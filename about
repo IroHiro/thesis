@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>About - Albay Agricultural Monitoring System</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: "Segoe UI", sans-serif;
+        }
+
+        body {
+            background-color: #2f3b1f;
+            color: #fff;
+            line-height: 1.6;
+        }
+
+        /* NAVBAR */
+        .navbar {
+            background-color: #263014;
+            padding: 15px 40px;
+        }
+
+        .nav-links {
+            list-style: none;
+            display: flex;
+            justify-content: center;
+            gap: 40px;
+        }
+
+        .nav-links a {
+            text-decoration: none;
+            color: #cfe09c;
+            font-weight: 500;
+        }
+
+        .nav-links a:hover {
+            color: #ffffff;
+        }
+
+        /* HEADER */
+        .header {
+            background: linear-gradient(rgba(45, 60, 20, 0.9), rgba(45, 60, 20, 0.7)), 
+                        url('https://images.unsplash.com/photo-1595435934247-5d33b7f92c70?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80');
+            background-size: cover;
+            background-position: center;
+            padding: 60px 20px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.2rem;
+            margin-bottom: 15px;
+            color: #ffffff;
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            color: #e6efc8;
+            max-width: 800px;
+            margin: 0 auto 10px auto;
+        }
+
+        /* MAIN CONTENT */
+        .main-content {
+            max-width: 1000px;
+            margin: 40px auto;
+            padding: 0 20px;
+        }
+
+        .section-card {
+            background-color: #3c4527;
+            padding: 25px;
+            border-radius: 6px;
+            margin-bottom: 30px;
+            border: 1px solid #4a5430;
+        }
+
+        .section-card h2 {
+            color: #cfe09c;
+            margin-bottom: 15px;
+        }
+
+        .section-card p {
+            color: #e6efc8;
+            margin-bottom: 10px;
+        }
+
+        /* FOOTER */
+        .footer {
+            background-color: #263014;
+            padding: 25px 20px;
+            text-align: center;
+            border-top: 1px solid #3c4527;
+            margin-top: 40px;
+        }
+
+        .footer p {
+            color: #cfe09c;
+            font-size: 0.9em;
+        }
+    </style>
+</head>
+<body>
+    <!-- NAVBAR -->
+    <nav class="navbar">
+        <ul class="nav-links">
+            <li><a href="index.html">Home</a></li>
+            <li><a href="index.html#map">Crop Map</a></li>
+            <li><a href="about.html">About</a></li>
+            <li><a href="index.html#contact">Contact</a></li>
+        </ul>
+    </nav>
+
+    <!-- HEADER -->
+    <header class="header">
+        <h1>About Albay Agricultural Monitoring System</h1>
+        <p>Learn about our mission to visualize and analyze crop distribution across Albay's municipalities.</p>
+    </header>
+
+    <!-- MAIN CONTENT -->
+    <div class="main-content">
+        <div class="section-card">
+            <h2>Our Mission</h2>
+            <p>The Albay Agricultural Monitoring System aims to provide farmers, researchers, and policymakers with clear, data-driven insights into crop distribution and agricultural trends in key municipalities.</p>
+            <p>By combining geographic visualization and statistical analysis, we help the agricultural community make informed decisions and adapt to changing environmental conditions.</p>
+        </div>
+
+        <div class="section-card">
+            <h2>Focus Areas</h2>
+            <p>Our system currently highlights the top 5 municipalities for crop production:</p>
+            <ul>
+                <li>City of Ligao</li>
+                <li>Pio Duran</li>
+                <li>Malinao</li>
+                <li>Polangui</li>
+                <li>Oas</li>
+            </ul>
+            <p>We monitor major crops such as Corn, Rice/Palay, and Banana, providing detailed data and insights for each area.</p>
+        </div>
+
+        <div class="section-card">
+            <h2>Our Approach</h2>
+            <p>We use data-driven methods, including Random Forest and LSTM models, to analyze crop distribution patterns and forecast trends.</p>
+            <p>The system is designed to support climate-adaptive agriculture, helping farmers maximize yields while minimizing environmental impact.</p>
+        </div>
+
+        <div class="section-card">
+            <h2>About Us</h2>
+            <p>This project is part of the Albay Agricultural Research Initiative, dedicated to improving agricultural outcomes through technology and data science.</p>
+            <p>We collaborate with local stakeholders, researchers, and government agencies to ensure accurate and actionable insights.</p>
+        </div>
+    </div>
+
+    <!-- FOOTER -->
+    <footer class="footer">
+        <p>Data Source: RSBSA Registry | Project: Data-Driven Crop Suitability and Yield Prediction for Climate-Adaptive Agriculture in Albay</p>
+        <p>© 2024 Albay Agricultural Research Initiative</p>
+    </footer>
+</body>
+</html>
