@@ -1,0 +1,727 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Albay Crop Distribution - Top 5 Municipalities</title>
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: "Segoe UI", sans-serif;
+        }
+
+        body {
+            background-color: #2f3b1f;
+            color: #fff;
+        }
+
+        /* NAVBAR */
+        .navbar {
+            background-color: #263014;
+            padding: 15px 40px;
+        }
+
+        .nav-links {
+            list-style: none;
+            display: flex;
+            justify-content: center;
+            gap: 40px;
+        }
+
+        .nav-links a {
+            text-decoration: none;
+            color: #cfe09c;
+            font-weight: 500;
+        }
+
+        .nav-links a:hover {
+            color: #ffffff;
+        }
+
+        /* HEADER */
+        .header {
+            background: linear-gradient(rgba(45, 60, 20, 0.9), rgba(45, 60, 20, 0.7)), 
+                        url('https://images.unsplash.com/photo-1595435934247-5d33b7f92c70?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80');
+            background-size: cover;
+            background-position: center;
+            padding: 40px 20px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.2rem;
+            line-height: 1.3;
+            margin-bottom: 15px;
+            color: #ffffff;
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            margin-bottom: 20px;
+            color: #e6efc8;
+            max-width: 800px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        /* MAIN CONTENT */
+        .main-content {
+            display: flex;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 30px 20px;
+            gap: 30px;
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                flex-direction: column;
+            }
+        }
+
+        /* CONTROLS PANEL */
+        .controls-panel {
+            flex: 1;
+            min-width: 350px;
+        }
+
+        .panel-card {
+            background-color: #3c4527;
+            padding: 25px;
+            border-radius: 6px;
+            margin-bottom: 25px;
+            border: 1px solid #4a5430;
+        }
+
+        .panel-card h3 {
+            color: #cfe09c;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #4a5430;
+            font-size: 1.2rem;
+        }
+
+        /* CROP SELECTION */
+        .crop-selectors {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .crop-button {
+            background-color: #4a5430;
+            border: 2px solid #8fa163;
+            border-radius: 4px;
+            padding: 15px 10px;
+            color: #fff;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            font-weight: 500;
+        }
+
+        .crop-button:hover {
+            background-color: #5a6438;
+            border-color: #a0b173;
+        }
+
+        .crop-button.active {
+            background-color: #f3f5e6;
+            color: #2f3b1f;
+            border-color: #f3f5e6;
+        }
+
+        .crop-button.corn.active {
+            background-color: #FFA500;
+            color: #2f3b1f;
+            border-color: #FFA500;
+        }
+
+        .crop-button.rice.active {
+            background-color: #4CAF50;
+            color: #fff;
+            border-color: #4CAF50;
+        }
+
+        .crop-button.banana.active {
+            background-color: #FFEB3B;
+            color: #2f3b1f;
+            border-color: #FFEB3B;
+        }
+
+        .crop-icon {
+            font-size: 24px;
+        }
+
+        /* MAP CONTAINER */
+        .map-container {
+            flex: 2;
+            border-radius: 6px;
+            overflow: hidden;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            min-height: 600px;
+        }
+
+        #map {
+            height: 100%;
+            width: 100%;
+        }
+
+        /* LEGEND */
+        .legend-item {
+            display: flex;
+            align-items: center;
+            margin: 12px 0;
+            padding: 8px;
+            background-color: #4a5430;
+            border-radius: 4px;
+        }
+
+        .legend-color {
+            width: 25px;
+            height: 25px;
+            border-radius: 4px;
+            margin-right: 15px;
+            border: 1px solid #8fa163;
+        }
+
+        /* STATISTICS */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+        }
+
+        .stat-item {
+            background-color: #4a5430;
+            padding: 15px;
+            border-radius: 4px;
+            text-align: center;
+            border: 1px solid #5a6438;
+        }
+
+        .stat-value {
+            font-size: 1.8em;
+            font-weight: bold;
+            color: #f3f5e6;
+            margin: 5px 0;
+        }
+
+        .stat-label {
+            font-size: 0.9em;
+            color: #cfe09c;
+        }
+
+        /* MUNICIPALITY LIST */
+        .municipality-card {
+            background-color: #4a5430;
+            padding: 20px;
+            border-radius: 6px;
+            margin-bottom: 15px;
+            border-left: 4px solid #8fa163;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .municipality-card:hover {
+            background-color: #5a6438;
+            transform: translateY(-2px);
+        }
+
+        .municipality-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .municipality-name {
+            font-weight: 600;
+            color: #f3f5e6;
+            font-size: 1.1em;
+        }
+
+        .total-farmers {
+            background-color: #263014;
+            color: #cfe09c;
+            padding: 4px 12px;
+            border-radius: 15px;
+            font-size: 0.9em;
+        }
+
+        .current-crop {
+            margin-bottom: 15px;
+            color: #e6efc8;
+        }
+
+        .crop-bars {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            margin-top: 10px;
+        }
+
+        .crop-bar {
+            background-color: #3c4527;
+            height: 24px;
+            border-radius: 12px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .crop-fill {
+            height: 100%;
+            border-radius: 12px;
+            transition: width 0.5s ease;
+        }
+
+        .crop-fill.corn {
+            background: linear-gradient(90deg, #FFA500, #FF8C00);
+        }
+
+        .crop-fill.rice {
+            background: linear-gradient(90deg, #4CAF50, #388E3C);
+        }
+
+        .crop-fill.banana {
+            background: linear-gradient(90deg, #FFEB3B, #FDD835);
+        }
+
+        .crop-label {
+            position: absolute;
+            width: 100%;
+            text-align: center;
+            font-size: 0.8em;
+            font-weight: 600;
+            color: #2f3b1f;
+            line-height: 24px;
+            z-index: 1;
+        }
+
+        /* FOOTER */
+        .footer {
+            background-color: #263014;
+            padding: 25px 20px;
+            text-align: center;
+            border-top: 1px solid #3c4527;
+            margin-top: 40px;
+        }
+
+        .footer p {
+            color: #cfe09c;
+            margin-bottom: 10px;
+            font-size: 0.9em;
+        }
+
+        /* FORM STYLES (for consistency) */
+        .form-card select {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 18px;
+            background-color: #4a5430;
+            color: #fff;
+            border: 1px solid #8fa163;
+            border-radius: 4px;
+        }
+
+        .form-card button {
+            width: 100%;
+            padding: 12px;
+            background-color: #f3f5e6;
+            color: #2f3b1f;
+            border: none;
+            border-radius: 4px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .form-card button:hover {
+            background-color: #e2e8c9;
+        }
+    </style>
+</head>
+<body>
+    <!-- NAVBAR -->
+    <nav class="navbar">
+        <ul class="nav-links">
+            <li><a href="#home">Home</a></li>
+            <li><a href="#map">Crop Map</a></li>
+            <li><a href="#about">About</a></li>
+            <li><a href="#contact">Contact</a></li>
+        </ul>
+    </nav>
+
+    <!-- HEADER -->
+    <header class="header">
+        <h1>🌾 Albay Agricultural Monitoring System</h1>
+        <p>Visualizing crop distribution across 5 key municipalities: City of Ligao, Pio Duran, Malinao, Polangui, and Oas</p>
+        <p>Monitoring: Corn • Rice/Palay • Banana</p>
+    </header>
+
+    <!-- MAIN CONTENT -->
+    <div class="main-content">
+        <!-- LEFT PANEL - CONTROLS -->
+        <div class="controls-panel">
+            <!-- CROP SELECTION -->
+            <div class="panel-card">
+                <h3>🌽 Select Crop</h3>
+                <div class="crop-selectors">
+                    <button class="crop-button corn active" data-crop="Corn">
+                        <span class="crop-icon">🌽</span>
+                        <span>Corn</span>
+                    </button>
+                    <button class="crop-button rice" data-crop="Rice/Palay">
+                        <span class="crop-icon">🍚</span>
+                        <span>Rice/Palay</span>
+                    </button>
+                    <button class="crop-button banana" data-crop="Banana">
+                        <span class="crop-icon">🍌</span>
+                        <span>Banana</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- LEGEND -->
+            <div class="panel-card">
+                <h3>📊 Map Legend</h3>
+                <div id="legend">
+                    <!-- Legend content will be populated by JavaScript -->
+                </div>
+            </div>
+
+            <!-- STATISTICS -->
+            <div class="panel-card">
+                <h3>📈 Statistics</h3>
+                <div class="stats-grid">
+                    <div class="stat-item">
+                        <div class="stat-value" id="totalFarmers">0</div>
+                        <div class="stat-label">Total Farmers</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value" id="currentCropCount">0</div>
+                        <div class="stat-label" id="currentCropLabel">Corn Farmers</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- MUNICIPALITIES LIST -->
+            <div class="panel-card">
+                <h3>📍 Municipalities</h3>
+                <div id="municipalityList">
+                    <!-- Municipality cards will be populated by JavaScript -->
+                </div>
+            </div>
+        </div>
+
+        <!-- RIGHT PANEL - MAP -->
+        <div class="map-container">
+            <div id="map"></div>
+        </div>
+    </div>
+
+    <!-- FOOTER -->
+    <footer class="footer">
+        <p>Data Source: RSBSA Registry | Project: Data-Driven Crop Suitability and Yield Prediction for Climate-Adaptive Agriculture in Albay</p>
+        <p>© 2024 Albay Agricultural Research Initiative | Using Random Forest & LSTM Models</p>
+    </footer>
+
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    
+    <script>
+        // Data for the 5 focus municipalities
+        const municipalityData = {
+            "CITY OF LIGAO": {
+                "total": 8233,
+                "coordinates": [13.2167, 123.5167],
+                "crops": {
+                    "Corn": 863,
+                    "Rice/Palay": 1677,
+                    "Banana": 496
+                },
+                "description": "Major agricultural hub with diversified crops"
+            },
+            "PIO DURAN": {
+                "total": 6226,
+                "coordinates": [13.0333, 123.4500],
+                "crops": {
+                    "Corn": 1131,
+                    "Rice/Palay": 2313,
+                    "Banana": 146
+                },
+                "description": "Rice-dominated agriculture with significant corn production"
+            },
+            "MALINAO": {
+                "total": 3802,
+                "coordinates": [13.4000, 123.7000],
+                "crops": {
+                    "Corn": 465,
+                    "Rice/Palay": 152,
+                    "Banana": 545
+                },
+                "description": "Banana-focused with diverse fruit cultivation"
+            },
+            "POLANGUI": {
+                "total": 4446,
+                "coordinates": [13.3167, 123.4833],
+                "crops": {
+                    "Corn": 969,
+                    "Rice/Palay": 146,
+                    "Banana": 676
+                },
+                "description": "Strong in banana and corn production"
+            },
+            "OAS": {
+                "total": 7508,
+                "coordinates": [13.2667, 123.4833],
+                "crops": {
+                    "Corn": 656,
+                    "Rice/Palay": 1930,
+                    "Banana": 297
+                },
+                "description": "Rice cultivation center with balanced crop mix"
+            }
+        };
+
+        // Initialize map
+        const map = L.map('map').setView([13.25, 123.52], 10);
+
+        // Add tile layer with a more natural theme
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap contributors',
+            maxZoom: 15,
+            minZoom: 8
+        }).addTo(map);
+
+        // Current selected crop
+        let currentCrop = "Corn";
+
+        // Store markers for each municipality
+        const municipalityMarkers = {};
+
+        // Function to get color for a crop value
+        function getColorForValue(value, maxValue) {
+            if (!value || value === 0) return '#3c4527';
+            
+            const ratio = value / maxValue;
+            if (ratio < 0.25) return '#FFEDA0';
+            if (ratio < 0.5) return '#FEB24C';
+            if (ratio < 0.75) return '#F03B20';
+            return '#BD0026';
+        }
+
+        // Function to update statistics
+        function updateStatistics() {
+            const totalFarmers = Object.values(municipalityData)
+                .reduce((sum, data) => sum + data.total, 0);
+            
+            const currentCropTotal = Object.values(municipalityData)
+                .reduce((sum, data) => sum + (data.crops[currentCrop] || 0), 0);
+            
+            document.getElementById('totalFarmers').textContent = totalFarmers.toLocaleString();
+            document.getElementById('currentCropCount').textContent = currentCropTotal.toLocaleString();
+            document.getElementById('currentCropLabel').textContent = `${currentCrop} Farmers`;
+        }
+
+        // Function to update municipality list
+        function updateMunicipalityList() {
+            const container = document.getElementById('municipalityList');
+            container.innerHTML = '';
+            
+            Object.entries(municipalityData).forEach(([name, data]) => {
+                const cropValue = data.crops[currentCrop] || 0;
+                const percentage = ((cropValue / data.total) * 100).toFixed(1);
+                
+                // Calculate bar widths for all 3 crops
+                const maxCropValue = Math.max(...Object.values(data.crops));
+                const cornWidth = maxCropValue > 0 ? (data.crops.Corn / maxCropValue) * 100 : 0;
+                const riceWidth = maxCropValue > 0 ? (data.crops["Rice/Palay"] / maxCropValue) * 100 : 0;
+                const bananaWidth = maxCropValue > 0 ? (data.crops.Banana / maxCropValue) * 100 : 0;
+                
+                const card = document.createElement('div');
+                card.className = 'municipality-card';
+                card.innerHTML = `
+                    <div class="municipality-header">
+                        <div class="municipality-name">${name}</div>
+                        <div class="total-farmers">${data.total.toLocaleString()} farmers</div>
+                    </div>
+                    <div class="current-crop">
+                        <strong>${currentCrop}:</strong> ${cropValue.toLocaleString()} farmers (${percentage}%)
+                    </div>
+                    <div class="crop-bars">
+                        <div class="crop-bar">
+                            <div class="crop-fill corn" style="width: ${cornWidth}%"></div>
+                            <div class="crop-label">Corn: ${data.crops.Corn}</div>
+                        </div>
+                        <div class="crop-bar">
+                            <div class="crop-fill rice" style="width: ${riceWidth}%"></div>
+                            <div class="crop-label">Rice: ${data.crops["Rice/Palay"]}</div>
+                        </div>
+                        <div class="crop-bar">
+                            <div class="crop-fill banana" style="width: ${bananaWidth}%"></div>
+                            <div class="crop-label">Banana: ${data.crops.Banana}</div>
+                        </div>
+                    </div>
+                `;
+                
+                // Add click event to center map on municipality
+                card.addEventListener('click', () => {
+                    map.setView(data.coordinates, 12);
+                    if (municipalityMarkers[name]) {
+                        municipalityMarkers[name].openPopup();
+                    }
+                });
+                
+                container.appendChild(card);
+            });
+        }
+
+        // Function to update map based on selected crop
+        function updateMap() {
+            let maxValue = 0;
+            
+            // Find maximum value for the current crop
+            Object.values(municipalityData).forEach(data => {
+                const value = data.crops[currentCrop] || 0;
+                if (value > maxValue) maxValue = value;
+            });
+
+            // Update legend
+            updateLegend(maxValue);
+            
+            // Update statistics
+            updateStatistics();
+
+            // Clear existing markers
+            Object.values(municipalityMarkers).forEach(marker => {
+                if (marker && marker.remove) marker.remove();
+            });
+
+            // Add markers for each municipality
+            Object.entries(municipalityData).forEach(([name, data]) => {
+                const coords = data.coordinates;
+                const cropValue = data.crops[currentCrop] || 0;
+                const percentage = ((cropValue / data.total) * 100).toFixed(1);
+                
+                // Calculate marker size based on value
+                const radius = Math.max(20, Math.min(40, (cropValue / maxValue) * 35 + 20));
+                
+                // Create popup content
+                let popupContent = `<div style="color: #2f3b1f; padding: 10px; min-width: 250px;">
+                    <h3 style="margin-bottom: 10px; color: #2f3b1f;">${name}</h3>
+                    <p><strong>Total Farmers:</strong> ${data.total.toLocaleString()}</p>
+                    <hr style="margin: 10px 0; border-color: #8fa163;">
+                    <p><strong>${currentCrop}:</strong> ${cropValue.toLocaleString()} farmers</p>
+                    <p><em>${percentage}% of municipality farmers</em></p>
+                    <hr style="margin: 10px 0; border-color: #8fa163;">
+                    <p><strong>All Crops:</strong></p>
+                    <p>🌽 Corn: ${data.crops.Corn.toLocaleString()}</p>
+                    <p>🍚 Rice: ${data.crops["Rice/Palay"].toLocaleString()}</p>
+                    <p>🍌 Banana: ${data.crops.Banana.toLocaleString()}</p>
+                    <p style="margin-top: 10px; font-style: italic; color: #5a6438;">${data.description}</p>
+                </div>`;
+                
+                // Create marker
+                const marker = L.circleMarker(coords, {
+                    radius: radius,
+                    fillColor: getColorForValue(cropValue, maxValue),
+                    color: '#263014',
+                    weight: 2,
+                    opacity: 1,
+                    fillOpacity: 0.8
+                }).addTo(map);
+                
+                municipalityMarkers[name] = marker;
+                
+                // Bind popup
+                marker.bindPopup(popupContent);
+                
+                // Add hover effect
+                marker.on('mouseover', function() {
+                    this.openPopup();
+                });
+                
+                marker.on('mouseout', function() {
+                    this.closePopup();
+                });
+                
+                // Click to highlight
+                marker.on('click', function() {
+                    map.setView(coords, 12);
+                });
+            });
+        }
+
+        // Function to update legend
+        function updateLegend(maxValue) {
+            const legend = document.getElementById('legend');
+            
+            legend.innerHTML = `
+                <div class="legend-item">
+                    <div class="legend-color" style="background-color: #BD0026;"></div>
+                    <span>High (${Math.round(maxValue * 0.75)}+ farmers)</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background-color: #F03B20;"></div>
+                    <span>Medium (${Math.round(maxValue * 0.5)}-${Math.round(maxValue * 0.75)} farmers)</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background-color: #FEB24C;"></div>
+                    <span>Low (${Math.round(maxValue * 0.25)}-${Math.round(maxValue * 0.5)} farmers)</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background-color: #FFEDA0;"></div>
+                    <span>Very Low (1-${Math.round(maxValue * 0.25)} farmers)</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background-color: #3c4527;"></div>
+                    <span>No Data</span>
+                </div>
+            `;
+        }
+
+        // Initialize crop buttons
+        document.querySelectorAll('.crop-button').forEach(button => {
+            button.addEventListener('click', function() {
+                // Update active state
+                document.querySelectorAll('.crop-button').forEach(btn => {
+                    btn.classList.remove('active');
+                });
+                this.classList.add('active');
+                
+                // Update current crop
+                currentCrop = this.dataset.crop;
+                
+                // Update map and list
+                updateMap();
+                updateMunicipalityList();
+            });
+        });
+
+        // Add municipality labels to map
+        Object.entries(municipalityData).forEach(([name, data]) => {
+            L.marker(data.coordinates, {
+                icon: L.divIcon({
+                    className: 'municipality-label',
+                    html: `<div style="background: rgba(45, 60, 20, 0.9); padding: 4px 12px; border-radius: 15px; font-weight: 600; color: #f3f5e6; border: 1px solid #8fa163; font-size: 0.9em;">${name}</div>`,
+                    iconSize: [120, 30]
+                })
+            }).addTo(map);
+        });
+
+        // Initial render
+        updateMap();
+        updateMunicipalityList();
+        updateStatistics();
+    </script>
+</body>
+</html>

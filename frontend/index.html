@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Crop Suitability & Yield Prediction</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <!-- Navigation Bar -->
+  <header class="navbar">
+    <nav>
+      <ul class="nav-links">
+        <li><a href="#">Home</a></li>
+        <li><a href="#">About</a></li>
+        <li><a href="#">FAQs</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <!-- HERO SECTION -->
+  <section class="hero">
+    <div class="overlay"></div>
+
+    <div class="hero-content">
+      <h1>
+        Data-Driven Crop Suitability and Yield Prediction for Climate-Adaptive
+        Agriculture in Albay using Random Forest and LSTM models
+      </h1>
+      <p>Your guide to crop suitability and yield forecasting.</p>
+
+      <!-- FORM CARD -->
+      <div class="form-card">
+        <label for="city">Select Your Municipality/City </label>
+        <select id="city">
+          <option value="">-- Select Municipality/City --</option>
+          <option value="Malinao">Malinao</option>
+          <option value="Pio Duran">Pio Duran</option>
+          <option value="Ligao">Ligao City</option>
+          <option value="Polangui">Polangui</option>
+          <option value="Oas">Oas</option>
+        </select>
+
+        <label for="crop">Select a Crop</label>
+        <select id="crop">
+          <option value="">-- Select Crop --</option>
+          <option value="Rice">Rice</option>
+          <option value="Corn">Corn</option>
+          <option value="Coconut">Banana</option>
+        </select>
+
+        <button onclick="getPrediction()">Get Prediction</button>
+      </div>
+    </div>
+  </section>
+
+  <script src="script.js"></script>
+</body>
+</html>
