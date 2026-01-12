@@ -21,20 +21,27 @@
         /* NAVBAR */
         .navbar {
             background-color: #263014;
-            padding: 15px 40px;
+            height: 50px;           /* slightly shorter */
+            display: flex;
+            align-items: center;    /* vertical centering */
+            justify-content: center; /* horizontal centering of nav-links */
+            padding: 0 40px;        /* remove top/bottom padding to match height */
         }
 
         .nav-links {
             list-style: none;
             display: flex;
-            justify-content: center;
             gap: 40px;
+            margin: 0;             /* remove extra margin */
+            padding: 0;            /* remove extra padding */
         }
 
         .nav-links a {
             text-decoration: none;
             color: #cfe09c;
             font-weight: 500;
+            font-size: 1rem;        /* consistent font size */
+            line-height: 50px;      /* match navbar height for perfect vertical alignment */
         }
 
         .nav-links a:hover {
@@ -54,6 +61,7 @@
         .header h1 {
             font-size: 2.2rem;
             margin-bottom: 15px;
+            line-height: 1.3;
             color: #ffffff;
         }
 
@@ -120,13 +128,13 @@
             <li><a href="index.html">Home</a></li>
             <li><a href="map.html">Crop Map</a></li>
             <li><a href="about.html">About</a></li>
-            <li><a href="index.html#contact">Contact</a></li>
+            <li><a href="index.html#contact">FAQs</a></li>
         </ul>
     </nav>
 
     <!-- HEADER -->
     <header class="header">
-        <h1>About Albay Agricultural Monitoring System</h1>
+        <h1>About Agricultural Climate-Adaptive Prediction System in Albay</h1>
         <p>Learn about our mission to visualize and analyze crop distribution across Albay's municipalities.</p>
     </header>
 

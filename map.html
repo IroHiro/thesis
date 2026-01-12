@@ -22,20 +22,27 @@
         /* NAVBAR */
         .navbar {
             background-color: #263014;
-            padding: 15px 40px;
+            height: 50px;           /* slightly shorter */
+            display: flex;
+            align-items: center;    /* vertical centering */
+            justify-content: center; /* horizontal centering of nav-links */
+            padding: 0 40px;        /* remove top/bottom padding to match height */
         }
 
         .nav-links {
             list-style: none;
             display: flex;
-            justify-content: center;
             gap: 40px;
+            margin: 0;             /* remove extra margin */
+            padding: 0;            /* remove extra padding */
         }
 
         .nav-links a {
             text-decoration: none;
             color: #cfe09c;
             font-weight: 500;
+            font-size: 1rem;        /* consistent font size */
+            line-height: 50px;      /* match navbar height for perfect vertical alignment */
         }
 
         .nav-links a:hover {
@@ -356,7 +363,7 @@
             <li><a href="index.html">Home</a></li>
             <li><a href="map.html">Crop Map</a></li>
             <li><a href="about.html">About</a></li>
-            <li><a href="#contact">Contact</a></li>
+            <li><a href="#contact">FAQs</a></li>
         </ul>
     </nav>
 

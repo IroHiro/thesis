@@ -12,21 +12,28 @@ body {
 
 /* NAVBAR */
 .navbar {
-  background-color: #263014;
-  padding: 15px 40px;
+    background-color: #263014;
+    height: 50px;           /* slightly shorter */
+    display: flex;
+    align-items: center;    /* vertical centering */
+    justify-content: center; /* horizontal centering of nav-links */
+    padding: 0 40px;        /* remove top/bottom padding to match height */
 }
 
 .nav-links {
-  list-style: none;
-  display: flex;
-  justify-content: center;
-  gap: 40px;
+    list-style: none;
+    display: flex;
+    gap: 40px;
+    margin: 0;             /* remove extra margin */
+    padding: 0;            /* remove extra padding */
 }
 
 .nav-links a {
-  text-decoration: none;
-  color: #cfe09c;
-  font-weight: 500;
+    text-decoration: none;
+    color: #cfe09c;
+    font-weight: 500;
+    font-size: 1rem;        /* consistent font size */
+    line-height: 50px;      /* match navbar height for perfect vertical alignment */
 }
 
 .nav-links a:hover {
