@@ -47,7 +47,7 @@
                         url('https://images.unsplash.com/photo-1595435934247-5d33b7f92c70?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80');
             background-size: cover;
             background-position: center;
-            padding: 60px 20px;
+            padding: 40px 20px;
             text-align: center;
         }
 
@@ -67,7 +67,7 @@
         /* MAIN CONTENT */
         .main-content {
             max-width: 1000px;
-            margin: 40px auto;
+            margin: 20px auto;
             padding: 0 20px;
         }
 
@@ -87,6 +87,15 @@
         .section-card p {
             color: #e6efc8;
             margin-bottom: 10px;
+        }
+
+        .section-card ul {
+            padding-left: 30px; /* moves list items to the right */
+            list-style-type: disc; /* keeps bullets */
+        }
+        .section-card ul li {
+            margin-bottom: 8px;
+            color: #e6efc8;
         }
 
         /* FOOTER */
@@ -110,7 +119,7 @@
         <ul class="nav-links">
             <li><a href="index.html">Home</a></li>
             <li><a href="index.html#map">Crop Map</a></li>
-            <li><a href="about.html">About</a></li>
+            <li><a href="about">About</a></li>
             <li><a href="index.html#contact">Contact</a></li>
         </ul>
     </nav>
@@ -150,7 +159,7 @@
 
         <div class="section-card">
             <h2>About Us</h2>
-            <p>This project is part of the Albay Agricultural Research Initiative, dedicated to improving agricultural outcomes through technology and data science.</p>
+            <p>This project is part of the Thesis project of the Computer Science students from Bicol University, dedicated to improving agricultural outcomes through technology and data science.</p>
             <p>We collaborate with local stakeholders, researchers, and government agencies to ensure accurate and actionable insights.</p>
         </div>
     </div>
