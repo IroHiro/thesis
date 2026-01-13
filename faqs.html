@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FAQs - Albay Agricultural Monitoring System</title>
+
+<style>
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: "Segoe UI", sans-serif;
+}
+
+body {
+    background-color: #2f3b1f;
+    color: #fff;
+    line-height: 1.6;
+}
+
+/* NAVBAR */
+.navbar {
+    background-color: #263014;
+    height: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.nav-links {
+    list-style: none;
+    display: flex;
+    gap: 40px;
+}
+
+.nav-links a {
+    text-decoration: none;
+    color: #cfe09c;
+    font-weight: 500;
+    line-height: 50px;
+}
+
+.nav-links a:hover {
+    color: #ffffff;
+}
+
+/* HEADER */
+.header {
+    background: linear-gradient(rgba(45, 60, 20, 0.9), rgba(45, 60, 20, 0.7)),
+                url('https://images.unsplash.com/photo-1595435934247-5d33b7f92c70');
+    background-size: cover;
+    background-position: center;
+    padding: 40px 20px;
+    text-align: center;
+}
+
+.header h1 {
+    font-size: 2.2rem;
+}
+
+.header p {
+    color: #e6efc8;
+    margin-top: 10px;
+}
+
+/* MAIN CONTENT */
+.main-content {
+    max-width: 1000px;
+    margin: 30px auto;
+    padding: 0 20px;
+}
+
+/* FAQ CARD */
+.faq-card {
+    background-color: #3c4527;
+    border: 1px solid #4a5430;
+    border-radius: 6px;
+    margin-bottom: 20px;
+    overflow: hidden;
+}
+
+/* QUESTION */
+.faq-question {
+    padding: 20px;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.faq-question h2 {
+    color: #cfe09c;
+    font-size: 1.05rem;
+}
+
+.faq-question span {
+    font-size: 1.3rem;
+    transition: transform 0.3s ease;
+}
+
+/* ANSWER */
+.faq-answer {
+    max-height: 0;
+    overflow: hidden;
+    padding: 0 20px;
+    transition: max-height 0.4s ease, padding 0.3s ease;
+}
+
+.faq-answer p {
+    color: #e6efc8;
+    padding-bottom: 20px;
+}
+
+/* ACTIVE STATE */
+.faq-card.active .faq-answer {
+    max-height: 300px;
+    padding-top: 10px;
+}
+
+.faq-card.active .faq-question span {
+    transform: rotate(180deg);
+}
+
+/* FOOTER */
+.footer {
+    background-color: #263014;
+    padding: 25px;
+    text-align: center;
+    margin-top: 40px;
+}
+
+.footer p {
+    color: #cfe09c;
+    font-size: 0.9em;
+}
+</style>
+</head>
+
+<body>
+
+<!-- NAVBAR -->
+<nav class="navbar">
+    <ul class="nav-links">
+        <li><a href="index.html">Home</a></li>
+        <li><a href="map.html">Crop Map</a></li>
+        <li><a href="about.html">About</a></li>
+        <li><a href="faqs.html">FAQs</a></li>
+    </ul>
+</nav>
+
+<!-- HEADER -->
+<header class="header">
+    <h1>Frequently Asked Questions</h1>
+    <p>Click a question to view the answer.</p>
+</header>
+
+<!-- FAQ CONTENT -->
+<div class="main-content">
+
+    <div class="faq-card">
+        <div class="faq-question">
+            <h2>What is the Albay Agricultural Monitoring System?</h2>
+            <span>▼</span>
+        </div>
+        <div class="faq-answer">
+            <p>
+                It is a web-based system that visualizes crop distribution and analyzes agricultural data
+                to support climate-adaptive decision-making in Albay.
+            </p>
+        </div>
+    </div>
+
+    <div class="faq-card">
+        <div class="faq-question">
+            <h2>Which municipalities are included?</h2>
+            <span>▼</span>
+        </div>
+        <div class="faq-answer">
+            <p>
+                The system focuses on City of Ligao, Pio Duran, Malinao, Polangui, and Oas.
+            </p>
+        </div>
+    </div>
+
+    <div class="faq-card">
+        <div class="faq-question">
+            <h2>What crops are monitored?</h2>
+            <span>▼</span>
+        </div>
+        <div class="faq-answer">
+            <p>
+                Corn, Rice/Palay, and Banana are currently monitored in the system.
+            </p>
+        </div>
+    </div>
+
+    <div class="faq-card">
+        <div class="faq-question">
+            <h2>Where does the data come from?</h2>
+            <span>▼</span>
+        </div>
+        <div class="faq-answer">
+            <p>
+                Data is sourced from the RSBSA Registry and official agricultural records.
+            </p>
+        </div>
+    </div>
+
+    <div class="faq-card">
+        <div class="faq-question">
+            <h2>Who developed this system?</h2>
+            <span>▼</span>
+        </div>
+        <div class="faq-answer">
+            <p>
+                This system was developed as a thesis project by Computer Science students from Bicol University.
+            </p>
+        </div>
+    </div>
+
+</div>
+
+<!-- FOOTER -->
+<footer class="footer">
+    <p>© 2024 Albay Agricultural Research Initiative</p>
+</footer>
+
+<!-- SCRIPT -->
+<script>
+document.querySelectorAll('.faq-question').forEach(question => {
+    question.addEventListener('click', () => {
+        const card = question.parentElement;
+        card.classList.toggle('active');
+    });
+});
+</script>
+
+</body>
+</html>
