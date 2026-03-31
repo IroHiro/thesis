@@ -64,8 +64,8 @@
      * TerraSight Crop Yield Prediction Logic
      * Handles 4-week LSTM sequence generation and Typhoon metric extraction
      */
-    
-    // 1. Location Database (Baseline NDVI/EVI and Coordinates for Albay)
+
+    // 1. Location Database
     const locationData = {
         "Polangui": { lat: 13.2933, lon: 123.4853, ndvi: 0.74, evi: 0.46 },
         "Oas":      { lat: 13.2583, lon: 123.4967, ndvi: 0.72, evi: 0.44 },
@@ -74,37 +74,49 @@
         "Malinao":  { lat: 13.4117, lon: 123.7000, ndvi: 0.73, evi: 0.45 }
     };
     
-    const API_KEY = 'GMV5K3F5X4R63XB7JXGV8GZHV'; // Replace with your actual key
+    const API_KEY = 'GMV5K3F5X4R63XB7JXGV8GZHV';
     const RENDER_URL = 'https://crop-yield-api.onrender.com/predict';
     
     async function predictYield() {
-        const loc = document.getElementById('city').value;
+        const locKey = document.getElementById('city').value;
         const cropEncoded = document.getElementById('crop').value;
         const display = document.getElementById('display');
         const loader = document.getElementById('loader');
     
-        // Show loading state
+        if (!locKey || !cropEncoded) {
+            alert("Please select both a municipality and a crop.");
+            return;
+        }
+    
+        const coords = locationData[locKey];
         loader.style.display = "block";
-        display.innerText = "Fetching weather data and calculating indices...";
+        display.innerText = "Fetching 28-day weather history...";
     
         try {
-            const coords = locationData[loc];
+            // Updated URL matching your snippet's base path
+            const baseUrl = "https://weather.visualcrossing.com/VisualCrossingWebServices/rest/services/timeline/";
             
-            // 2. Fetch 28 days of historical weather data
-            const weatherUrl = `https://weather.visualcrossing.com/visual-crossing-weather-api/services/timeline/${coords.lat},${coords.lon}/last28days?unitGroup=metric&include=days&key=${API_KEY}&contentType=json`;
-            
-            const weatherRes = await fetch(weatherUrl);
-            if (!weatherRes.ok) throw new Error("Weather API Error");
-            
-            const weatherData = await weatherRes.json();
-            const allDays = weatherData.days; // 28-day array
+            // We need exactly 28 days for the 4-week LSTM
+            const today = new Date();
+            const pastDate = new Date();
+            pastDate.setDate(today.getDate() - 27); // 28 days total including today
     
-            // 3. Process 4 Weeks for LSTM (12 features per week)
+            const formatDate = (d) => d.toISOString().split('T')[0];
+            const dateRange = `${formatDate(pastDate)}/${formatDate(today)}`;
+    
+            const weatherUrl = `${baseUrl}${coords.lat},${coords.lon}/${dateRange}?unitGroup=metric&key=${API_KEY}&contentType=json&include=days`;
+    
+            const weatherRes = await fetch(weatherUrl);
+            if (!weatherRes.ok) throw new Error(`Weather API Error: ${weatherRes.status}`);
+            
+            const weatherJSON = await weatherRes.json();
+            const allDays = weatherJSON.days; // Should be 28 days
+    
+            // 2. Process 4 Weeks for LSTM (12 features)
             let rawSequence = [];
             for (let i = 0; i < 4; i++) {
                 const weekBlock = allDays.slice(i * 7, (i * 7) + 7);
     
-                // Calculate Weekly Averages/Totals
                 const tmax = Math.max(...weekBlock.map(d => d.tempmax));
                 const tmin = Math.min(...weekBlock.map(d => d.tempmin));
                 const tave = weekBlock.reduce((acc, d) => acc + d.temp, 0) / 7;
@@ -113,61 +125,49 @@
                 const solar = weekBlock.reduce((acc, d) => acc + d.solarradiation, 0) / 7;
                 const wind = weekBlock.reduce((acc, d) => acc + d.windspeed, 0) / 7;
     
-                // Date-based features
                 const dateObj = new Date(weekBlock[0].datetime);
-                const weekNum = getWeekNumber(dateObj);
-                const yearNum = dateObj.getFullYear();
-                const seasonNum = getSeason(dateObj);
-    
                 rawSequence.push([
                     coords.ndvi, coords.evi, 
                     tmax, tmin, tave, rain, hum, solar, wind,
-                    yearNum, weekNum, seasonNum
+                    dateObj.getFullYear(), getWeekNumber(dateObj), getSeason(dateObj)
                 ]);
             }
     
-            // 4. Extract Typhoon Metrics for Random Forest (Entire 28-day period)
+            // 3. Extract Typhoon Metrics for RF
             const max_wind_kts = Math.max(...allDays.map(d => d.windspeed)) * 0.539957;
             const min_pres_mb = Math.min(...allDays.map(d => d.pressure));
-            // Duration: Count hours where wind > 34 knots (Tropical Storm threshold)
             const duration_hrs = allDays.filter(d => d.windspeed > 63).length * 24; 
-            
-            // Risk Score Logic (Customize this for your thesis)
-            let risk_score = 1; // Low
-            if (max_wind_kts > 100 || min_pres_mb < 980) risk_score = 3; // High
-            else if (max_wind_kts > 64) risk_score = 2; // Medium
+            let risk_score = (max_wind_kts > 100) ? 3 : (max_wind_kts > 64 ? 2 : 1);
     
-            // 5. Send to Render Backend
-            display.innerText = "Analyzing patterns (Server waking up)...";
-            
+            display.innerText = "Connecting to Prediction Server...";
+    
+            // 4. Send to Render
             const response = await fetch(RENDER_URL, {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify({
-                    raw_sequence: rawSequence,      // 4x12 for LSTM
+                    raw_sequence: rawSequence,
                     crop_encoded: parseInt(cropEncoded),
-                    max_wind: max_wind_kts,         // Typhoon Metrics for RF
+                    max_wind: max_wind_kts,
                     min_pres: min_pres_mb,
                     duration: duration_hrs,
                     risk_score: risk_score
                 })
             });
     
-            if (!response.ok) throw new Error("Prediction Server Error");
+            if (!response.ok) throw new Error("Render Server is offline or busy.");
     
             const result = await response.json();
             display.innerText = `Predicted Yield: ${result.yield.toFixed(2)} tons/ha`;
     
         } catch (error) {
             console.error(error);
-            display.innerText = "Error: " + error.message;
+            display.innerText = "Status: " + error.message;
         } finally {
             loader.style.display = "none";
         }
     }
     
-    /** * HELPER: Get ISO Week Number
-     */
     function getWeekNumber(d) {
         d = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
         d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay() || 7));
@@ -175,14 +175,10 @@
         return Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
     }
     
-    /** * HELPER: Define Season (1=Dry, 2=Wet) based on Bicol climate
-     */
     function getSeason(d) {
         const month = d.getMonth() + 1;
-        // June to December is typically the Wet season in Albay
-        return (month >= 6 && month <= 12) ? 2 : 1;
+        return (month >= 6 && month <= 12) ? 2 : 1; // 2 for Wet, 1 for Dry
     }
-    
   </script>
 </body>
 </html>
