@@ -148,6 +148,8 @@
                 body: JSON.stringify({
                     raw_sequence: rawSequence,
                     crop_encoded: parseInt(cropEncoded),
+                    municipality: locKey,  // ← ADD THIS (e.g., 'Ligao')
+                    season: getSeason(dateObj),  // ← ADD THIS (1 or 2)
                     max_wind: max_wind_kts,
                     min_pres: min_pres_mb,
                     duration: duration_hrs,
