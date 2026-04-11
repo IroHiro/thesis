@@ -167,6 +167,7 @@
             }
     
             const result = await response.json();
+            console.log("API Response:", result);
             display.innerText = `Predicted Yield: ${result.yield.toFixed(2)} tons/ha`;
     
         } catch (error) {
