@@ -93,13 +93,11 @@
         display.innerText = "Fetching 28-day weather history...";
     
         try {
-            // Updated URL matching your snippet's base path
             const baseUrl = "https://weather.visualcrossing.com/VisualCrossingWebServices/rest/services/timeline/";
             
-            // We need exactly 28 days for the 4-week LSTM
             const today = new Date();
             const pastDate = new Date();
-            pastDate.setDate(today.getDate() - 27); // 28 days total including today
+            pastDate.setDate(today.getDate() - 27);
     
             const formatDate = (d) => d.toISOString().split('T')[0];
             const dateRange = `${formatDate(pastDate)}/${formatDate(today)}`;
@@ -110,10 +108,13 @@
             if (!weatherRes.ok) throw new Error(`Weather API Error: ${weatherRes.status}`);
             
             const weatherJSON = await weatherRes.json();
-            const allDays = weatherJSON.days; // Should be 28 days
+            const allDays = weatherJSON.days;
     
-            // 2. Process 4 Weeks for LSTM (12 features)
+            // Process 4 Weeks for LSTM
             let rawSequence = [];
+            let lastSeason = null;
+            let lastDateObj = null;
+            
             for (let i = 0; i < 4; i++) {
                 const weekBlock = allDays.slice(i * 7, (i * 7) + 7);
     
@@ -126,14 +127,17 @@
                 const wind = weekBlock.reduce((acc, d) => acc + d.windspeed, 0) / 7;
     
                 const dateObj = new Date(weekBlock[0].datetime);
+                lastDateObj = dateObj;
+                lastSeason = getSeason(dateObj);
+                
                 rawSequence.push([
                     coords.ndvi, coords.evi, 
                     tmax, tmin, tave, rain, hum, solar, wind,
-                    dateObj.getFullYear(), getWeekNumber(dateObj), getSeason(dateObj)
+                    dateObj.getFullYear(), getWeekNumber(dateObj), lastSeason
                 ]);
             }
     
-            // 3. Extract Typhoon Metrics for RF
+            // Typhoon Metrics
             const max_wind_kts = Math.max(...allDays.map(d => d.windspeed)) * 0.539957;
             const min_pres_mb = Math.min(...allDays.map(d => d.pressure));
             const duration_hrs = allDays.filter(d => d.windspeed > 63).length * 24; 
@@ -141,15 +145,15 @@
     
             display.innerText = "Connecting to Prediction Server...";
     
-            // 4. Send to Render
+            // Send to Render
             const response = await fetch(RENDER_URL, {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify({
                     raw_sequence: rawSequence,
                     crop_encoded: parseInt(cropEncoded),
-                    municipality: locKey,  // ← ADD THIS (e.g., 'Ligao')
-                    season: getSeason(dateObj),  // ← ADD THIS (1 or 2)
+                    municipality: locKey,
+                    season: lastSeason,
                     max_wind: max_wind_kts,
                     min_pres: min_pres_mb,
                     duration: duration_hrs,
@@ -157,7 +161,10 @@
                 })
             });
     
-            if (!response.ok) throw new Error("Render Server is offline or busy.");
+            if (!response.ok) {
+                const errorText = await response.text();
+                throw new Error(`Server error (${response.status}): ${errorText}`);
+            }
     
             const result = await response.json();
             display.innerText = `Predicted Yield: ${result.yield.toFixed(2)} tons/ha`;
@@ -181,6 +188,6 @@
         const month = d.getMonth() + 1;
         return (month >= 6 && month <= 12) ? 2 : 1; // 2 for Wet, 1 for Dry
     }
-  </script>
+</script>
 </body>
 </html>
