@@ -1,194 +1,220 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Crop Suitability & Yield Prediction</title>
-  <link rel="stylesheet" href="style.css" />
-</head>
-<body>
+"""
+TERRASIGHT PREDICTION API - Main Backend
+Run this on Render
+"""
 
-  <!-- Navigation Bar -->
-  <header class="navbar">
-    <nav>
-      <ul class="nav-links">
-        <li><a href="index.html">Home</a></li>
-        <li><a href="map.html">Crop Map</a></li>
-        <li><a href="about.html">About</a></li>
-        <li><a href="faqs.html">FAQs</a></li>
-      </ul>
-    </nav>
-  </header>
+import numpy as np
+import joblib
+import os
+from flask import Flask, request, jsonify
+from flask_cors import CORS
 
-  <!-- HERO SECTION -->
-  <section class="hero">
-    <div class="overlay"></div>
+app = Flask(__name__)
+CORS(app)
 
-    <div class="hero-content">
-      <h1>
-        Data-Driven Crop Suitability and Yield Prediction for Climate-Adaptive
-        Agriculture in Albay using Random Forest and LSTM models
-      </h1>
-      <p>Your guide to crop suitability and yield forecasting.</p>
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
-      <!-- FORM CARD -->
-      <div class="form-card">
-        <label for="city">Select Your Municipality/City </label>
-        <select id="city">
-          <option value="">-- Select Municipality/City --</option>
-          <option value="Malinao">Malinao</option>
-          <option value="PioDuran">Pio Duran</option>
-          <option value="Ligao">Ligao City</option>
-          <option value="Polangui">Polangui</option>
-          <option value="Oas">Oas</option>
-        </select>
+print("=" * 60)
+print("TERRASIGHT PREDICTION API - Starting up...")
+print("=" * 60)
 
-        <label for="crop">Select a Crop</label>
-        <select id="crop">
-          <option value="">-- Select Crop --</option>
-          <option value="1">Rice</option>
-          <option value="0">Corn</option>
-          <option value="Coconut">Banana</option>
-        </select>
+# ============================================
+# LOAD MODELS
+# ============================================
 
-        <button onclick="predictYield()">Get Prediction</button>
+# Load Random Forest
+rf_path = os.path.join(BASE_DIR, 'random_forest_model.pkl')
+if os.path.exists(rf_path):
+    rf_model = joblib.load(rf_path)
+    print(f"✅ Random Forest loaded - expects {rf_model.n_features_in_} features")
+else:
+    rf_model = None
+    print(f"❌ random_forest_model.pkl not found")
 
-        <div id="loader" style="display: none; margin: 10px auto;" class="spinner"></div>
-        <div id="display" style="margin-top: 15px; font-weight: bold; color: white;"></div>
-      </div>
-    </div>
-  </section>
+# Load encoders
+crop_encoder_path = os.path.join(BASE_DIR, 'crop_encoder.pkl')
+if os.path.exists(crop_encoder_path):
+    crop_encoder = joblib.load(crop_encoder_path)
+    print(f"✅ Crop encoder loaded: {crop_encoder.classes_}")
+else:
+    crop_encoder = None
 
-  <script> 
-    /**
-     * TerraSight Crop Yield Prediction Logic
-     * Handles 4-week LSTM sequence generation and Typhoon metric extraction
-     */
+season_encoder_path = os.path.join(BASE_DIR, 'season_encoder.pkl')
+if os.path.exists(season_encoder_path):
+    season_encoder = joblib.load(season_encoder_path)
+    print(f"✅ Season encoder loaded: {season_encoder.classes_}")
+else:
+    season_encoder = None
 
-    // 1. Location Database
-    const locationData = {
-        "Polangui": { lat: 13.2933, lon: 123.4853, ndvi: 0.74, evi: 0.46 },
-        "Oas":      { lat: 13.2583, lon: 123.4967, ndvi: 0.72, evi: 0.44 },
-        "Ligao":    { lat: 13.2422, lon: 123.5372, ndvi: 0.71, evi: 0.43 },
-        "PioDuran": { lat: 13.0450, lon: 123.4561, ndvi: 0.69, evi: 0.40 },
-        "Malinao":  { lat: 13.4117, lon: 123.7000, ndvi: 0.73, evi: 0.45 }
-    };
+muni_encoder_path = os.path.join(BASE_DIR, 'municipality_encoder.pkl')
+if os.path.exists(muni_encoder_path):
+    muni_encoder = joblib.load(muni_encoder_path)
+    print(f"✅ Municipality encoder loaded: {muni_encoder.classes_}")
+else:
+    muni_encoder = None
+
+print("=" * 60)
+
+# ============================================
+# HELPER FUNCTIONS
+# ============================================
+
+def process_weekly_sequence(raw_sequence):
+    """Convert 4 weeks of weather data into a feature vector"""
+    all_features = []
     
-    const API_KEY = 'GMV5K3F5X4R63XB7JXGV8GZHV';
-    const RENDER_URL = 'https://crop-yield-api-9c1l.onrender.com/predict';
+    for week in raw_sequence:
+        features = [
+            week[0],   # ndvi
+            week[1],   # evi
+            week[4],   # temp_avg
+            week[2],   # temp_max
+            week[3],   # temp_min
+            week[5],   # rainfall
+            week[6],   # humidity
+            week[7],   # solar_radiation
+            week[8]    # wind_speed
+        ]
+        all_features.extend(features)
     
-    async function predictYield() {
-        const locKey = document.getElementById('city').value;
-        const cropEncoded = document.getElementById('crop').value;
-        const display = document.getElementById('display');
-        const loader = document.getElementById('loader');
+    # Calculate statistical features across all 4 weeks
+    ndvi_vals = [w[0] for w in raw_sequence]
+    evi_vals = [w[1] for w in raw_sequence]
+    temp_vals = [w[4] for w in raw_sequence]
+    rain_vals = [w[5] for w in raw_sequence]
     
-        if (!locKey || !cropEncoded) {
-            alert("Please select both a municipality and a crop.");
-            return;
-        }
+    stats = [
+        np.mean(ndvi_vals), np.max(ndvi_vals), np.min(ndvi_vals),
+        np.mean(evi_vals), np.max(evi_vals), np.min(evi_vals),
+        np.mean(temp_vals), np.max(temp_vals), np.min(temp_vals),
+        np.sum(rain_vals)
+    ]
     
-        const coords = locationData[locKey];
-        loader.style.display = "block";
-        display.innerText = "Fetching 28-day weather history...";
+    return np.array(all_features + stats)
+
+def get_season_name(season_code):
+    if season_code == 2:
+        return 'Wet'
+    elif season_code == 1:
+        return 'Dry'
+    return None
+
+def predict_yield(features, crop_name, municipality, season_name):
+    """Predict yield using Random Forest"""
     
-        try {
-            const baseUrl = "https://weather.visualcrossing.com/VisualCrossingWebServices/rest/services/timeline/";
-            
-            const today = new Date();
-            const pastDate = new Date();
-            pastDate.setDate(today.getDate() - 27);
+    if rf_model is None:
+        return None, "Random Forest model not loaded"
     
-            const formatDate = (d) => d.toISOString().split('T')[0];
-            const dateRange = `${formatDate(pastDate)}/${formatDate(today)}`;
+    feature_list = list(features)
     
-            const weatherUrl = `${baseUrl}${coords.lat},${coords.lon}/${dateRange}?unitGroup=metric&key=${API_KEY}&contentType=json&include=days`;
+    # Add crop
+    if crop_encoder:
+        try:
+            crop_val = crop_encoder.transform([crop_name])[0]
+        except:
+            crop_val = 1 if crop_name == 'Rice' else 0
+    else:
+        crop_val = 1 if crop_name == 'Rice' else 0
+    feature_list.append(crop_val)
     
-            const weatherRes = await fetch(weatherUrl);
-            if (!weatherRes.ok) throw new Error(`Weather API Error: ${weatherRes.status}`);
-            
-            const weatherJSON = await weatherRes.json();
-            const allDays = weatherJSON.days;
+    # Add municipality
+    if municipality and muni_encoder:
+        try:
+            if municipality in muni_encoder.classes_:
+                muni_val = muni_encoder.transform([municipality])[0]
+                feature_list.append(muni_val)
+        except:
+            pass
     
-            // Process 4 Weeks for LSTM
-            let rawSequence = [];
-            let lastSeason = null;
-            let lastDateObj = null;
-            
-            for (let i = 0; i < 4; i++) {
-                const weekBlock = allDays.slice(i * 7, (i * 7) + 7);
+    # Add season
+    if season_name and season_encoder:
+        try:
+            if season_name in season_encoder.classes_:
+                season_val = season_encoder.transform([season_name])[0]
+                feature_list.append(season_val)
+        except:
+            pass
     
-                const tmax = Math.max(...weekBlock.map(d => d.tempmax));
-                const tmin = Math.min(...weekBlock.map(d => d.tempmin));
-                const tave = weekBlock.reduce((acc, d) => acc + d.temp, 0) / 7;
-                const rain = weekBlock.reduce((acc, d) => acc + d.precip, 0);
-                const hum  = weekBlock.reduce((acc, d) => acc + d.humidity, 0) / 7;
-                const solar = weekBlock.reduce((acc, d) => acc + d.solarradiation, 0) / 7;
-                const wind = weekBlock.reduce((acc, d) => acc + d.windspeed, 0) / 7;
+    # Pad to match model expectation
+    expected = rf_model.n_features_in_
+    if len(feature_list) < expected:
+        feature_list.extend([0] * (expected - len(feature_list)))
+    elif len(feature_list) > expected:
+        feature_list = feature_list[:expected]
     
-                const dateObj = new Date(weekBlock[0].datetime);
-                lastDateObj = dateObj;
-                lastSeason = getSeason(dateObj);
-                
-                rawSequence.push([
-                    coords.ndvi, coords.evi, 
-                    tmax, tmin, tave, rain, hum, solar, wind,
-                    dateObj.getFullYear(), getWeekNumber(dateObj), lastSeason
-                ]);
-            }
+    features_array = np.array(feature_list).reshape(1, -1)
+    predicted = rf_model.predict(features_array)[0]
     
-            // Typhoon Metrics
-            const max_wind_kts = Math.max(...allDays.map(d => d.windspeed)) * 0.539957;
-            const min_pres_mb = Math.min(...allDays.map(d => d.pressure));
-            const duration_hrs = allDays.filter(d => d.windspeed > 63).length * 24; 
-            let risk_score = (max_wind_kts > 100) ? 3 : (max_wind_kts > 64 ? 2 : 1);
-    
-            display.innerText = "Connecting to Prediction Server...";
-    
-            // Send to Render
-            const response = await fetch(RENDER_URL, {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({
-                    raw_sequence: rawSequence,
-                    crop_encoded: parseInt(cropEncoded),
-                    municipality: locKey,
-                    season: lastSeason,
-                    max_wind: max_wind_kts,
-                    min_pres: min_pres_mb,
-                    duration: duration_hrs,
-                    risk_score: risk_score
-                })
-            });
-    
-            if (!response.ok) {
-                const errorText = await response.text();
-                throw new Error(`Server error (${response.status}): ${errorText}`);
-            }
-    
-            const result = await response.json();
-            console.log("API Response:", result);
-            display.innerText = `Predicted Yield: ${result.yield.toFixed(2)} tons/ha`;
-    
-        } catch (error) {
-            console.error(error);
-            display.innerText = "Status: " + error.message;
-        } finally {
-            loader.style.display = "none";
-        }
-    }
-    
-    function getWeekNumber(d) {
-        d = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
-        d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay() || 7));
-        var yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
-        return Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
-    }
-    
-    function getSeason(d) {
-        const month = d.getMonth() + 1;
-        return (month >= 6 && month <= 12) ? 2 : 1; // 2 for Wet, 1 for Dry
-    }
-</script>
-</body>
-</html>
+    return predicted, None
+
+# ============================================
+# API ENDPOINTS
+# ============================================
+
+@app.route('/predict', methods=['POST'])
+def predict():
+    try:
+        data = request.get_json()
+        
+        if not data:
+            return jsonify({'error': 'No JSON data'}), 400
+        
+        raw_sequence = data.get('raw_sequence')
+        crop_encoded = data.get('crop_encoded')
+        municipality = data.get('municipality')
+        season_code = data.get('season')
+        
+        if not raw_sequence:
+            return jsonify({'error': 'Missing raw_sequence'}), 400
+        if crop_encoded is None:
+            return jsonify({'error': 'Missing crop_encoded'}), 400
+        if not municipality:
+            return jsonify({'error': 'Missing municipality'}), 400
+        
+        features = process_weekly_sequence(raw_sequence)
+        crop_name = 'Rice' if crop_encoded == 1 else 'Corn'
+        season_name = get_season_name(season_code)
+        
+        # Debug logging
+        print(f"\n📥 REQUEST: {municipality}, {crop_name}, {season_name}")
+        print(f"   Features shape: {features.shape}")
+        print(f"   First 5 features: {features[:5]}")
+        
+        predicted, error = predict_yield(features, crop_name, municipality, season_name)
+        
+        if error:
+            return jsonify({'error': error}), 500
+        
+        print(f"   Predicted: {predicted:.3f} tons/ha")
+        
+        return jsonify({
+            'yield': round(predicted, 3),
+            'crop': crop_name,
+            'municipality': municipality,
+            'season': season_name,
+            'status': 'success'
+        })
+        
+    except Exception as e:
+        print(f"❌ Error: {e}")
+        import traceback
+        traceback.print_exc()
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/model_info', methods=['GET'])
+def model_info():
+    """Get model information for debugging"""
+    return jsonify({
+        'rf_features_expected': rf_model.n_features_in_ if rf_model else None,
+        'crop_encoder_classes': crop_encoder.classes_.tolist() if crop_encoder else None,
+        'municipality_encoder_classes': muni_encoder.classes_.tolist() if muni_encoder else None,
+        'season_encoder_classes': season_encoder.classes_.tolist() if season_encoder else None
+    })
+
+@app.route('/health', methods=['GET'])
+def health():
+    return jsonify({'status': 'healthy'})
+
+if __name__ == '__main__':
+    port = int(os.environ.get('PORT', 5000))
+    app.run(host='0.0.0.0', port=port)
