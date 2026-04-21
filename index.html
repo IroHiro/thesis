@@ -154,7 +154,7 @@
     
     const YIELD_API_URL = 'https://crop-yield-api-9c1l.onrender.com/predict';
     const SUITABILITY_API_URL = 'https://suitability-api.onrender.com/predict';
-    const WEATHER_API_KEY = 'GMV5K3F5X4R63XB7JXGV8GZHV';
+    const WEATHER_API_KEY = 'FMDQ3KEZ3BUFNDGYXKFYYZ8L7';
     
     // Cache expiration time (1 week in milliseconds)
     const CACHE_EXPIRY = 7 * 24 * 60 * 60 * 1000;
@@ -169,10 +169,22 @@
     };
     
     // ============================================
-    // CACHED WEATHER DATA FETCHING
+    // CACHED WEATHER DATA FETCHING (WITH 429 HANDLING)
     // ============================================
     
     async function fetchWeatherData(lat, lon, municipality) {
+        // Check cooldown first
+        if (isInCooldown) {
+            console.log("⏳ In cooldown mode, using cache only...");
+            const cached = sessionStorage.getItem(`weather_${municipality}`);
+            if (cached) {
+                const cachedData = JSON.parse(cached);
+                console.log("📦 Returning cached data during cooldown");
+                return cachedData.data;
+            }
+            throw new Error("Rate limited and no cache available. Please try again later.");
+        }
+        
         // Check sessionStorage cache first
         const cacheKey = `weather_${municipality}`;
         const cached = sessionStorage.getItem(cacheKey);
@@ -214,47 +226,74 @@
         
         const weatherUrl = `https://weather.visualcrossing.com/VisualCrossingWebServices/rest/services/timeline/${lat},${lon}/${dateRange}?unitGroup=metric&key=${WEATHER_API_KEY}&contentType=json&include=days`;
         
-        const weatherRes = await fetch(weatherUrl);
-        if (!weatherRes.ok) throw new Error(`Weather API Error: ${weatherRes.status}`);
-        
-        const weatherJSON = await weatherRes.json();
-        const allDays = weatherJSON.days;
-        
-        // Calculate averages for suitability API
-        let totalTemp = 0;
-        let totalRainfall = 0;
-        let maxWind = 0;
-        let minPressure = Infinity;
-        
-        for (const day of allDays) {
-            totalTemp += day.temp;
-            totalRainfall += day.precip;
-            maxWind = Math.max(maxWind, day.windspeed);
-            minPressure = Math.min(minPressure, day.pressure);
+        try {
+            const weatherRes = await fetch(weatherUrl);
+            
+            // Handle 429 Rate Limit
+            if (weatherRes.status === 429) {
+                console.log("🚫 Rate limit hit! Entering 15-minute cooldown...");
+                isInCooldown = true;
+                
+                // Reset cooldown after 15 minutes
+                if (cooldownTimer) clearTimeout(cooldownTimer);
+                cooldownTimer = setTimeout(() => {
+                    console.log("✅ Cooldown ended. Requests allowed again.");
+                    isInCooldown = false;
+                }, 15 * 60 * 1000); // 15 minutes
+                
+                // Try to return cached data if available
+                const cachedData = sessionStorage.getItem(cacheKey);
+                if (cachedData) {
+                    console.log("📦 Returning cached data during cooldown");
+                    return JSON.parse(cachedData).data;
+                }
+                throw new Error("Rate limit reached. Please wait 15 minutes or try tomorrow.");
+            }
+            
+            if (!weatherRes.ok) throw new Error(`Weather API Error: ${weatherRes.status}`);
+            
+            const weatherJSON = await weatherRes.json();
+            const allDays = weatherJSON.days;
+            
+            // Calculate averages for suitability API
+            let totalTemp = 0;
+            let totalRainfall = 0;
+            let maxWind = 0;
+            let minPressure = Infinity;
+            
+            for (const day of allDays) {
+                totalTemp += day.temp;
+                totalRainfall += day.precip;
+                maxWind = Math.max(maxWind, day.windspeed);
+                minPressure = Math.min(minPressure, day.pressure);
+            }
+            
+            const avgTemp = totalTemp / allDays.length;
+            const maxWindKts = maxWind * 0.539957;
+            
+            const result = {
+                allDays: allDays,
+                avgTemperature: avgTemp,
+                totalRainfall: totalRainfall,
+                maxWindKts: maxWindKts,
+                minPressure: minPressure
+            };
+            
+            // Store in sessionStorage with timestamp
+            sessionStorage.setItem(cacheKey, JSON.stringify({
+                data: result,
+                timestamp: Date.now()
+            }));
+            
+            console.log(`💾 Cached weather data for ${municipality}`);
+            
+            return result;
+            
+        } catch (error) {
+            console.error("Weather fetch error:", error);
+            throw error;
         }
-        
-        const avgTemp = totalTemp / allDays.length;
-        const maxWindKts = maxWind * 0.539957;
-        
-        const result = {
-            allDays: allDays,
-            avgTemperature: avgTemp,
-            totalRainfall: totalRainfall,
-            maxWindKts: maxWindKts,
-            minPressure: minPressure
-        };
-        
-        // Store in sessionStorage with timestamp
-        sessionStorage.setItem(cacheKey, JSON.stringify({
-            data: result,
-            timestamp: Date.now()
-        }));
-        
-        console.log(`💾 Cached weather data for ${municipality}`);
-        
-        return result;
     }
-    
     // ============================================
     // MAIN PREDICTION FUNCTION
     // ============================================
