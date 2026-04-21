@@ -35,16 +35,13 @@
       font-size: 14px;
       color: #666;
     }
-    .suitability-Highly {
+    .suitability-High {
       color: #2d6a4f;
     }
-    .suitability-Moderately {
+    .suitability-Medium {
       color: #f4a261;
     }
-    .suitability-Marginally {
-      color: #e76f51;
-    }
-    .suitability-Not {
+    .suitability-Low {
       color: #d62828;
     }
     .probability-bar {
@@ -81,6 +78,14 @@
     @keyframes spin {
       0% { transform: rotate(0deg); }
       100% { transform: rotate(360deg); }
+    }
+    .cache-badge {
+      font-size: 10px;
+      background: #e9ecef;
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 10px;
+      margin-top: 5px;
     }
   </style>
 </head>
@@ -151,6 +156,9 @@
     const SUITABILITY_API_URL = 'https://suitability-api.onrender.com/predict';
     const WEATHER_API_KEY = 'GMV5K3F5X4R63XB7JXGV8GZHV';
     
+    // Cache expiration time (1 hour in milliseconds)
+    const CACHE_EXPIRY = 60 * 60 * 1000;
+    
     // Location database with NDVI, EVI, and soil fertility
     const locationData = {
         "Polangui": { lat: 13.2933, lon: 123.4853, ndvi: 0.74, evi: 0.46, soil_fertility: 3.2 },
@@ -159,6 +167,93 @@
         "Pioduran": { lat: 13.0450, lon: 123.4561, ndvi: 0.69, evi: 0.40, soil_fertility: 2.8 },
         "Malinao":  { lat: 13.4117, lon: 123.7000, ndvi: 0.73, evi: 0.45, soil_fertility: 3.1 }
     };
+    
+    // ============================================
+    // CACHED WEATHER DATA FETCHING
+    // ============================================
+    
+    async function fetchWeatherData(lat, lon, municipality) {
+        // Check sessionStorage cache first
+        const cacheKey = `weather_${municipality}`;
+        const cached = sessionStorage.getItem(cacheKey);
+        
+        if (cached) {
+            const cachedData = JSON.parse(cached);
+            const cacheAge = Date.now() - cachedData.timestamp;
+            
+            if (cacheAge < CACHE_EXPIRY) {
+                console.log(`✅ Using cached weather data for ${municipality} (${Math.round(cacheAge / 1000)} seconds old)`);
+                
+                // Add cache indicator to results
+                const resultsDiv = document.getElementById('results');
+                if (resultsDiv) {
+                    const cacheIndicator = document.createElement('div');
+                    cacheIndicator.className = 'cache-badge';
+                    cacheIndicator.textContent = '📦 Using cached weather data';
+                    cacheIndicator.style.marginTop = '10px';
+                    // Remove old indicator if exists
+                    const oldIndicator = document.querySelector('.cache-badge');
+                    if (oldIndicator) oldIndicator.remove();
+                }
+                
+                return cachedData.data;
+            } else {
+                console.log(`⏰ Cache expired for ${municipality}, fetching fresh data...`);
+                sessionStorage.removeItem(cacheKey);
+            }
+        }
+        
+        console.log(`🌤️ Fetching fresh weather data for ${municipality}...`);
+        
+        const today = new Date();
+        const pastDate = new Date();
+        pastDate.setDate(today.getDate() - 27);
+        
+        const formatDate = (d) => d.toISOString().split('T')[0];
+        const dateRange = `${formatDate(pastDate)}/${formatDate(today)}`;
+        
+        const weatherUrl = `https://weather.visualcrossing.com/VisualCrossingWebServices/rest/services/timeline/${lat},${lon}/${dateRange}?unitGroup=metric&key=${WEATHER_API_KEY}&contentType=json&include=days`;
+        
+        const weatherRes = await fetch(weatherUrl);
+        if (!weatherRes.ok) throw new Error(`Weather API Error: ${weatherRes.status}`);
+        
+        const weatherJSON = await weatherRes.json();
+        const allDays = weatherJSON.days;
+        
+        // Calculate averages for suitability API
+        let totalTemp = 0;
+        let totalRainfall = 0;
+        let maxWind = 0;
+        let minPressure = Infinity;
+        
+        for (const day of allDays) {
+            totalTemp += day.temp;
+            totalRainfall += day.precip;
+            maxWind = Math.max(maxWind, day.windspeed);
+            minPressure = Math.min(minPressure, day.pressure);
+        }
+        
+        const avgTemp = totalTemp / allDays.length;
+        const maxWindKts = maxWind * 0.539957;
+        
+        const result = {
+            allDays: allDays,
+            avgTemperature: avgTemp,
+            totalRainfall: totalRainfall,
+            maxWindKts: maxWindKts,
+            minPressure: minPressure
+        };
+        
+        // Store in sessionStorage with timestamp
+        sessionStorage.setItem(cacheKey, JSON.stringify({
+            data: result,
+            timestamp: Date.now()
+        }));
+        
+        console.log(`💾 Cached weather data for ${municipality}`);
+        
+        return result;
+    }
     
     // ============================================
     // MAIN PREDICTION FUNCTION
@@ -181,9 +276,13 @@
         loaderDiv.style.display = "flex";
         resultsDiv.innerHTML = "";
         
+        // Remove any old cache indicator
+        const oldIndicator = document.querySelector('.cache-badge');
+        if (oldIndicator) oldIndicator.remove();
+        
         try {
-            // 1. Fetch weather data
-            const weatherData = await fetchWeatherData(coords.lat, coords.lon);
+            // 1. Fetch weather data (uses cache if available)
+            const weatherData = await fetchWeatherData(coords.lat, coords.lon, locKey);
             
             // 2. Calculate weekly averages for suitability API
             const weeklyAverages = calculateWeeklyAverages(weatherData.allDays);
@@ -212,56 +311,10 @@
     }
     
     // ============================================
-    // WEATHER DATA FETCHING
-    // ============================================
-    
-    async function fetchWeatherData(lat, lon) {
-        const today = new Date();
-        const pastDate = new Date();
-        pastDate.setDate(today.getDate() - 27);
-        
-        const formatDate = (d) => d.toISOString().split('T')[0];
-        const dateRange = `${formatDate(pastDate)}/${formatDate(today)}`;
-        
-        const weatherUrl = `https://weather.visualcrossing.com/VisualCrossingWebServices/rest/services/timeline/${lat},${lon}/${dateRange}?unitGroup=metric&key=${WEATHER_API_KEY}&contentType=json&include=days`;
-        
-        const weatherRes = await fetch(weatherUrl);
-        if (!weatherRes.ok) throw new Error(`Weather API Error: ${weatherRes.status}`);
-        
-        const weatherJSON = await weatherRes.json();
-        const allDays = weatherJSON.days;
-        
-        // Calculate average temperature and total rainfall for suitability
-        let totalTemp = 0;
-        let totalRainfall = 0;
-        let maxWind = 0;
-        let minPressure = Infinity;
-        
-        for (const day of allDays) {
-            totalTemp += day.temp;
-            totalRainfall += day.precip;
-            maxWind = Math.max(maxWind, day.windspeed);
-            minPressure = Math.min(minPressure, day.pressure);
-        }
-        
-        const avgTemp = totalTemp / allDays.length;
-        const maxWindKts = maxWind * 0.539957;
-        
-        return {
-            allDays: allDays,
-            avgTemperature: avgTemp,
-            totalRainfall: totalRainfall,
-            maxWindKts: maxWindKts,
-            minPressure: minPressure
-        };
-    }
-    
-    // ============================================
     // WEEKLY AVERAGES FOR SUITABILITY
     // ============================================
     
     function calculateWeeklyAverages(allDays) {
-        // Calculate weekly averages (4 weeks)
         const weeklyAverages = [];
         
         for (let i = 0; i < 4; i++) {
@@ -289,7 +342,6 @@
         let rawSequence = [];
         let lastSeason = null;
         
-        // Crop encoding: Rice = 1, Corn = 0
         const cropEncoded = cropType === 'rice' ? 1 : 0;
         
         for (let i = 0; i < 4; i++) {
@@ -314,7 +366,6 @@
             ]);
         }
         
-        // Typhoon metrics
         const duration_hrs = allDays.filter(d => d.windspeed > 63).length * 24;
         let risk_score = (weatherData.maxWindKts > 100) ? 3 : (weatherData.maxWindKts > 64 ? 2 : 1);
         
@@ -346,10 +397,8 @@
     // ============================================
     
     async function callSuitabilityAPI(cropType, weeklyAverages, coords) {
-        // Use the most recent week's data (or average of all weeks)
         const latestWeek = weeklyAverages[weeklyAverages.length - 1];
         
-        // Calculate average temperature and total rainfall across all weeks
         let totalTemp = 0;
         let totalRainfall = 0;
         
@@ -368,10 +417,10 @@
             temperature: avgTemperature,
             rainfall: totalRainfallSum,
             soil_fertility: coords.soil_fertility,
-            n_score: 3,  // Default medium
-            p_score: 3,  // Default medium
-            k_score: 3,  // Default medium
-            humidity: 75  // Default humidity
+            n_score: 3,
+            p_score: 3,
+            k_score: 3,
+            humidity: 75
         };
         
         console.log("Suitability API Request:", requestBody);
@@ -397,10 +446,15 @@
     function displayResults(yieldResult, suitabilityResult, cropType, municipality) {
         const resultsDiv = document.getElementById('results');
         
-        // Determine suitability class for styling
-        const suitabilityClass = `suitability-${suitabilityResult.suitability.split(' ')[0]}`;
+        const suitabilityClass = `suitability-${suitabilityResult.suitability}`;
         
-        // Build probabilities HTML if available
+        // Get suitability display text
+        const suitabilityDisplay = {
+            'High': '🌟 Highly Suitable',
+            'Medium': '✅ Moderately Suitable',
+            'Low': '⚠️ Marginally Suitable'
+        }[suitabilityResult.suitability] || suitabilityResult.suitability;
+        
         let probabilitiesHtml = '';
         if (suitabilityResult.probabilities) {
             probabilitiesHtml = '<div style="margin-top: 15px;">';
@@ -417,33 +471,40 @@
         
         resultsDiv.innerHTML = `
             <div class="results-container">
-                <!-- Yield Prediction Card -->
                 <div class="result-card">
                     <h3>🌾 ${cropType.charAt(0).toUpperCase() + cropType.slice(1)} Yield Prediction</h3>
                     <div class="value">${yieldResult.yield.toFixed(2)} <span class="unit">tons/ha</span></div>
                     <p style="margin-top: 10px; color: #666;">Location: ${municipality}</p>
-                    ${yieldResult.confidence ? `<p style="font-size: 12px; color: #888;">Confidence: ${yieldResult.confidence}%</p>` : ''}
                 </div>
                 
-                <!-- Suitability Card -->
                 <div class="result-card">
                     <h3>🌱 ${cropType.charAt(0).toUpperCase() + cropType.slice(1)} Suitability</h3>
-                    <div class="value ${suitabilityClass}">${suitabilityResult.suitability}</div>
+                    <div class="value ${suitabilityClass}">${suitabilityDisplay}</div>
                     ${suitabilityResult.confidence ? `<p style="margin-top: 5px;">Confidence: ${suitabilityResult.confidence}%</p>` : ''}
                     ${probabilitiesHtml}
                 </div>
             </div>
             
-            <!-- Recommendation based on both results -->
             <div class="result-card" style="margin-top: 20px; max-width: 600px; margin-left: auto; margin-right: auto;">
                 <h3>📋 Recommendation</h3>
                 ${getRecommendation(cropType, yieldResult.yield, suitabilityResult.suitability)}
             </div>
         `;
+        
+        // Check if we have a cache indicator
+        const cached = sessionStorage.getItem(`weather_${municipality}`);
+        if (cached) {
+            const cacheData = JSON.parse(cached);
+            const cacheAge = Math.round((Date.now() - cacheData.timestamp) / 1000);
+            const indicator = document.createElement('div');
+            indicator.className = 'cache-badge';
+            indicator.textContent = `📦 Weather data cached (${Math.floor(cacheAge / 60)} min ${cacheAge % 60} sec old)`;
+            resultsDiv.appendChild(indicator);
+        }
     }
     
     function getRecommendation(cropType, yieldValue, suitability) {
-        const isHighlySuitable = suitability === 'Highly Suitable' || suitability === 'Moderately Suitable';
+        const isHighlySuitable = suitability === 'High' || suitability === 'Medium';
         const isGoodYield = yieldValue > 4.0;
         
         if (isHighlySuitable && isGoodYield) {
@@ -470,10 +531,10 @@
     
     function getSeason(d) {
         const month = d.getMonth() + 1;
-        return (month >= 6 && month <= 12) ? 2 : 1; // 2 for Wet, 1 for Dry
+        return (month >= 6 && month <= 12) ? 2 : 1;
     }
     
-    // Also keep the original function for backward compatibility
+    // For backward compatibility
     async function predictYield() {
         await predictBoth();
     }
