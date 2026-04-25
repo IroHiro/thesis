@@ -149,11 +149,11 @@
 
   <script>
     // ============================================
-    // CONFIGURATION
+    // CONFIGURATION - USING YOUR RULE-BASED API
     // ============================================
     
-    const YIELD_API_URL = 'https://crop-yield-api-9c1l.onrender.com/predict';
-    const SUITABILITY_API_URL = 'https://suitability-api.onrender.com/predict';
+    // NEW: Single API that handles everything
+    const RULE_BASED_API_URL = 'https://rule-based-crop-api.onrender.com/predict';
     const WEATHER_API_KEY = 'FMDQ3KEZ3BUFNDGYXKFYYZ8L7';
     
     // Cache expiration time (1 week in milliseconds)
@@ -298,60 +298,6 @@
             throw error;
         }
     }
-    // ============================================
-    // MAIN PREDICTION FUNCTION
-    // ============================================
-    
-    async function predictBoth() {
-        const locKey = document.getElementById('city').value;
-        const cropType = document.getElementById('crop').value;
-        const resultsDiv = document.getElementById('results');
-        const loaderDiv = document.getElementById('dualLoader');
-        
-        if (!locKey || !cropType) {
-            alert("Please select both a municipality and a crop.");
-            return;
-        }
-        
-        const coords = locationData[locKey];
-        
-        // Show loader
-        loaderDiv.style.display = "flex";
-        resultsDiv.innerHTML = "";
-        
-        // Remove any old cache indicator
-        const oldIndicator = document.querySelector('.cache-badge');
-        if (oldIndicator) oldIndicator.remove();
-        
-        try {
-            // 1. Fetch weather data (uses cache if available)
-            const weatherData = await fetchWeatherData(coords.lat, coords.lon, locKey);
-            
-            // 2. Calculate weekly averages for suitability API
-            const weeklyAverages = calculateWeeklyAverages(weatherData.allDays);
-            
-            // 3. Call both APIs in parallel
-            const [yieldResult, suitabilityResult] = await Promise.all([
-                callYieldAPI(locKey, cropType, weatherData, coords),
-                callSuitabilityAPI(cropType, weeklyAverages, coords)
-            ]);
-            
-            // 4. Display both results
-            displayResults(yieldResult, suitabilityResult, cropType, locKey);
-            
-        } catch (error) {
-            console.error("Prediction error:", error);
-            resultsDiv.innerHTML = `
-                <div class="result-card" style="background: rgba(255,255,255,0.95);">
-                    <h3>Error</h3>
-                    <div class="value" style="color: red;">${error.message}</div>
-                    <p>Please try again later.</p>
-                </div>
-            `;
-        } finally {
-            loaderDiv.style.display = "none";
-        }
-    }
     
     // ============================================
     // WEEKLY AVERAGES FOR SUITABILITY
@@ -377,131 +323,126 @@
     }
     
     // ============================================
-    // YIELD API CALL
+    // MAIN PREDICTION FUNCTION - NOW USES RULE-BASED API
     // ============================================
     
-    async function callYieldAPI(locKey, cropType, weatherData, coords) {
-        const allDays = weatherData.allDays;
-        let rawSequence = [];
-        let lastSeason = null;
+    async function predictBoth() {
+        const locKey = document.getElementById('city').value;
+        const cropType = document.getElementById('crop').value;
+        const resultsDiv = document.getElementById('results');
+        const loaderDiv = document.getElementById('dualLoader');
         
-        const cropEncoded = cropType === 'rice' ? 1 : 0;
-        
-        for (let i = 0; i < 4; i++) {
-            const weekBlock = allDays.slice(i * 7, (i * 7) + 7);
-            if (weekBlock.length === 0) break;
-            
-            const tmax = Math.max(...weekBlock.map(d => d.tempmax));
-            const tmin = Math.min(...weekBlock.map(d => d.tempmin));
-            const tave = weekBlock.reduce((acc, d) => acc + d.temp, 0) / weekBlock.length;
-            const rain = weekBlock.reduce((acc, d) => acc + d.precip, 0);
-            const hum = weekBlock.reduce((acc, d) => acc + d.humidity, 0) / weekBlock.length;
-            const solar = weekBlock.reduce((acc, d) => acc + d.solarradiation, 0) / weekBlock.length;
-            const wind = weekBlock.reduce((acc, d) => acc + d.windspeed, 0) / weekBlock.length;
-            
-            const dateObj = new Date(weekBlock[0].datetime);
-            lastSeason = getSeason(dateObj);
-            
-            rawSequence.push([
-                coords.ndvi, coords.evi,
-                tmax, tmin, tave, rain, hum, solar, wind,
-                dateObj.getFullYear(), getWeekNumber(dateObj), lastSeason
-            ]);
+        if (!locKey || !cropType) {
+            alert("Please select both a municipality and a crop.");
+            return;
         }
         
-        const duration_hrs = allDays.filter(d => d.windspeed > 63).length * 24;
-        let risk_score = (weatherData.maxWindKts > 100) ? 3 : (weatherData.maxWindKts > 64 ? 2 : 1);
+        // Fix municipality name for API (Pioduran -> Pio Duran)
+        let municipalityName = locKey;
+        if (locKey === "Pioduran") municipalityName = "Pio Duran";
+        if (locKey === "Ligao") municipalityName = "Ligao";
         
-        const response = await fetch(YIELD_API_URL, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                raw_sequence: rawSequence,
-                crop_encoded: cropEncoded,
-                municipality: locKey,
-                season: lastSeason,
-                max_wind: weatherData.maxWindKts,
-                min_pres: weatherData.minPressure,
-                duration: duration_hrs,
-                risk_score: risk_score
-            })
-        });
+        const coords = locationData[locKey];
         
-        if (!response.ok) {
-            const errorText = await response.text();
-            throw new Error(`Yield API error (${response.status}): ${errorText}`);
+        // Show loader
+        loaderDiv.style.display = "flex";
+        resultsDiv.innerHTML = "";
+        
+        // Remove any old cache indicator
+        const oldIndicator = document.querySelector('.cache-badge');
+        if (oldIndicator) oldIndicator.remove();
+        
+        try {
+            // 1. Fetch weather data (uses cache if available)
+            const weatherData = await fetchWeatherData(coords.lat, coords.lon, municipalityName);
+            
+            // 2. Calculate weekly averages
+            const weeklyAverages = calculateWeeklyAverages(weatherData.allDays);
+            
+            // Calculate averages for the API
+            let totalTemp = 0;
+            let totalRainfall = 0;
+            for (const week of weeklyAverages) {
+                totalTemp += week.temperature;
+                totalRainfall += week.rainfall;
+            }
+            const avgTemperature = totalTemp / weeklyAverages.length;
+            
+            // 3. Call YOUR Rule-Based API (single call instead of two)
+            const requestBody = {
+                crop: cropType,
+                municipality: municipalityName,
+                avg_temperature: avgTemperature,
+                total_rainfall: totalRainfall,
+                humidity: 75,
+                ndvi: coords.ndvi,
+                evi: coords.evi,
+                soil_fertility: coords.soil_fertility,
+                n_score: 3,
+                p_score: 3,
+                k_score: 3
+            };
+            
+            console.log("Calling Rule-Based API:", RULE_BASED_API_URL);
+            console.log("Request body:", requestBody);
+            
+            const response = await fetch(RULE_BASED_API_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(requestBody)
+            });
+            
+            if (!response.ok) {
+                const errorText = await response.text();
+                throw new Error(`Rule-Based API error (${response.status}): ${errorText}`);
+            }
+            
+            const result = await response.json();
+            console.log("API Response:", result);
+            
+            // 4. Display results
+            displayResults(result, cropType, municipalityName);
+            
+        } catch (error) {
+            console.error("Prediction error:", error);
+            resultsDiv.innerHTML = `
+                <div class="result-card" style="background: rgba(255,255,255,0.95);">
+                    <h3>Error</h3>
+                    <div class="value" style="color: red;">${error.message}</div>
+                    <p>Please try again later.</p>
+                    <p style="font-size: 12px; margin-top: 10px;">API: ${RULE_BASED_API_URL}</p>
+                </div>
+            `;
+        } finally {
+            loaderDiv.style.display = "none";
         }
-        
-        return await response.json();
     }
     
     // ============================================
-    // SUITABILITY API CALL
+    // DISPLAY RESULTS - UPDATED FOR RULE-BASED API
     // ============================================
     
-    async function callSuitabilityAPI(cropType, weeklyAverages, coords) {
-        const latestWeek = weeklyAverages[weeklyAverages.length - 1];
-        
-        let totalTemp = 0;
-        let totalRainfall = 0;
-        
-        for (const week of weeklyAverages) {
-            totalTemp += week.temperature;
-            totalRainfall += week.rainfall;
-        }
-        
-        const avgTemperature = totalTemp / weeklyAverages.length;
-        const totalRainfallSum = totalRainfall;
-        
-        const requestBody = {
-            crop: cropType,
-            ndvi: coords.ndvi,
-            evi: coords.evi,
-            temperature: avgTemperature,
-            rainfall: totalRainfallSum,
-            soil_fertility: coords.soil_fertility,
-            n_score: 3,
-            p_score: 3,
-            k_score: 3,
-            humidity: 75
-        };
-        
-        console.log("Suitability API Request:", requestBody);
-        
-        const response = await fetch(SUITABILITY_API_URL, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(requestBody)
-        });
-        
-        if (!response.ok) {
-            const errorText = await response.text();
-            throw new Error(`Suitability API error (${response.status}): ${errorText}`);
-        }
-        
-        return await response.json();
-    }
-    
-    // ============================================
-    // DISPLAY RESULTS
-    // ============================================
-    
-    function displayResults(yieldResult, suitabilityResult, cropType, municipality) {
+    function displayResults(result, cropType, municipality) {
         const resultsDiv = document.getElementById('results');
         
-        const suitabilityClass = `suitability-${suitabilityResult.suitability}`;
+        // Extract data from the rule-based API response
+        const modelResults = result.model_results || {};
+        const calculatedScores = result.calculated_scores || {};
+        const recommendations = result.recommendations || {};
         
-        // Get suitability display text
+        const suitability = modelResults.suitability || 'Medium';
+        const suitabilityClass = `suitability-${suitability}`;
+        
         const suitabilityDisplay = {
             'High': '🌟 Highly Suitable',
             'Medium': '✅ Moderately Suitable',
             'Low': '⚠️ Marginally Suitable'
-        }[suitabilityResult.suitability] || suitabilityResult.suitability;
+        }[suitability] || suitability;
         
         let probabilitiesHtml = '';
-        if (suitabilityResult.probabilities) {
+        if (modelResults.suitability_probabilities) {
             probabilitiesHtml = '<div style="margin-top: 15px;">';
-            for (const [level, prob] of Object.entries(suitabilityResult.probabilities)) {
+            for (const [level, prob] of Object.entries(modelResults.suitability_probabilities)) {
                 probabilitiesHtml += `
                     <div class="probability-bar">
                         <div class="probability-fill" style="width: ${prob}%;"></div>
@@ -512,25 +453,81 @@
             probabilitiesHtml += '</div>';
         }
         
+        // Build recommendations HTML from the rule-based API
+        let recommendationsHtml = '';
+        
+        if (recommendations.overall) {
+            recommendationsHtml += `
+                <div style="margin-top: 15px; text-align: left; padding-top: 10px; border-top: 1px solid #ddd;">
+                    <h4>📋 ${recommendations.overall.status || 'Recommendation'}</h4>
+                    <p style="color: ${recommendations.overall.color || '#333'};">${recommendations.overall.message || ''}</p>
+                </div>
+            `;
+        }
+        
+        if (recommendations.planting_advice) {
+            recommendationsHtml += `
+                <div style="margin-top: 15px; text-align: left;">
+                    <h4>🌱 Planting Advice</h4>
+                    <p>${recommendations.planting_advice.message || ''}</p>
+                    <p>Conditions: ${recommendations.planting_advice.temperature || '?'}°C, ${recommendations.planting_advice.rainfall || '?'}mm rain</p>
+                </div>
+            `;
+        }
+        
+        if (recommendations.soil_preparation && recommendations.soil_preparation.length) {
+            recommendationsHtml += `
+                <div style="margin-top: 15px; text-align: left;">
+                    <h4>🛠️ Soil Preparation</h4>
+                    ${recommendations.soil_preparation.map(p => `<p>• ${p}</p>`).join('')}
+                </div>
+            `;
+        }
+        
+        if (recommendations.harvest_advice && recommendations.harvest_advice.length) {
+            recommendationsHtml += `
+                <div style="margin-top: 15px; text-align: left;">
+                    <h4>🌾 Harvest Advice</h4>
+                    ${recommendations.harvest_advice.map(h => `<p>• ${h}</p>`).join('')}
+                </div>
+            `;
+        }
+        
+        if (recommendations.typhoon) {
+            recommendationsHtml += `
+                <div style="margin-top: 15px; text-align: left;">
+                    <h4>🌀 Typhoon Preparedness</h4>
+                    <p><strong>Risk Level:</strong> ${recommendations.typhoon.risk_level || 'Unknown'}</p>
+                    <p><strong>Risk Months:</strong> ${recommendations.typhoon.risk_months || 'N/A'}</p>
+                    ${recommendations.typhoon.advice ? recommendations.typhoon.advice.map(a => `<p>• ${a}</p>`).join('') : ''}
+                </div>
+            `;
+        }
+        
         resultsDiv.innerHTML = `
             <div class="results-container">
                 <div class="result-card">
                     <h3>🌾 ${cropType.charAt(0).toUpperCase() + cropType.slice(1)} Yield Prediction</h3>
-                    <div class="value">${yieldResult.yield.toFixed(2)} <span class="unit">tons/ha</span></div>
-                    <p style="margin-top: 10px; color: #666;">Location: ${municipality}</p>
+                    <div class="value">${modelResults.predicted_yield_tons ? modelResults.predicted_yield_tons.toFixed(2) : '?'} <span class="unit">tons/ha</span></div>
+                    <div class="value" style="font-size: 20px;">(${modelResults.predicted_yield_kg ? modelResults.predicted_yield_kg.toLocaleString() : '?'} kg/ha)</div>
+                    <p style="margin-top: 5px;">${calculatedScores.vs_regional_average || ''}</p>
+                    <p style="margin-top: 10px;">Location: ${municipality}</p>
                 </div>
                 
                 <div class="result-card">
                     <h3>🌱 ${cropType.charAt(0).toUpperCase() + cropType.slice(1)} Suitability</h3>
                     <div class="value ${suitabilityClass}">${suitabilityDisplay}</div>
-                    ${suitabilityResult.confidence ? `<p style="margin-top: 5px;">Confidence: ${suitabilityResult.confidence}%</p>` : ''}
+                    <p style="margin-top: 5px;">Overall Score: ${calculatedScores.overall_suitability_score || '?'}%</p>
+                    <p style="margin-top: 5px;">Climate Match: ${calculatedScores.climate_match_score || '?'}%</p>
+                    <p style="margin-top: 5px;">Soil Compatibility: ${calculatedScores.soil_compatibility_score || '?'}%</p>
+                    ${modelResults.suitability_confidence ? `<p>Model Confidence: ${modelResults.suitability_confidence}%</p>` : ''}
                     ${probabilitiesHtml}
                 </div>
             </div>
             
             <div class="result-card" style="margin-top: 20px; max-width: 600px; margin-left: auto; margin-right: auto;">
-                <h3>📋 Recommendation</h3>
-                ${getRecommendation(cropType, yieldResult.yield, suitabilityResult.suitability)}
+                <h3>📋 Complete Recommendations</h3>
+                ${recommendationsHtml || '<p>No recommendations available.</p>'}
             </div>
         `;
         
@@ -546,25 +543,7 @@
         }
     }
     
-    function getRecommendation(cropType, yieldValue, suitability) {
-        const isHighlySuitable = suitability === 'High' || suitability === 'Medium';
-        const isGoodYield = yieldValue > 4.0;
-        
-        if (isHighlySuitable && isGoodYield) {
-            return `<p style="color: #2d6a4f;">✅ ${cropType.charAt(0).toUpperCase() + cropType.slice(1)} is highly suitable for this location with good yield potential. Consider expanding cultivation.</p>`;
-        } else if (isHighlySuitable && !isGoodYield) {
-            return `<p style="color: #f4a261;">⚠️ ${cropType.charAt(0).toUpperCase() + cropType.slice(1)} is suitable but yield is below average. Check farming practices and input management.</p>`;
-        } else if (!isHighlySuitable && isGoodYield) {
-            return `<p style="color: #f4a261;">⚠️ ${cropType.charAt(0).toUpperCase() + cropType.slice(1)} shows good yield but suitability is low. Monitor crop health closely.</p>`;
-        } else {
-            return `<p style="color: #d62828;">❌ ${cropType.charAt(0).toUpperCase() + cropType.slice(1)} may not be optimal for this location. Consider alternative crops or soil improvement.</p>`;
-        }
-    }
-    
-    // ============================================
-    // HELPER FUNCTIONS
-    // ============================================
-    
+    // Helper function (kept for compatibility)
     function getWeekNumber(d) {
         d = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
         d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay() || 7));
