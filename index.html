@@ -139,6 +139,21 @@
       background: #6d8548 !important;
     }
 
+    /* Reset button style */
+    .reset-btn {
+      background: #4a5a30 !important;
+      color: #eef5dc !important;
+      margin-top: 5px !important;
+      margin-bottom: 15px !important;
+      font-size: 0.85rem !important;
+      padding: 8px !important;
+    }
+
+    .reset-btn:hover {
+      background: #5a6e3a !important;
+      color: white !important;
+    }
+
     /* Parameter feedback animation */
     .param-feedback {
       animation: fadeOut 2s ease forwards;
@@ -226,7 +241,7 @@
         <!-- Advanced Parameters (hidden by default) -->
         <div id="advancedParams" style="display: none;">
           <div style="border-top: 1px solid #8fa163; margin: 10px 0 15px 0;"></div>
-          <h4 style="color: #dbe7b3; margin-bottom: 12px;">📊 Model Input Parameters</h4>
+          <h4 style="color: #dbe7b3; margin-bottom: 12px;">📊 Model Input Parameters (Override)</h4>
           
           <label for="avg_temperature">🌡️ Average Temperature (°C)</label>
           <input type="number" id="avg_temperature" step="0.1" placeholder="e.g., 27.3" value="27.3">
@@ -255,8 +270,13 @@
           <label for="k_score">🧪 Potassium Score (1-5)</label>
           <input type="number" id="k_score" step="1" min="1" max="5" placeholder="e.g., 3" value="3">
           
+          <!-- Reset to Default Button -->
+          <button type="button" class="reset-btn" onclick="resetToCurrentMunicipality()">
+            🔄 Reset to Municipality Defaults
+          </button>
+          
           <div style="border-top: 1px solid #8fa163; margin: 15px 0 10px 0;"></div>
-          <p style="font-size: 12px; color: #b8cc8a; text-align: center;">ℹ️ Auto-filled from selected municipality. Edit to override.</p>
+          <p style="font-size: 12px; color: #b8cc8a; text-align: center;">ℹ️ Auto-resets when municipality changes. Click reset above to restore.</p>
         </div>
 
         <button onclick="predictBoth()">Get Complete Prediction</button>
@@ -274,16 +294,14 @@
 
   <script>
     // ============================================
-    // CONFIGURATION - USING YOUR RULE-BASED API
+    // CONFIGURATION
     // ============================================
     
-    // NEW: Single API that handles everything
     const RULE_BASED_API_URL = 'https://rule-based-crop-api.onrender.com/predict';
     const WEATHER_API_KEY = 'FMDQ3KEZ3BUFNDGYXKFYYZ8L7';
     
     // Cache expiration time (1 week in milliseconds)
     const CACHE_EXPIRY = 7 * 24 * 60 * 60 * 1000;
-    // Cool down for Cache Climate API
     let isInCooldown = false;
     let cooldownTimer = null;
 
@@ -296,9 +314,70 @@
         "Malinao":  { lat: 13.4117, lon: 123.7000, ndvi: 0.73, evi: 0.45, soil_fertility: 3.1 }
     };
     
+    const DEFAULT_CLIMATE = {
+        avg_temperature: 27.3,
+        total_rainfall: 30,
+        humidity: 75,
+        n_score: 3,
+        p_score: 3,
+        k_score: 3
+    };
+    
+    let currentMunicipality = "";
+    
     // ============================================
-    // TOGGLE ADVANCED PARAMETERS
+    // HELPER FUNCTIONS
     // ============================================
+    
+    function getWeekNumber(d) {
+        d = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+        d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay() || 7));
+        var yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+        return Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
+    }
+    
+    function resetToCurrentMunicipality() {
+      const citySelect = document.getElementById('city');
+      const locKey = citySelect.value;
+      
+      if (!locKey) {
+        document.getElementById('avg_temperature').value = DEFAULT_CLIMATE.avg_temperature;
+        document.getElementById('total_rainfall').value = DEFAULT_CLIMATE.total_rainfall;
+        document.getElementById('humidity').value = DEFAULT_CLIMATE.humidity;
+        document.getElementById('n_score').value = DEFAULT_CLIMATE.n_score;
+        document.getElementById('p_score').value = DEFAULT_CLIMATE.p_score;
+        document.getElementById('k_score').value = DEFAULT_CLIMATE.k_score;
+        document.getElementById('ndvi').value = 0.70;
+        document.getElementById('evi').value = 0.43;
+        document.getElementById('soil_fertility').value = 3.0;
+        return;
+      }
+      
+      const coords = locationData[locKey];
+      if (coords) {
+        document.getElementById('avg_temperature').value = DEFAULT_CLIMATE.avg_temperature;
+        document.getElementById('total_rainfall').value = DEFAULT_CLIMATE.total_rainfall;
+        document.getElementById('humidity').value = DEFAULT_CLIMATE.humidity;
+        document.getElementById('ndvi').value = coords.ndvi;
+        document.getElementById('evi').value = coords.evi;
+        document.getElementById('soil_fertility').value = coords.soil_fertility;
+        document.getElementById('n_score').value = DEFAULT_CLIMATE.n_score;
+        document.getElementById('p_score').value = DEFAULT_CLIMATE.p_score;
+        document.getElementById('k_score').value = DEFAULT_CLIMATE.k_score;
+      }
+    }
+    
+    function onMunicipalityChange() {
+      const citySelect = document.getElementById('city');
+      const newMunicipality = citySelect.value;
+      
+      if (newMunicipality !== currentMunicipality) {
+        currentMunicipality = newMunicipality;
+        if (newMunicipality) {
+          resetToCurrentMunicipality();
+        }
+      }
+    }
     
     function toggleAdvancedParams() {
       const paramsDiv = document.getElementById('advancedParams');
@@ -315,84 +394,31 @@
       }
     }
     
-    // Auto-populate advanced fields when municipality changes
-    function autoPopulateFromMunicipality() {
-      const citySelect = document.getElementById('city');
-      const locKey = citySelect.value;
-      
-      if (!locKey) return;
-      
-      const coords = locationData[locKey];
-      if (coords) {
-        const ndviInput = document.getElementById('ndvi');
-        const eviInput = document.getElementById('evi');
-        const soilInput = document.getElementById('soil_fertility');
-        
-        if (ndviInput) ndviInput.value = coords.ndvi;
-        if (eviInput) eviInput.value = coords.evi;
-        if (soilInput) soilInput.value = coords.soil_fertility;
-        
-        // Add visual feedback
-        const feedback = document.createElement('div');
-        feedback.textContent = '✅ Parameters updated from ' + locKey;
-        feedback.style.fontSize = '11px';
-        feedback.style.color = '#cfe09c';
-        feedback.style.marginTop = '5px';
-        feedback.style.marginBottom = '10px';
-        
-        const oldFeedback = document.querySelector('.param-feedback');
-        if (oldFeedback) oldFeedback.remove();
-        feedback.className = 'param-feedback';
-        
-        const advancedParams = document.getElementById('advancedParams');
-        if (advancedParams && advancedParams.firstChild) {
-          advancedParams.insertBefore(feedback, advancedParams.firstChild);
-        }
-        
-        setTimeout(() => {
-          if (feedback && feedback.remove) feedback.remove();
-        }, 2000);
-      }
-    }
-    
-    // Listen for municipality changes
-    document.addEventListener('DOMContentLoaded', function() {
-      const citySelect = document.getElementById('city');
-      if (citySelect) {
-        citySelect.addEventListener('change', autoPopulateFromMunicipality);
-      }
-    });
-    
     // ============================================
-    // CACHED WEATHER DATA FETCHING (WITH 429 HANDLING)
+    // WEATHER DATA FETCHING
     // ============================================
     
     async function fetchWeatherData(lat, lon, municipality) {
-        // Check cooldown first
         if (isInCooldown) {
             console.log("⏳ In cooldown mode, using cache only...");
             const cached = sessionStorage.getItem(`weather_${municipality}`);
             if (cached) {
                 const cachedData = JSON.parse(cached);
-                console.log("📦 Returning cached data during cooldown");
                 return cachedData.data;
             }
-            throw new Error("Rate limited and no cache available. Please try again later.");
+            throw new Error("Rate limited and no cache available.");
         }
         
-        // Check sessionStorage cache first
         const cacheKey = `weather_${municipality}`;
         const cached = sessionStorage.getItem(cacheKey);
         
         if (cached) {
             const cachedData = JSON.parse(cached);
             const cacheAge = Date.now() - cachedData.timestamp;
-            
             if (cacheAge < CACHE_EXPIRY) {
-                console.log(`✅ Using cached weather data for ${municipality} (${Math.round(cacheAge / 1000)} seconds old)`);
+                console.log(`✅ Using cached weather data for ${municipality}`);
                 return cachedData.data;
             } else {
-                console.log(`⏰ Cache expired for ${municipality}, fetching fresh data...`);
                 sessionStorage.removeItem(cacheKey);
             }
         }
@@ -412,21 +438,16 @@
             const weatherRes = await fetch(weatherUrl);
             
             if (weatherRes.status === 429) {
-                console.log("🚫 Rate limit hit! Entering 15-minute cooldown...");
+                console.log("🚫 Rate limit hit!");
                 isInCooldown = true;
-                
                 if (cooldownTimer) clearTimeout(cooldownTimer);
                 cooldownTimer = setTimeout(() => {
-                    console.log("✅ Cooldown ended. Requests allowed again.");
                     isInCooldown = false;
                 }, 15 * 60 * 1000);
                 
                 const cachedData = sessionStorage.getItem(cacheKey);
-                if (cachedData) {
-                    console.log("📦 Returning cached data during cooldown");
-                    return JSON.parse(cachedData).data;
-                }
-                throw new Error("Rate limit reached. Please wait 15 minutes or try tomorrow.");
+                if (cachedData) return JSON.parse(cachedData).data;
+                throw new Error("Rate limit reached. Please wait.");
             }
             
             if (!weatherRes.ok) throw new Error(`Weather API Error: ${weatherRes.status}`);
@@ -462,7 +483,6 @@
                 timestamp: Date.now()
             }));
             
-            console.log(`💾 Cached weather data for ${municipality}`);
             return result;
             
         } catch (error) {
@@ -472,30 +492,7 @@
     }
     
     // ============================================
-    // WEEKLY AVERAGES FOR SUITABILITY
-    // ============================================
-    
-    function calculateWeeklyAverages(allDays) {
-        const weeklyAverages = [];
-        
-        for (let i = 0; i < 4; i++) {
-            const weekBlock = allDays.slice(i * 7, (i * 7) + 7);
-            if (weekBlock.length === 0) break;
-            
-            const tave = weekBlock.reduce((acc, d) => acc + d.temp, 0) / weekBlock.length;
-            const rain = weekBlock.reduce((acc, d) => acc + d.precip, 0);
-            
-            weeklyAverages.push({
-                temperature: tave,
-                rainfall: rain
-            });
-        }
-        
-        return weeklyAverages;
-    }
-    
-    // ============================================
-    // MAIN PREDICTION FUNCTION - USES FORM INPUTS
+    // MAIN PREDICTION FUNCTION
     // ============================================
     
     async function predictBoth() {
@@ -511,29 +508,74 @@
         
         let municipalityName = locKey;
         if (locKey === "Pioduran") municipalityName = "Pio Duran";
-        if (locKey === "Ligao") municipalityName = "Ligao";
         
         const coords = locationData[locKey];
-        
-        // Get values from inputs (with fallbacks)
-        const avgTemperature = parseFloat(document.getElementById('avg_temperature')?.value) || 27.3;
-        const totalRainfall = parseFloat(document.getElementById('total_rainfall')?.value) || 30;
-        const humidity = parseFloat(document.getElementById('humidity')?.value) || 75;
-        const ndvi = parseFloat(document.getElementById('ndvi')?.value) || coords.ndvi;
-        const evi = parseFloat(document.getElementById('evi')?.value) || coords.evi;
-        const soilFertility = parseFloat(document.getElementById('soil_fertility')?.value) || coords.soil_fertility;
-        const nScore = parseInt(document.getElementById('n_score')?.value) || 3;
-        const pScore = parseInt(document.getElementById('p_score')?.value) || 3;
-        const kScore = parseInt(document.getElementById('k_score')?.value) || 3;
         
         loaderDiv.style.display = "flex";
         resultsDiv.innerHTML = "";
         
-        const oldIndicator = document.querySelector('.cache-badge');
-        if (oldIndicator) oldIndicator.remove();
-        
         try {
-            // Build request body with FORM INPUT VALUES
+            // STEP 1: Fetch real weather data
+            console.log("🌤️ Fetching weather data...");
+            const weatherData = await fetchWeatherData(coords.lat, coords.lon, municipalityName);
+            const allDays = weatherData.allDays;
+            
+            // STEP 2: Build raw_sequence for Yield API
+            let rawSequence = [];
+            let lastSeason = null;
+            
+            for (let i = 0; i < 4; i++) {
+                const weekBlock = allDays.slice(i * 7, (i * 7) + 7);
+                if (weekBlock.length === 0) break;
+                
+                const tmax = Math.max(...weekBlock.map(d => d.tempmax));
+                const tmin = Math.min(...weekBlock.map(d => d.tempmin));
+                const tave = weekBlock.reduce((acc, d) => acc + d.temp, 0) / weekBlock.length;
+                const rain = weekBlock.reduce((acc, d) => acc + d.precip, 0);
+                const hum = weekBlock.reduce((acc, d) => acc + d.humidity, 0) / weekBlock.length;
+                const solar = weekBlock.reduce((acc, d) => acc + d.solarradiation, 0) / weekBlock.length;
+                const wind = weekBlock.reduce((acc, d) => acc + d.windspeed, 0) / weekBlock.length;
+                
+                const dateObj = new Date(weekBlock[0].datetime);
+                lastSeason = (dateObj.getMonth() + 1) >= 6 ? 2 : 1;
+                
+                rawSequence.push([
+                    coords.ndvi, coords.evi,
+                    tmax, tmin, tave, rain, hum, solar, wind,
+                    dateObj.getFullYear(), getWeekNumber(dateObj), lastSeason
+                ]);
+            }
+            
+            console.log(`📊 Built raw_sequence with ${rawSequence.length} weeks`);
+            
+            // STEP 3: Calculate weather statistics
+            let totalTemp = 0;
+            let totalRainfall = 0;
+            let maxWind = 0;
+            let minPressure = Infinity;
+            
+            for (const day of allDays) {
+                totalTemp += day.temp;
+                totalRainfall += day.precip;
+                maxWind = Math.max(maxWind, day.windspeed);
+                minPressure = Math.min(minPressure, day.pressure);
+            }
+            
+            const avgTemperature = totalTemp / allDays.length;
+            const maxWindKts = maxWind * 0.539957;
+            const duration_hrs = allDays.filter(d => d.windspeed > 63).length * 24;
+            const risk_score = maxWindKts > 100 ? 3 : (maxWindKts > 64 ? 2 : 1);
+            
+            // STEP 4: Get user overrides
+            const ndvi = parseFloat(document.getElementById('ndvi')?.value) || coords.ndvi;
+            const evi = parseFloat(document.getElementById('evi')?.value) || coords.evi;
+            const soilFertility = parseFloat(document.getElementById('soil_fertility')?.value) || coords.soil_fertility;
+            const nScore = parseInt(document.getElementById('n_score')?.value) || 3;
+            const pScore = parseInt(document.getElementById('p_score')?.value) || 3;
+            const kScore = parseInt(document.getElementById('k_score')?.value) || 3;
+            const humidity = parseFloat(document.getElementById('humidity')?.value) || 75;
+            
+            // STEP 5: Build COMPLETE request
             const requestBody = {
                 crop: cropType,
                 municipality: municipalityName,
@@ -545,11 +587,18 @@
                 soil_fertility: soilFertility,
                 n_score: nScore,
                 p_score: pScore,
-                k_score: kScore
+                k_score: kScore,
+                raw_sequence: rawSequence,
+                season: lastSeason || 2,
+                max_wind_kts: maxWindKts,
+                min_pres_mb: minPressure,
+                duration_hrs: duration_hrs,
+                risk_score: risk_score
             };
             
-            console.log("Calling Rule-Based API:", RULE_BASED_API_URL);
-            console.log("Request body (with manual inputs):", requestBody);
+            console.log("Calling Rule-Based API...");
+            console.log(`   raw_sequence length: ${rawSequence.length} weeks`);
+            console.log(`   season: ${lastSeason}, max_wind: ${maxWindKts} kts`);
             
             const response = await fetch(RULE_BASED_API_URL, {
                 method: 'POST',
@@ -565,7 +614,17 @@
             const result = await response.json();
             console.log("API Response:", result);
             
-            displayResults(result, cropType, municipalityName, requestBody);
+            displayResults(result, cropType, municipalityName, {
+                avg_temperature: avgTemperature,
+                total_rainfall: totalRainfall,
+                humidity: humidity,
+                ndvi: ndvi,
+                evi: evi,
+                soil_fertility: soilFertility,
+                n_score: nScore,
+                p_score: pScore,
+                k_score: kScore
+            });
             
         } catch (error) {
             console.error("Prediction error:", error);
@@ -574,7 +633,6 @@
                     <h3>Error</h3>
                     <div class="value" style="color: red;">${error.message}</div>
                     <p>Please try again later.</p>
-                    <p style="font-size: 12px; margin-top: 10px;">API: ${RULE_BASED_API_URL}</p>
                 </div>
             `;
         } finally {
@@ -583,7 +641,7 @@
     }
     
     // ============================================
-    // DISPLAY RESULTS - WITH USED PARAMETERS
+    // DISPLAY RESULTS
     // ============================================
     
     function displayResults(result, cropType, municipality, usedParams = null) {
@@ -616,7 +674,6 @@
             probabilitiesHtml += '</div>';
         }
         
-        // Build used parameters display
         let usedParamsHtml = '';
         if (usedParams) {
             usedParamsHtml = `
@@ -724,10 +781,17 @@
         }
     }
     
-    // For backward compatibility
-    async function predictYield() {
-        await predictBoth();
-    }
+    // ============================================
+    // INITIALIZE
+    // ============================================
+    
+    document.addEventListener('DOMContentLoaded', function() {
+      const citySelect = document.getElementById('city');
+      if (citySelect) {
+        citySelect.addEventListener('change', onMunicipalityChange);
+        currentMunicipality = citySelect.value;
+      }
+    });
   </script>
 </body>
 </html>
