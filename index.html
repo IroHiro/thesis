@@ -88,6 +88,90 @@
       border-radius: 10px;
       margin-top: 5px;
     }
+
+    /* Input field styles */
+    .form-card input {
+      width: 100%;
+      padding: 12px 14px;
+      margin-bottom: 18px;
+      background-color: #2e3c1c;
+      color: #ffffff;
+      border: 1px solid #7f9a4e;
+      border-radius: 14px;
+      font-size: 0.95rem;
+      transition: all 0.2s ease;
+      outline: none;
+    }
+
+    .form-card input:hover {
+      background-color: #3c4d25;
+      border-color: #a9c97a;
+    }
+
+    .form-card input:focus {
+      border-color: #cfe49e;
+      box-shadow: 0 0 0 3px rgba(160, 190, 100, 0.3);
+    }
+
+    .form-card input::placeholder {
+      color: #8aa066;
+      font-size: 0.85rem;
+    }
+
+    .form-card h4 {
+      font-size: 0.95rem;
+      margin-bottom: 12px;
+      color: #d4e6a5;
+      font-weight: 600;
+    }
+
+    /* Toggle button style */
+    #toggleParamsBtn {
+      margin-bottom: 10px !important;
+      background: #5a6e3a !important;
+      color: white !important;
+      transition: all 0.2s ease;
+    }
+
+    #toggleParamsBtn:hover {
+      opacity: 0.9;
+      transform: translateY(-1px);
+      background: #6d8548 !important;
+    }
+
+    /* Parameter feedback animation */
+    .param-feedback {
+      animation: fadeOut 2s ease forwards;
+      font-size: 11px;
+      color: #cfe09c;
+      margin-top: 5px;
+      margin-bottom: 10px;
+      text-align: center;
+    }
+
+    @keyframes fadeOut {
+      0% { opacity: 1; }
+      70% { opacity: 1; }
+      100% { opacity: 0; display: none; }
+    }
+
+    /* Table style for parameters display */
+    .result-card table {
+      border-collapse: collapse;
+      width: 100%;
+      margin-top: 8px;
+    }
+
+    .result-card td {
+      padding: 4px 0;
+      border-bottom: 1px solid rgba(150, 180, 90, 0.2);
+    }
+
+    .result-card td:first-child {
+      font-weight: 600;
+      color: #c8e09a;
+      width: 45%;
+    }
   </style>
 </head>
 <body>
@@ -117,7 +201,7 @@
 
       <!-- FORM CARD -->
       <div class="form-card">
-        <label for="city">Select Your Municipality/City </label>
+        <label for="city">📍 Select Your Municipality/City</label>
         <select id="city">
           <option value="">-- Select Municipality/City --</option>
           <option value="Malinao">Malinao</option>
@@ -127,18 +211,59 @@
           <option value="Oas">Oas</option>
         </select>
 
-        <label for="crop">Select a Crop</label>
+        <label for="crop">🌾 Select a Crop</label>
         <select id="crop">
           <option value="">-- Select Crop --</option>
           <option value="rice">Rice</option>
           <option value="corn">Corn</option>
         </select>
 
+        <!-- Toggle Button for Advanced Parameters -->
+        <button type="button" id="toggleParamsBtn" onclick="toggleAdvancedParams()" style="background: #5a6e3a; color: white; margin-bottom: 15px;">
+          ⚙️ Show Advanced Parameters
+        </button>
+
+        <!-- Advanced Parameters (hidden by default) -->
+        <div id="advancedParams" style="display: none;">
+          <div style="border-top: 1px solid #8fa163; margin: 10px 0 15px 0;"></div>
+          <h4 style="color: #dbe7b3; margin-bottom: 12px;">📊 Model Input Parameters</h4>
+          
+          <label for="avg_temperature">🌡️ Average Temperature (°C)</label>
+          <input type="number" id="avg_temperature" step="0.1" placeholder="e.g., 27.3" value="27.3">
+
+          <label for="total_rainfall">🌧️ Total Rainfall (mm)</label>
+          <input type="number" id="total_rainfall" step="0.1" placeholder="e.g., 30" value="30">
+
+          <label for="humidity">💧 Humidity (%)</label>
+          <input type="number" id="humidity" step="1" placeholder="e.g., 75" value="75">
+
+          <label for="ndvi">🌿 NDVI (0-1)</label>
+          <input type="number" id="ndvi" step="0.01" min="0" max="1" placeholder="e.g., 0.73" value="0.73">
+
+          <label for="evi">🍃 EVI (0-1)</label>
+          <input type="number" id="evi" step="0.01" min="0" max="1" placeholder="e.g., 0.45" value="0.45">
+
+          <label for="soil_fertility">🪴 Soil Fertility (1-5)</label>
+          <input type="number" id="soil_fertility" step="0.1" min="1" max="5" placeholder="e.g., 3.1" value="3.1">
+
+          <label for="n_score">🧪 Nitrogen Score (1-5)</label>
+          <input type="number" id="n_score" step="1" min="1" max="5" placeholder="e.g., 3" value="3">
+
+          <label for="p_score">🧪 Phosphorus Score (1-5)</label>
+          <input type="number" id="p_score" step="1" min="1" max="5" placeholder="e.g., 3" value="3">
+
+          <label for="k_score">🧪 Potassium Score (1-5)</label>
+          <input type="number" id="k_score" step="1" min="1" max="5" placeholder="e.g., 3" value="3">
+          
+          <div style="border-top: 1px solid #8fa163; margin: 15px 0 10px 0;"></div>
+          <p style="font-size: 12px; color: #b8cc8a; text-align: center;">ℹ️ Auto-filled from selected municipality. Edit to override.</p>
+        </div>
+
         <button onclick="predictBoth()">Get Complete Prediction</button>
 
-       <!-- Single Loader -->
+        <!-- Single Loader -->
         <div class="single-spinner" id="dualLoader" style="display: none;">
-        <div class="spinner-small"></div>
+          <div class="spinner-small"></div>
         </div>
 
         <!-- Results Display -->
@@ -162,7 +287,6 @@
     let isInCooldown = false;
     let cooldownTimer = null;
 
-    
     // Location database with NDVI, EVI, and soil fertility
     const locationData = {
         "Polangui": { lat: 13.2933, lon: 123.4853, ndvi: 0.74, evi: 0.46, soil_fertility: 3.2 },
@@ -171,6 +295,73 @@
         "Pioduran": { lat: 13.0450, lon: 123.4561, ndvi: 0.69, evi: 0.40, soil_fertility: 2.8 },
         "Malinao":  { lat: 13.4117, lon: 123.7000, ndvi: 0.73, evi: 0.45, soil_fertility: 3.1 }
     };
+    
+    // ============================================
+    // TOGGLE ADVANCED PARAMETERS
+    // ============================================
+    
+    function toggleAdvancedParams() {
+      const paramsDiv = document.getElementById('advancedParams');
+      const toggleBtn = document.getElementById('toggleParamsBtn');
+      
+      if (paramsDiv.style.display === 'none') {
+        paramsDiv.style.display = 'block';
+        toggleBtn.innerHTML = '🔽 Hide Advanced Parameters';
+        toggleBtn.style.background = '#8fa163';
+      } else {
+        paramsDiv.style.display = 'none';
+        toggleBtn.innerHTML = '⚙️ Show Advanced Parameters';
+        toggleBtn.style.background = '#5a6e3a';
+      }
+    }
+    
+    // Auto-populate advanced fields when municipality changes
+    function autoPopulateFromMunicipality() {
+      const citySelect = document.getElementById('city');
+      const locKey = citySelect.value;
+      
+      if (!locKey) return;
+      
+      const coords = locationData[locKey];
+      if (coords) {
+        const ndviInput = document.getElementById('ndvi');
+        const eviInput = document.getElementById('evi');
+        const soilInput = document.getElementById('soil_fertility');
+        
+        if (ndviInput) ndviInput.value = coords.ndvi;
+        if (eviInput) eviInput.value = coords.evi;
+        if (soilInput) soilInput.value = coords.soil_fertility;
+        
+        // Add visual feedback
+        const feedback = document.createElement('div');
+        feedback.textContent = '✅ Parameters updated from ' + locKey;
+        feedback.style.fontSize = '11px';
+        feedback.style.color = '#cfe09c';
+        feedback.style.marginTop = '5px';
+        feedback.style.marginBottom = '10px';
+        
+        const oldFeedback = document.querySelector('.param-feedback');
+        if (oldFeedback) oldFeedback.remove();
+        feedback.className = 'param-feedback';
+        
+        const advancedParams = document.getElementById('advancedParams');
+        if (advancedParams && advancedParams.firstChild) {
+          advancedParams.insertBefore(feedback, advancedParams.firstChild);
+        }
+        
+        setTimeout(() => {
+          if (feedback && feedback.remove) feedback.remove();
+        }, 2000);
+      }
+    }
+    
+    // Listen for municipality changes
+    document.addEventListener('DOMContentLoaded', function() {
+      const citySelect = document.getElementById('city');
+      if (citySelect) {
+        citySelect.addEventListener('change', autoPopulateFromMunicipality);
+      }
+    });
     
     // ============================================
     // CACHED WEATHER DATA FETCHING (WITH 429 HANDLING)
@@ -199,19 +390,6 @@
             
             if (cacheAge < CACHE_EXPIRY) {
                 console.log(`✅ Using cached weather data for ${municipality} (${Math.round(cacheAge / 1000)} seconds old)`);
-                
-                // Add cache indicator to results
-                const resultsDiv = document.getElementById('results');
-                if (resultsDiv) {
-                    const cacheIndicator = document.createElement('div');
-                    cacheIndicator.className = 'cache-badge';
-                    cacheIndicator.textContent = '📦 Using cached weather data';
-                    cacheIndicator.style.marginTop = '10px';
-                    // Remove old indicator if exists
-                    const oldIndicator = document.querySelector('.cache-badge');
-                    if (oldIndicator) oldIndicator.remove();
-                }
-                
                 return cachedData.data;
             } else {
                 console.log(`⏰ Cache expired for ${municipality}, fetching fresh data...`);
@@ -233,19 +411,16 @@
         try {
             const weatherRes = await fetch(weatherUrl);
             
-            // Handle 429 Rate Limit
             if (weatherRes.status === 429) {
                 console.log("🚫 Rate limit hit! Entering 15-minute cooldown...");
                 isInCooldown = true;
                 
-                // Reset cooldown after 15 minutes
                 if (cooldownTimer) clearTimeout(cooldownTimer);
                 cooldownTimer = setTimeout(() => {
                     console.log("✅ Cooldown ended. Requests allowed again.");
                     isInCooldown = false;
-                }, 15 * 60 * 1000); // 15 minutes
+                }, 15 * 60 * 1000);
                 
-                // Try to return cached data if available
                 const cachedData = sessionStorage.getItem(cacheKey);
                 if (cachedData) {
                     console.log("📦 Returning cached data during cooldown");
@@ -259,7 +434,6 @@
             const weatherJSON = await weatherRes.json();
             const allDays = weatherJSON.days;
             
-            // Calculate averages for suitability API
             let totalTemp = 0;
             let totalRainfall = 0;
             let maxWind = 0;
@@ -283,14 +457,12 @@
                 minPressure: minPressure
             };
             
-            // Store in sessionStorage with timestamp
             sessionStorage.setItem(cacheKey, JSON.stringify({
                 data: result,
                 timestamp: Date.now()
             }));
             
             console.log(`💾 Cached weather data for ${municipality}`);
-            
             return result;
             
         } catch (error) {
@@ -323,7 +495,7 @@
     }
     
     // ============================================
-    // MAIN PREDICTION FUNCTION - NOW USES RULE-BASED API
+    // MAIN PREDICTION FUNCTION - USES FORM INPUTS
     // ============================================
     
     async function predictBoth() {
@@ -337,54 +509,47 @@
             return;
         }
         
-        // Fix municipality name for API (Pioduran -> Pio Duran)
         let municipalityName = locKey;
         if (locKey === "Pioduran") municipalityName = "Pio Duran";
         if (locKey === "Ligao") municipalityName = "Ligao";
         
         const coords = locationData[locKey];
         
-        // Show loader
+        // Get values from inputs (with fallbacks)
+        const avgTemperature = parseFloat(document.getElementById('avg_temperature')?.value) || 27.3;
+        const totalRainfall = parseFloat(document.getElementById('total_rainfall')?.value) || 30;
+        const humidity = parseFloat(document.getElementById('humidity')?.value) || 75;
+        const ndvi = parseFloat(document.getElementById('ndvi')?.value) || coords.ndvi;
+        const evi = parseFloat(document.getElementById('evi')?.value) || coords.evi;
+        const soilFertility = parseFloat(document.getElementById('soil_fertility')?.value) || coords.soil_fertility;
+        const nScore = parseInt(document.getElementById('n_score')?.value) || 3;
+        const pScore = parseInt(document.getElementById('p_score')?.value) || 3;
+        const kScore = parseInt(document.getElementById('k_score')?.value) || 3;
+        
         loaderDiv.style.display = "flex";
         resultsDiv.innerHTML = "";
         
-        // Remove any old cache indicator
         const oldIndicator = document.querySelector('.cache-badge');
         if (oldIndicator) oldIndicator.remove();
         
         try {
-            // 1. Fetch weather data (uses cache if available)
-            const weatherData = await fetchWeatherData(coords.lat, coords.lon, municipalityName);
-            
-            // 2. Calculate weekly averages
-            const weeklyAverages = calculateWeeklyAverages(weatherData.allDays);
-            
-            // Calculate averages for the API
-            let totalTemp = 0;
-            let totalRainfall = 0;
-            for (const week of weeklyAverages) {
-                totalTemp += week.temperature;
-                totalRainfall += week.rainfall;
-            }
-            const avgTemperature = totalTemp / weeklyAverages.length;
-            
-            // 3. Call YOUR Rule-Based API (single call instead of two)
+            // Build request body with FORM INPUT VALUES
             const requestBody = {
                 crop: cropType,
                 municipality: municipalityName,
                 avg_temperature: avgTemperature,
                 total_rainfall: totalRainfall,
-                humidity: 75,
-                ndvi: coords.ndvi,
-                evi: coords.evi,
-                soil_fertility: coords.soil_fertility,
-                n_score: 3,
-                p_score: 3,
-                k_score: 3
+                humidity: humidity,
+                ndvi: ndvi,
+                evi: evi,
+                soil_fertility: soilFertility,
+                n_score: nScore,
+                p_score: pScore,
+                k_score: kScore
             };
             
             console.log("Calling Rule-Based API:", RULE_BASED_API_URL);
-            console.log("Request body:", requestBody);
+            console.log("Request body (with manual inputs):", requestBody);
             
             const response = await fetch(RULE_BASED_API_URL, {
                 method: 'POST',
@@ -400,8 +565,7 @@
             const result = await response.json();
             console.log("API Response:", result);
             
-            // 4. Display results
-            displayResults(result, cropType, municipalityName);
+            displayResults(result, cropType, municipalityName, requestBody);
             
         } catch (error) {
             console.error("Prediction error:", error);
@@ -419,13 +583,12 @@
     }
     
     // ============================================
-    // DISPLAY RESULTS - UPDATED FOR RULE-BASED API
+    // DISPLAY RESULTS - WITH USED PARAMETERS
     // ============================================
     
-    function displayResults(result, cropType, municipality) {
+    function displayResults(result, cropType, municipality, usedParams = null) {
         const resultsDiv = document.getElementById('results');
         
-        // Extract data from the rule-based API response
         const modelResults = result.model_results || {};
         const calculatedScores = result.calculated_scores || {};
         const recommendations = result.recommendations || {};
@@ -453,14 +616,32 @@
             probabilitiesHtml += '</div>';
         }
         
-        // Build recommendations HTML from the rule-based API
+        // Build used parameters display
+        let usedParamsHtml = '';
+        if (usedParams) {
+            usedParamsHtml = `
+                <div style="margin-top: 15px; text-align: left; padding-top: 10px; border-top: 1px solid #ddd; font-size: 12px;">
+                    <h4>📊 Input Parameters Used</h4>
+                    <table style="width: 100%; font-size: 11px;">
+                        <tr><td>🌡️ Temperature:</td><td>${usedParams.avg_temperature}°C</td></tr>
+                        <tr><td>🌧️ Rainfall:</td><td>${usedParams.total_rainfall} mm</td></tr>
+                        <tr><td>💧 Humidity:</td><td>${usedParams.humidity}%</td></tr>
+                        <tr><td>🌿 NDVI:</td><td>${usedParams.ndvi}</td></tr>
+                        <tr><td>🍃 EVI:</td><td>${usedParams.evi}</td></tr>
+                        <tr><td>🪴 Soil Fertility:</td><td>${usedParams.soil_fertility}</td></tr>
+                        <tr><td>🧪 N/P/K:</td><td>${usedParams.n_score}/${usedParams.p_score}/${usedParams.k_score}</td></tr>
+                    </table>
+                </div>
+            `;
+        }
+        
         let recommendationsHtml = '';
         
         if (recommendations.overall) {
             recommendationsHtml += `
                 <div style="margin-top: 15px; text-align: left; padding-top: 10px; border-top: 1px solid #ddd;">
                     <h4>📋 ${recommendations.overall.status || 'Recommendation'}</h4>
-                    <p style="color: ${recommendations.overall.color || '#333'};">${recommendations.overall.message || ''}</p>
+                    <p>${recommendations.overall.message || ''}</p>
                 </div>
             `;
         }
@@ -528,10 +709,10 @@
             <div class="result-card" style="margin-top: 20px; max-width: 600px; margin-left: auto; margin-right: auto;">
                 <h3>📋 Complete Recommendations</h3>
                 ${recommendationsHtml || '<p>No recommendations available.</p>'}
+                ${usedParamsHtml}
             </div>
         `;
         
-        // Check if we have a cache indicator
         const cached = sessionStorage.getItem(`weather_${municipality}`);
         if (cached) {
             const cacheData = JSON.parse(cached);
@@ -541,19 +722,6 @@
             indicator.textContent = `📦 Weather data cached (${Math.floor(cacheAge / 60)} min ${cacheAge % 60} sec old)`;
             resultsDiv.appendChild(indicator);
         }
-    }
-    
-    // Helper function (kept for compatibility)
-    function getWeekNumber(d) {
-        d = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
-        d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay() || 7));
-        var yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
-        return Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
-    }
-    
-    function getSeason(d) {
-        const month = d.getMonth() + 1;
-        return (month >= 6 && month <= 12) ? 2 : 1;
     }
     
     // For backward compatibility
