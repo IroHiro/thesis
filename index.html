@@ -324,6 +324,135 @@
     };
     
     let currentMunicipality = "";
+
+        // ============================================
+        // API WARMUP - Wake up all APIs in parallel
+        // ============================================
+        
+        // Track if warmup has been done
+        let warmupCompleted = false;
+        let warmupInProgress = false;
+        
+        // List of APIs to warm up
+        const APIS_TO_WARM = [
+            'https://suitability-api.onrender.com/health',
+            'https://crop-yield-api-9c1l.onrender.com/health',
+            'https://rule-based-crop-api.onrender.com/health'
+        ];
+        
+        async function warmupAllAPIs() {
+            if (warmupCompleted || warmupInProgress) {
+                console.log("⏭️ Warmup already completed or in progress");
+                return;
+            }
+            
+            warmupInProgress = true;
+            console.log("🔥 Warming up all APIs in parallel...");
+            
+            const warmupStart = Date.now();
+            
+            // Create timeout promises (15 seconds max for warmup)
+            const timeout = new Promise((_, reject) => 
+                setTimeout(() => reject(new Error("Warmup timeout")), 15000)
+            );
+            
+            try {
+                // Call all APIs simultaneously
+                const warmupPromises = APIS_TO_WARM.map(async (url) => {
+                    try {
+                        const start = Date.now();
+                        console.log(`   ⏳ Warming: ${url}`);
+                        const response = await fetch(url, { 
+                            method: 'GET',
+                            headers: { 'Content-Type': 'application/json' }
+                        });
+                        const elapsed = Date.now() - start;
+                        console.log(`   ✅ ${url} responded in ${elapsed}ms (status: ${response.status})`);
+                        return { url, status: response.status, elapsed };
+                    } catch (error) {
+                        console.log(`   ⚠️ ${url} warmup failed: ${error.message}`);
+                        return { url, status: 'failed', error: error.message };
+                    }
+                });
+                
+                // Race between all warmups and timeout
+                const results = await Promise.race([
+                    Promise.all(warmupPromises),
+                    timeout.then(() => { throw new Error("Warmup timeout"); })
+                ]);
+                
+                const totalTime = Date.now() - warmupStart;
+                console.log(`✅ API warmup completed in ${totalTime}ms`);
+                
+                // Count successes
+                const successes = results.filter(r => r.status === 200 || r.status === 204).length;
+                console.log(`   📊 ${successes}/${APIS_TO_WARM} APIs ready`);
+                
+                warmupCompleted = true;
+                
+                // Optional: Show warmup indicator in UI
+                showWarmupIndicator(totalTime, successes);
+                
+            } catch (error) {
+                console.log(`⚠️ Warmup issue: ${error.message}`);
+                console.log("   APIs may be slow on first request");
+            } finally {
+                warmupInProgress = false;
+            }
+        }
+        
+        function showWarmupIndicator(totalTime, successCount) {
+            // Create a small temporary indicator in the corner
+            const indicator = document.createElement('div');
+            indicator.style.position = 'fixed';
+            indicator.style.bottom = '10px';
+            indicator.style.right = '10px';
+            indicator.style.backgroundColor = successCount === APIS_TO_WARM.length ? '#2d6a4f' : '#f4a261';
+            indicator.style.color = 'white';
+            indicator.style.padding = '4px 12px';
+            indicator.style.borderRadius = '20px';
+            indicator.style.fontSize = '11px';
+            indicator.style.fontFamily = 'monospace';
+            indicator.style.zIndex = '9999';
+            indicator.style.opacity = '0.8';
+            indicator.style.transition = 'opacity 0.5s';
+            indicator.innerHTML = successCount === APIS_TO_WARM.length 
+                ? `✅ APIs ready (${totalTime}ms)`
+                : `⚠️ ${successCount}/${APIS_TO_WARM.length} APIs ready`;
+            
+            document.body.appendChild(indicator);
+            
+            // Fade out after 5 seconds
+            setTimeout(() => {
+                indicator.style.opacity = '0';
+                setTimeout(() => indicator.remove(), 1000);
+            }, 5000);
+        }
+        
+        // ============================================
+        // WARM UP APIS WHEN PAGE LOADS
+        // ============================================
+        
+        // Warm up immediately when script loads
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', () => {
+                // Small delay to not block initial rendering
+                setTimeout(warmupAllAPIs, 100);
+            });
+        } else {
+            setTimeout(warmupAllAPIs, 100);
+        }
+        
+        // Also warm up when user clicks the predict button (in case first warmup failed)
+        // But don't block the prediction - let it run in background
+        function ensureWarmup() {
+            if (!warmupCompleted && !warmupInProgress) {
+                console.log("🔄 Ensuring APIs are warmed up before prediction...");
+                warmupAllAPIs();
+            }
+        }
+
+
     
     // ============================================
     // HELPER FUNCTIONS
@@ -496,6 +625,8 @@
     // ============================================
     
     async function predictBoth() {
+        ensureWarmup();
+      
         const locKey = document.getElementById('city').value;
         const cropType = document.getElementById('crop').value;
         const resultsDiv = document.getElementById('results');
