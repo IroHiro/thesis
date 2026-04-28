@@ -127,6 +127,7 @@
 
     /* Toggle button style */
     #toggleParamsBtn {
+      margin-top: 15px !important;
       margin-bottom: 10px !important;
       background: #5a6e3a !important;
       color: white !important;
@@ -187,6 +188,77 @@
       color: #c8e09a;
       width: 45%;
     }
+
+    /* Input Summary Panel - New Stylish Section */
+    .input-summary-panel {
+      background: rgba(30, 45, 20, 0.95);
+      backdrop-filter: blur(8px);
+      border-radius: 20px;
+      padding: 20px;
+      margin-top: 20px;
+      border: 1px solid rgba(160, 190, 100, 0.4);
+      transition: all 0.3s ease;
+    }
+
+    .input-summary-panel h3 {
+      color: #e0f0bc;
+      font-size: 1.2rem;
+      margin-bottom: 15px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      border-left: 3px solid #a9c97a;
+      padding-left: 12px;
+    }
+
+    .input-summary-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 12px;
+    }
+
+    .input-summary-item {
+      background: rgba(20, 30, 12, 0.6);
+      border-radius: 12px;
+      padding: 10px 12px;
+      text-align: center;
+      transition: transform 0.2s ease;
+    }
+
+    .input-summary-item:hover {
+      transform: translateY(-2px);
+      background: rgba(40, 60, 25, 0.7);
+    }
+
+    .input-summary-label {
+      font-size: 11px;
+      color: #b8cc8a;
+      letter-spacing: 0.5px;
+      margin-bottom: 5px;
+      display: block;
+    }
+
+    .input-summary-value {
+      font-size: 18px;
+      font-weight: 700;
+      color: #f9ffea;
+    }
+
+    .input-summary-unit {
+      font-size: 10px;
+      color: #8aa066;
+      margin-left: 2px;
+    }
+
+    .weather-badge {
+      background: #2d6a4f;
+      color: white;
+      font-size: 10px;
+      padding: 4px 10px;
+      border-radius: 20px;
+      display: inline-block;
+      margin-top: 12px;
+    }
   </style>
 </head>
 <body>
@@ -233,53 +305,16 @@
           <option value="corn">Corn</option>
         </select>
 
-        <!-- Toggle Button for Advanced Parameters -->
-        <button type="button" id="toggleParamsBtn" onclick="toggleAdvancedParams()" style="background: #5a6e3a; color: white; margin-bottom: 15px;">
-          ⚙️ Show Advanced Parameters
-        </button>
+        <button onclick="predictBoth()">🔮 Get Complete Prediction</button>
 
-        <!-- Advanced Parameters (hidden by default) -->
-        <div id="advancedParams" style="display: none;">
-          <div style="border-top: 1px solid #8fa163; margin: 10px 0 15px 0;"></div>
-          <h4 style="color: #dbe7b3; margin-bottom: 12px;">📊 Model Input Parameters (Override)</h4>
-          
-          <label for="avg_temperature">🌡️ Average Temperature (°C)</label>
-          <input type="number" id="avg_temperature" step="0.1" placeholder="e.g., 27.3" value="27.3">
-
-          <label for="total_rainfall">🌧️ Total Rainfall (mm)</label>
-          <input type="number" id="total_rainfall" step="0.1" placeholder="e.g., 30" value="30">
-
-          <label for="humidity">💧 Humidity (%)</label>
-          <input type="number" id="humidity" step="1" placeholder="e.g., 75" value="75">
-
-          <label for="ndvi">🌿 NDVI (0-1)</label>
-          <input type="number" id="ndvi" step="0.01" min="0" max="1" placeholder="e.g., 0.73" value="0.73">
-
-          <label for="evi">🍃 EVI (0-1)</label>
-          <input type="number" id="evi" step="0.01" min="0" max="1" placeholder="e.g., 0.45" value="0.45">
-
-          <label for="soil_fertility">🪴 Soil Fertility (1-5)</label>
-          <input type="number" id="soil_fertility" step="0.1" min="1" max="5" placeholder="e.g., 3.1" value="3.1">
-
-          <label for="n_score">🧪 Nitrogen Score (1-5)</label>
-          <input type="number" id="n_score" step="1" min="1" max="5" placeholder="e.g., 3" value="3">
-
-          <label for="p_score">🧪 Phosphorus Score (1-5)</label>
-          <input type="number" id="p_score" step="1" min="1" max="5" placeholder="e.g., 3" value="3">
-
-          <label for="k_score">🧪 Potassium Score (1-5)</label>
-          <input type="number" id="k_score" step="1" min="1" max="5" placeholder="e.g., 3" value="3">
-          
-          <!-- Reset to Default Button -->
-          <button type="button" class="reset-btn" onclick="resetToCurrentMunicipality()">
-            🔄 Reset to Municipality Defaults
-          </button>
-          
-          <div style="border-top: 1px solid #8fa163; margin: 15px 0 10px 0;"></div>
-          <p style="font-size: 12px; color: #b8cc8a; text-align: center;">ℹ️ Auto-resets when municipality changes. Click reset above to restore.</p>
+        <!-- Input Parameters Summary Panel - SHOWN BEFORE RESULTS -->
+        <div id="inputSummaryPanel" class="input-summary-panel" style="display: none;">
+          <h3>📋 Current Input Parameters</h3>
+          <div id="inputSummaryGrid" class="input-summary-grid">
+            <!-- Dynamic content will be inserted here -->
+          </div>
+          <div id="weatherSourceBadge" class="weather-badge" style="display: none;"></div>
         </div>
-
-        <button onclick="predictBoth()">Get Complete Prediction</button>
 
         <!-- Single Loader -->
         <div class="single-spinner" id="dualLoader" style="display: none;">
@@ -288,6 +323,65 @@
 
         <!-- Results Display -->
         <div id="results" style="margin-top: 20px;"></div>
+
+        <!-- Toggle Button for Advanced Parameters - MOVED TO BOTTOM -->
+        <button type="button" id="toggleParamsBtn" onclick="toggleAdvancedParams()" style="margin-top: 20px;">
+          ⚙️ Show Advanced Parameters
+        </button>
+
+        <!-- Advanced Parameters (hidden by default) - MOVED TO BOTTOM -->
+        <div id="advancedParams" style="display: none;">
+          <div style="border-top: 1px solid #8fa163; margin: 10px 0 15px 0;"></div>
+          <h4 style="color: #dbe7b3; margin-bottom: 12px;">📊 Override Model Parameters</h4>
+          <p style="font-size: 11px; color: #c8dd9e; margin-bottom: 15px;">✏️ Edit these values to customize your prediction</p>
+          
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+            <div>
+              <label for="avg_temperature">🌡️ Temperature (°C)</label>
+              <input type="number" id="avg_temperature" step="0.1" placeholder="e.g., 27.3" value="27.3">
+            </div>
+            <div>
+              <label for="total_rainfall">🌧️ Rainfall (mm)</label>
+              <input type="number" id="total_rainfall" step="0.1" placeholder="e.g., 30" value="30">
+            </div>
+            <div>
+              <label for="humidity">💧 Humidity (%)</label>
+              <input type="number" id="humidity" step="1" placeholder="e.g., 75" value="75">
+            </div>
+            <div>
+              <label for="ndvi">🌿 NDVI (0-1)</label>
+              <input type="number" id="ndvi" step="0.01" min="0" max="1" placeholder="e.g., 0.73" value="0.73">
+            </div>
+            <div>
+              <label for="evi">🍃 EVI (0-1)</label>
+              <input type="number" id="evi" step="0.01" min="0" max="1" placeholder="e.g., 0.45" value="0.45">
+            </div>
+            <div>
+              <label for="soil_fertility">🪴 Soil Fertility (1-5)</label>
+              <input type="number" id="soil_fertility" step="0.1" min="1" max="5" placeholder="e.g., 3.1" value="3.1">
+            </div>
+            <div>
+              <label for="n_score">🧪 Nitrogen (1-5)</label>
+              <input type="number" id="n_score" step="1" min="1" max="5" placeholder="e.g., 3" value="3">
+            </div>
+            <div>
+              <label for="p_score">🧪 Phosphorus (1-5)</label>
+              <input type="number" id="p_score" step="1" min="1" max="5" placeholder="e.g., 3" value="3">
+            </div>
+            <div>
+              <label for="k_score">🧪 Potassium (1-5)</label>
+              <input type="number" id="k_score" step="1" min="1" max="5" placeholder="e.g., 3" value="3">
+            </div>
+          </div>
+          
+          <!-- Reset to Default Button -->
+          <button type="button" class="reset-btn" onclick="resetToCurrentMunicipality()">
+            🔄 Reset to Municipality Defaults
+          </button>
+          
+          <div style="border-top: 1px solid #8fa163; margin: 15px 0 10px 0;"></div>
+          <p style="font-size: 12px; color: #b8cc8a; text-align: center;">ℹ️ Values auto-reset when municipality changes. Changes reflect immediately in the summary above.</p>
+        </div>
       </div>
     </div>
   </section>
@@ -325,134 +419,141 @@
     
     let currentMunicipality = "";
 
-        // ============================================
-        // API WARMUP - Wake up all APIs in parallel
-        // ============================================
+    // ============================================
+    // API WARMUP
+    // ============================================
+    
+    let warmupCompleted = false;
+    let warmupInProgress = false;
+    
+    const APIS_TO_WARM = [
+        'https://suitability-api.onrender.com/health',
+        'https://crop-yield-api-9c1l.onrender.com/health',
+        'https://rule-based-crop-api.onrender.com/health'
+    ];
+    
+    async function warmupAllAPIs() {
+        if (warmupCompleted || warmupInProgress) return;
+        warmupInProgress = true;
+        console.log("🔥 Warming up all APIs...");
         
-        // Track if warmup has been done
-        let warmupCompleted = false;
-        let warmupInProgress = false;
-        
-        // List of APIs to warm up
-        const APIS_TO_WARM = [
-            'https://suitability-api.onrender.com/health',
-            'https://crop-yield-api-9c1l.onrender.com/health',
-            'https://rule-based-crop-api.onrender.com/health'
-        ];
-        
-        async function warmupAllAPIs() {
-            if (warmupCompleted || warmupInProgress) {
-                console.log("⏭️ Warmup already completed or in progress");
-                return;
-            }
-            
-            warmupInProgress = true;
-            console.log("🔥 Warming up all APIs in parallel...");
-            
-            const warmupStart = Date.now();
-            
-            // Create timeout promises (15 seconds max for warmup)
-            const timeout = new Promise((_, reject) => 
-                setTimeout(() => reject(new Error("Warmup timeout")), 15000)
-            );
-            
-            try {
-                // Call all APIs simultaneously
-                const warmupPromises = APIS_TO_WARM.map(async (url) => {
-                    try {
-                        const start = Date.now();
-                        console.log(`   ⏳ Warming: ${url}`);
-                        const response = await fetch(url, { 
-                            method: 'GET',
-                            headers: { 'Content-Type': 'application/json' }
-                        });
-                        const elapsed = Date.now() - start;
-                        console.log(`   ✅ ${url} responded in ${elapsed}ms (status: ${response.status})`);
-                        return { url, status: response.status, elapsed };
-                    } catch (error) {
-                        console.log(`   ⚠️ ${url} warmup failed: ${error.message}`);
-                        return { url, status: 'failed', error: error.message };
-                    }
-                });
-                
-                // Race between all warmups and timeout
-                const results = await Promise.race([
-                    Promise.all(warmupPromises),
-                    timeout.then(() => { throw new Error("Warmup timeout"); })
-                ]);
-                
-                const totalTime = Date.now() - warmupStart;
-                console.log(`✅ API warmup completed in ${totalTime}ms`);
-                
-                // Count successes
-                const successes = results.filter(r => r.status === 200 || r.status === 204).length;
-                console.log(`   📊 ${successes}/${APIS_TO_WARM} APIs ready`);
-                
-                warmupCompleted = true;
-                
-                // Optional: Show warmup indicator in UI
-                showWarmupIndicator(totalTime, successes);
-                
-            } catch (error) {
-                console.log(`⚠️ Warmup issue: ${error.message}`);
-                console.log("   APIs may be slow on first request");
-            } finally {
-                warmupInProgress = false;
-            }
-        }
-        
-        function showWarmupIndicator(totalTime, successCount) {
-            // Create a small temporary indicator in the corner
-            const indicator = document.createElement('div');
-            indicator.style.position = 'fixed';
-            indicator.style.bottom = '10px';
-            indicator.style.right = '10px';
-            indicator.style.backgroundColor = successCount === APIS_TO_WARM.length ? '#2d6a4f' : '#f4a261';
-            indicator.style.color = 'white';
-            indicator.style.padding = '4px 12px';
-            indicator.style.borderRadius = '20px';
-            indicator.style.fontSize = '11px';
-            indicator.style.fontFamily = 'monospace';
-            indicator.style.zIndex = '9999';
-            indicator.style.opacity = '0.8';
-            indicator.style.transition = 'opacity 0.5s';
-            indicator.innerHTML = successCount === APIS_TO_WARM.length 
-                ? `✅ APIs ready (${totalTime}ms)`
-                : `⚠️ ${successCount}/${APIS_TO_WARM.length} APIs ready`;
-            
-            document.body.appendChild(indicator);
-            
-            // Fade out after 5 seconds
-            setTimeout(() => {
-                indicator.style.opacity = '0';
-                setTimeout(() => indicator.remove(), 1000);
-            }, 5000);
-        }
-        
-        // ============================================
-        // WARM UP APIS WHEN PAGE LOADS
-        // ============================================
-        
-        // Warm up immediately when script loads
-        if (document.readyState === 'loading') {
-            document.addEventListener('DOMContentLoaded', () => {
-                // Small delay to not block initial rendering
-                setTimeout(warmupAllAPIs, 100);
+        try {
+            const warmupPromises = APIS_TO_WARM.map(async (url) => {
+                try {
+                    const response = await fetch(url, { method: 'GET', headers: { 'Content-Type': 'application/json' } });
+                    console.log(`   ✅ ${url} responded with ${response.status}`);
+                    return true;
+                } catch (error) {
+                    console.log(`   ⚠️ ${url} warmup failed: ${error.message}`);
+                    return false;
+                }
             });
-        } else {
-            setTimeout(warmupAllAPIs, 100);
+            await Promise.race([Promise.all(warmupPromises), new Promise(r => setTimeout(r, 10000))]);
+            warmupCompleted = true;
+        } catch (error) {
+            console.log(`⚠️ Warmup issue: ${error.message}`);
+        } finally {
+            warmupInProgress = false;
         }
-        
-        // Also warm up when user clicks the predict button (in case first warmup failed)
-        // But don't block the prediction - let it run in background
-        function ensureWarmup() {
-            if (!warmupCompleted && !warmupInProgress) {
-                console.log("🔄 Ensuring APIs are warmed up before prediction...");
-                warmupAllAPIs();
-            }
+    }
+    
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', () => setTimeout(warmupAllAPIs, 100));
+    } else {
+        setTimeout(warmupAllAPIs, 100);
+    }
+    
+    function ensureWarmup() {
+        if (!warmupCompleted && !warmupInProgress) warmupAllAPIs();
+    }
+
+    // ============================================
+    // INPUT SUMMARY PANEL - LIVE UPDATE
+    // ============================================
+    
+    function updateInputSummaryPanel() {
+      const panel = document.getElementById('inputSummaryPanel');
+      const grid = document.getElementById('inputSummaryGrid');
+      const citySelect = document.getElementById('city');
+      const cropSelect = document.getElementById('crop');
+      
+      if (!grid) return;
+      
+      // Get current values from inputs
+      const avgTemp = document.getElementById('avg_temperature')?.value || '27.3';
+      const rainfall = document.getElementById('total_rainfall')?.value || '30';
+      const humidity = document.getElementById('humidity')?.value || '75';
+      const ndvi = document.getElementById('ndvi')?.value || '0.73';
+      const evi = document.getElementById('evi')?.value || '0.45';
+      const soilFert = document.getElementById('soil_fertility')?.value || '3.1';
+      const nScore = document.getElementById('n_score')?.value || '3';
+      const pScore = document.getElementById('p_score')?.value || '3';
+      const kScore = document.getElementById('k_score')?.value || '3';
+      const municipality = citySelect?.options[citySelect.selectedIndex]?.text || 'Not selected';
+      const crop = cropSelect?.options[cropSelect.selectedIndex]?.text || 'Not selected';
+      
+      grid.innerHTML = `
+        <div class="input-summary-item">
+          <span class="input-summary-label">📍 Location</span>
+          <span class="input-summary-value" style="font-size: 14px;">${municipality}</span>
+        </div>
+        <div class="input-summary-item">
+          <span class="input-summary-label">🌾 Crop</span>
+          <span class="input-summary-value" style="font-size: 14px;">${crop}</span>
+        </div>
+        <div class="input-summary-item">
+          <span class="input-summary-label">🌡️ Temperature</span>
+          <span class="input-summary-value">${parseFloat(avgTemp).toFixed(1)}<span class="input-summary-unit">°C</span></span>
+        </div>
+        <div class="input-summary-item">
+          <span class="input-summary-label">🌧️ Rainfall</span>
+          <span class="input-summary-value">${parseFloat(rainfall).toFixed(0)}<span class="input-summary-unit">mm</span></span>
+        </div>
+        <div class="input-summary-item">
+          <span class="input-summary-label">💧 Humidity</span>
+          <span class="input-summary-value">${parseFloat(humidity).toFixed(0)}<span class="input-summary-unit">%</span></span>
+        </div>
+        <div class="input-summary-item">
+          <span class="input-summary-label">🌿 NDVI</span>
+          <span class="input-summary-value">${parseFloat(ndvi).toFixed(2)}</span>
+        </div>
+        <div class="input-summary-item">
+          <span class="input-summary-label">🍃 EVI</span>
+          <span class="input-summary-value">${parseFloat(evi).toFixed(2)}</span>
+        </div>
+        <div class="input-summary-item">
+          <span class="input-summary-label">🪴 Soil Fertility</span>
+          <span class="input-summary-value">${parseFloat(soilFert).toFixed(1)}<span class="input-summary-unit">/5</span></span>
+        </div>
+        <div class="input-summary-item">
+          <span class="input-summary-label">🧪 N/P/K</span>
+          <span class="input-summary-value">${nScore}/${pScore}/${kScore}</span>
+        </div>
+      `;
+      
+      // Show the panel
+      panel.style.display = 'block';
+    }
+    
+    // Attach live update listeners to all input fields
+    function attachLiveUpdateListeners() {
+      const inputIds = ['avg_temperature', 'total_rainfall', 'humidity', 'ndvi', 'evi', 'soil_fertility', 'n_score', 'p_score', 'k_score'];
+      inputIds.forEach(id => {
+        const element = document.getElementById(id);
+        if (element) {
+          element.addEventListener('input', updateInputSummaryPanel);
+          element.addEventListener('change', updateInputSummaryPanel);
         }
-
-
+      });
+      
+      const citySelect = document.getElementById('city');
+      const cropSelect = document.getElementById('crop');
+      if (citySelect) citySelect.addEventListener('change', () => {
+        updateInputSummaryPanel();
+        onMunicipalityChange();
+      });
+      if (cropSelect) cropSelect.addEventListener('change', updateInputSummaryPanel);
+    }
     
     // ============================================
     // HELPER FUNCTIONS
@@ -479,6 +580,7 @@
         document.getElementById('ndvi').value = 0.70;
         document.getElementById('evi').value = 0.43;
         document.getElementById('soil_fertility').value = 3.0;
+        updateInputSummaryPanel();
         return;
       }
       
@@ -493,7 +595,28 @@
         document.getElementById('n_score').value = DEFAULT_CLIMATE.n_score;
         document.getElementById('p_score').value = DEFAULT_CLIMATE.p_score;
         document.getElementById('k_score').value = DEFAULT_CLIMATE.k_score;
+        updateInputSummaryPanel();
+        
+        // Show feedback
+        showFeedback(`✅ Reset to ${locKey} actual data`);
       }
+    }
+    
+    function showFeedback(message) {
+      const feedback = document.createElement('div');
+      feedback.textContent = message;
+      feedback.style.cssText = 'font-size:11px; color:#a9e06e; margin-top:5px; margin-bottom:10px; text-align:center; background:rgba(50,70,30,0.8); padding:6px; border-radius:20px;';
+      const oldFeedback = document.querySelector('.param-feedback');
+      if (oldFeedback) oldFeedback.remove();
+      feedback.className = 'param-feedback';
+      const advancedParams = document.getElementById('advancedParams');
+      if (advancedParams && advancedParams.style.display === 'block') {
+        const resetBtn = document.querySelector('.reset-btn');
+        if (resetBtn && resetBtn.parentNode) {
+          resetBtn.parentNode.insertBefore(feedback, resetBtn.nextSibling);
+        }
+      }
+      setTimeout(() => feedback.remove(), 2500);
     }
     
     function onMunicipalityChange() {
@@ -504,6 +627,7 @@
         currentMunicipality = newMunicipality;
         if (newMunicipality) {
           resetToCurrentMunicipality();
+          showFeedback(`🔄 Parameters auto-reset for ${newMunicipality}`);
         }
       }
     }
@@ -529,12 +653,8 @@
     
     async function fetchWeatherData(lat, lon, municipality) {
         if (isInCooldown) {
-            console.log("⏳ In cooldown mode, using cache only...");
             const cached = sessionStorage.getItem(`weather_${municipality}`);
-            if (cached) {
-                const cachedData = JSON.parse(cached);
-                return cachedData.data;
-            }
+            if (cached) return JSON.parse(cached).data;
             throw new Error("Rate limited and no cache available.");
         }
         
@@ -570,10 +690,7 @@
                 console.log("🚫 Rate limit hit!");
                 isInCooldown = true;
                 if (cooldownTimer) clearTimeout(cooldownTimer);
-                cooldownTimer = setTimeout(() => {
-                    isInCooldown = false;
-                }, 15 * 60 * 1000);
-                
+                cooldownTimer = setTimeout(() => { isInCooldown = false; }, 15 * 60 * 1000);
                 const cachedData = sessionStorage.getItem(cacheKey);
                 if (cachedData) return JSON.parse(cachedData).data;
                 throw new Error("Rate limit reached. Please wait.");
@@ -584,11 +701,7 @@
             const weatherJSON = await weatherRes.json();
             const allDays = weatherJSON.days;
             
-            let totalTemp = 0;
-            let totalRainfall = 0;
-            let maxWind = 0;
-            let minPressure = Infinity;
-            
+            let totalTemp = 0, totalRainfall = 0, maxWind = 0, minPressure = Infinity;
             for (const day of allDays) {
                 totalTemp += day.temp;
                 totalRainfall += day.precip;
@@ -599,19 +712,9 @@
             const avgTemp = totalTemp / allDays.length;
             const maxWindKts = maxWind * 0.539957;
             
-            const result = {
-                allDays: allDays,
-                avgTemperature: avgTemp,
-                totalRainfall: totalRainfall,
-                maxWindKts: maxWindKts,
-                minPressure: minPressure
-            };
+            const result = { allDays, avgTemperature: avgTemp, totalRainfall, maxWindKts, minPressure };
             
-            sessionStorage.setItem(cacheKey, JSON.stringify({
-                data: result,
-                timestamp: Date.now()
-            }));
-            
+            sessionStorage.setItem(cacheKey, JSON.stringify({ data: result, timestamp: Date.now() }));
             return result;
             
         } catch (error) {
@@ -646,12 +749,9 @@
         resultsDiv.innerHTML = "";
         
         try {
-            // STEP 1: Fetch real weather data
-            console.log("🌤️ Fetching weather data...");
             const weatherData = await fetchWeatherData(coords.lat, coords.lon, municipalityName);
             const allDays = weatherData.allDays;
             
-            // STEP 2: Build raw_sequence for Yield API
             let rawSequence = [];
             let lastSeason = null;
             
@@ -677,14 +777,7 @@
                 ]);
             }
             
-            console.log(`📊 Built raw_sequence with ${rawSequence.length} weeks`);
-            
-            // STEP 3: Calculate weather statistics
-            let totalTemp = 0;
-            let totalRainfall = 0;
-            let maxWind = 0;
-            let minPressure = Infinity;
-            
+            let totalTemp = 0, totalRainfall = 0, maxWind = 0, minPressure = Infinity;
             for (const day of allDays) {
                 totalTemp += day.temp;
                 totalRainfall += day.precip;
@@ -697,7 +790,7 @@
             const duration_hrs = allDays.filter(d => d.windspeed > 63).length * 24;
             const risk_score = maxWindKts > 100 ? 3 : (maxWindKts > 64 ? 2 : 1);
             
-            // STEP 4: Get user overrides
+            // Get user overrides from inputs (these are now editable!)
             const ndvi = parseFloat(document.getElementById('ndvi')?.value) || coords.ndvi;
             const evi = parseFloat(document.getElementById('evi')?.value) || coords.evi;
             const soilFertility = parseFloat(document.getElementById('soil_fertility')?.value) || coords.soil_fertility;
@@ -705,13 +798,14 @@
             const pScore = parseInt(document.getElementById('p_score')?.value) || 3;
             const kScore = parseInt(document.getElementById('k_score')?.value) || 3;
             const humidity = parseFloat(document.getElementById('humidity')?.value) || 75;
+            const userAvgTemp = parseFloat(document.getElementById('avg_temperature')?.value) || avgTemperature;
+            const userTotalRainfall = parseFloat(document.getElementById('total_rainfall')?.value) || totalRainfall;
             
-            // STEP 5: Build COMPLETE request
             const requestBody = {
                 crop: cropType,
                 municipality: municipalityName,
-                avg_temperature: avgTemperature,
-                total_rainfall: totalRainfall,
+                avg_temperature: userAvgTemp,
+                total_rainfall: userTotalRainfall,
                 humidity: humidity,
                 ndvi: ndvi,
                 evi: evi,
@@ -727,9 +821,7 @@
                 risk_score: risk_score
             };
             
-            console.log("Calling Rule-Based API...");
-            console.log(`   raw_sequence length: ${rawSequence.length} weeks`);
-            console.log(`   season: ${lastSeason}, max_wind: ${maxWindKts} kts`);
+            console.log("Calling Rule-Based API...", requestBody);
             
             const response = await fetch(RULE_BASED_API_URL, {
                 method: 'POST',
@@ -746,8 +838,8 @@
             console.log("API Response:", result);
             
             displayResults(result, cropType, municipalityName, {
-                avg_temperature: avgTemperature,
-                total_rainfall: totalRainfall,
+                avg_temperature: userAvgTemp,
+                total_rainfall: userTotalRainfall,
                 humidity: humidity,
                 ndvi: ndvi,
                 evi: evi,
@@ -805,24 +897,6 @@
             probabilitiesHtml += '</div>';
         }
         
-        let usedParamsHtml = '';
-        if (usedParams) {
-            usedParamsHtml = `
-                <div style="margin-top: 15px; text-align: left; padding-top: 10px; border-top: 1px solid #ddd; font-size: 12px;">
-                    <h4>📊 Input Parameters Used</h4>
-                    <table style="width: 100%; font-size: 11px;">
-                        <tr><td>🌡️ Temperature:</td><td>${usedParams.avg_temperature}°C</td></tr>
-                        <tr><td>🌧️ Rainfall:</td><td>${usedParams.total_rainfall} mm</td></tr>
-                        <tr><td>💧 Humidity:</td><td>${usedParams.humidity}%</td></tr>
-                        <tr><td>🌿 NDVI:</td><td>${usedParams.ndvi}</td></tr>
-                        <tr><td>🍃 EVI:</td><td>${usedParams.evi}</td></tr>
-                        <tr><td>🪴 Soil Fertility:</td><td>${usedParams.soil_fertility}</td></tr>
-                        <tr><td>🧪 N/P/K:</td><td>${usedParams.n_score}/${usedParams.p_score}/${usedParams.k_score}</td></tr>
-                    </table>
-                </div>
-            `;
-        }
-        
         let recommendationsHtml = '';
         
         if (recommendations.overall) {
@@ -839,7 +913,6 @@
                 <div style="margin-top: 15px; text-align: left;">
                     <h4>🌱 Planting Advice</h4>
                     <p>${recommendations.planting_advice.message || ''}</p>
-                    <p>Conditions: ${recommendations.planting_advice.temperature || '?'}°C, ${recommendations.planting_advice.rainfall || '?'}mm rain</p>
                 </div>
             `;
         }
@@ -879,7 +952,6 @@
                     <h3>🌾 ${cropType.charAt(0).toUpperCase() + cropType.slice(1)} Yield Prediction</h3>
                     <div class="value">${modelResults.predicted_yield_tons ? modelResults.predicted_yield_tons.toFixed(2) : '?'} <span class="unit">tons/ha</span></div>
                     <div class="value" style="font-size: 20px;">(${modelResults.predicted_yield_kg ? modelResults.predicted_yield_kg.toLocaleString() : '?'} kg/ha)</div>
-                    <p style="margin-top: 5px;">${calculatedScores.vs_regional_average || ''}</p>
                     <p style="margin-top: 10px;">Location: ${municipality}</p>
                 </div>
                 
@@ -897,7 +969,6 @@
             <div class="result-card" style="margin-top: 20px; max-width: 600px; margin-left: auto; margin-right: auto;">
                 <h3>📋 Complete Recommendations</h3>
                 ${recommendationsHtml || '<p>No recommendations available.</p>'}
-                ${usedParamsHtml}
             </div>
         `;
         
@@ -921,6 +992,18 @@
       if (citySelect) {
         citySelect.addEventListener('change', onMunicipalityChange);
         currentMunicipality = citySelect.value;
+      }
+      
+      // Initialize input summary panel
+      updateInputSummaryPanel();
+      attachLiveUpdateListeners();
+      
+      // Also update panel when advanced params are toggled
+      const toggleBtn = document.getElementById('toggleParamsBtn');
+      if (toggleBtn) {
+        toggleBtn.addEventListener('click', function() {
+          setTimeout(updateInputSummaryPanel, 100);
+        });
       }
     });
   </script>
