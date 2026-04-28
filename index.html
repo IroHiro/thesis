@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Crop Suitability & Yield Prediction</title>
+  <title>Crop Suitability & Yield Prediction | Smart Agriculture Albay</title>
   <link rel="stylesheet" href="style.css" />
   <style>
     /* Additional styles for dual results */
@@ -155,41 +155,7 @@
       color: white !important;
     }
 
-    /* Parameter feedback animation */
-    .param-feedback {
-      animation: fadeOut 2s ease forwards;
-      font-size: 11px;
-      color: #cfe09c;
-      margin-top: 5px;
-      margin-bottom: 10px;
-      text-align: center;
-    }
-
-    @keyframes fadeOut {
-      0% { opacity: 1; }
-      70% { opacity: 1; }
-      100% { opacity: 0; display: none; }
-    }
-
-    /* Table style for parameters display */
-    .result-card table {
-      border-collapse: collapse;
-      width: 100%;
-      margin-top: 8px;
-    }
-
-    .result-card td {
-      padding: 4px 0;
-      border-bottom: 1px solid rgba(150, 180, 90, 0.2);
-    }
-
-    .result-card td:first-child {
-      font-weight: 600;
-      color: #c8e09a;
-      width: 45%;
-    }
-
-    /* Input Summary Panel - New Stylish Section */
+    /* Input Summary Panel */
     .input-summary-panel {
       background: rgba(30, 45, 20, 0.95);
       backdrop-filter: blur(8px);
@@ -213,14 +179,14 @@
 
     .input-summary-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
       gap: 12px;
     }
 
     .input-summary-item {
       background: rgba(20, 30, 12, 0.6);
       border-radius: 12px;
-      padding: 10px 12px;
+      padding: 8px 10px;
       text-align: center;
       transition: transform 0.2s ease;
     }
@@ -231,33 +197,182 @@
     }
 
     .input-summary-label {
-      font-size: 11px;
+      font-size: 9px;
       color: #b8cc8a;
       letter-spacing: 0.5px;
-      margin-bottom: 5px;
+      margin-bottom: 4px;
       display: block;
+      text-transform: uppercase;
     }
 
     .input-summary-value {
-      font-size: 18px;
+      font-size: 16px;
       font-weight: 700;
       color: #f9ffea;
     }
 
     .input-summary-unit {
-      font-size: 10px;
+      font-size: 9px;
       color: #8aa066;
       margin-left: 2px;
     }
 
-    .weather-badge {
-      background: #2d6a4f;
-      color: white;
-      font-size: 10px;
+    /* Yield Dashboard Integration Styles */
+    .dashboard-card {
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(8px);
+      border-radius: 24px;
+      padding: 20px;
+      margin-top: 20px;
+      box-shadow: 0 12px 28px rgba(0, 0, 0, 0.2);
+      border: 1px solid rgba(160, 190, 100, 0.3);
+    }
+
+    .dashboard-card h3 {
+      color: #2d6a4f;
+      margin-bottom: 15px;
+      font-size: 1.2rem;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .header-stats {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 15px;
+      font-weight: bold;
+      font-size: 0.85rem;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .yield-achieved { color: #2e7d32; }
+    .gap-remaining { color: #f4a261; }
+
+    .farm-wrapper {
+      position: relative;
+      border: 8px solid #a67c52;
+      border-radius: 12px;
+      background: #c19a6b;
+      overflow: hidden;
+      margin-bottom: 15px;
+    }
+
+    .grid-visual {
+      display: grid;
+      grid-template-columns: repeat(10, 1fr);
+      gap: 2px;
+      padding: 5px;
+    }
+
+    .cell-visual {
+      aspect-ratio: 1.2;
+      transition: background 0.3s ease;
+      border-radius: 4px;
+    }
+
+    .cell-visual.active {
+      background-color: #a5d6a7;
+    }
+    .cell-visual.active::after {
+      content: "🌾";
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      height: 100%;
+    }
+
+    .cell-visual.empty {
+      background-color: #c19a6b;
+      background-image: radial-gradient(#a67c52 15%, transparent 20%);
+      background-size: 8px 8px;
+    }
+
+    .badge-visual {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: rgba(255, 255, 255, 0.85);
+      backdrop-filter: blur(4px);
+      padding: 10px 20px;
+      border-radius: 40px;
+      font-size: 2rem;
+      font-weight: 900;
+      color: #1b5e20;
+      z-index: 10;
+      white-space: nowrap;
+    }
+
+    .footer-data {
+      display: flex;
+      justify-content: space-between;
+      border-top: 1px solid #ddd;
+      padding-top: 12px;
+      font-size: 0.85rem;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .footer-data span {
+      background: #f5f5f5;
       padding: 4px 10px;
       border-radius: 20px;
-      display: inline-block;
-      margin-top: 12px;
+    }
+
+    /* Parameter feedback animation */
+    .param-feedback {
+      animation: fadeOut 2s ease forwards;
+      font-size: 11px;
+      color: #cfe09c;
+      margin-top: 5px;
+      margin-bottom: 10px;
+      text-align: center;
+    }
+
+    @keyframes fadeOut {
+      0% { opacity: 1; }
+      70% { opacity: 1; }
+      100% { opacity: 0; display: none; }
+    }
+
+    /* Responsive */
+    @media (max-width: 680px) {
+      .navbar {
+        padding: 0 20px;
+      }
+      .nav-links {
+        gap: 24px;
+      }
+      .hero-content h1 {
+        font-size: 1.7rem;
+      }
+      .hero-content p {
+        font-size: 1rem;
+      }
+      .form-card {
+        padding: 24px 20px;
+        max-width: 95%;
+      }
+      .result-card .value {
+        font-size: 28px !important;
+      }
+      .results-container {
+        gap: 16px !important;
+      }
+      .input-summary-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+      .badge-visual {
+        font-size: 1.2rem;
+        padding: 6px 12px;
+      }
+      .cell-visual.active::after {
+        font-size: 10px;
+      }
     }
   </style>
 </head>
@@ -307,13 +422,12 @@
 
         <button onclick="predictBoth()">🔮 Get Complete Prediction</button>
 
-        <!-- Input Parameters Summary Panel - SHOWN BEFORE RESULTS -->
+        <!-- Input Parameters Summary Panel -->
         <div id="inputSummaryPanel" class="input-summary-panel" style="display: none;">
           <h3>📋 Current Input Parameters</h3>
           <div id="inputSummaryGrid" class="input-summary-grid">
-            <!-- Dynamic content will be inserted here -->
+            <div class="input-summary-item">Loading weather data...</div>
           </div>
-          <div id="weatherSourceBadge" class="weather-badge" style="display: none;"></div>
         </div>
 
         <!-- Single Loader -->
@@ -324,12 +438,32 @@
         <!-- Results Display -->
         <div id="results" style="margin-top: 20px;"></div>
 
-        <!-- Toggle Button for Advanced Parameters - MOVED TO BOTTOM -->
+        <!-- YIELD DASHBOARD - Visual Farm Representation -->
+        <div id="yieldDashboard" class="dashboard-card" style="display: none;">
+          <h3>🌾 Visual Yield Dashboard</h3>
+          <div class="header-stats">
+            <span class="yield-achieved">📊 YIELD ACHIEVED: <span id="txtPercent">0</span>%</span>
+            <span class="gap-remaining">⚠️ GAP REMAINING: <span id="txtGap">0</span>%</span>
+          </div>
+
+          <div class="farm-wrapper">
+            <div id="farmGrid" class="grid-visual"></div>
+            <div id="centerBadge" class="badge-visual">0%</div>
+          </div>
+
+          <div class="footer-data">
+            <span>🌾 CROP: <strong id="dashboardCrop">Rice</strong></span>
+            <span>📈 CURRENT YIELD: <strong id="txtKg">0</strong> kg/ha</span>
+            <span>🎯 TARGET: <strong id="txtTarget">4000</strong> kg/ha</span>
+          </div>
+        </div>
+
+        <!-- Toggle Button for Advanced Parameters -->
         <button type="button" id="toggleParamsBtn" onclick="toggleAdvancedParams()" style="margin-top: 20px;">
           ⚙️ Show Advanced Parameters
         </button>
 
-        <!-- Advanced Parameters (hidden by default) - MOVED TO BOTTOM -->
+        <!-- Advanced Parameters (hidden by default) -->
         <div id="advancedParams" style="display: none;">
           <div style="border-top: 1px solid #8fa163; margin: 10px 0 15px 0;"></div>
           <h4 style="color: #dbe7b3; margin-bottom: 12px;">📊 Override Model Parameters</h4>
@@ -386,7 +520,7 @@
     </div>
   </section>
 
-      <script>
+  <script>
     // ============================================
     // CONFIGURATION
     // ============================================
@@ -394,12 +528,12 @@
     const RULE_BASED_API_URL = 'https://rule-based-crop-api.onrender.com/predict';
     const WEATHER_API_KEY = 'FMDQ3KEZ3BUFNDGYXKFYYZ8L7';
     
-    // Cache expiration time (1 hour for weather data - more reasonable)
-    const CACHE_EXPIRY = 7 * 24 * 60 * 60 * 1000; // 1 hour
+    // Cache expiration time (1 hour for weather data)
+    const CACHE_EXPIRY = 60 * 60 * 1000;
     let isInCooldown = false;
     let cooldownTimer = null;
     
-    // Real climate data cache for each municipality
+    // Real climate data cache
     let realClimateData = {};
 
     // Location database with NDVI, EVI, and soil fertility
@@ -411,7 +545,12 @@
         "Malinao":  { lat: 13.4117, lon: 123.7000, ndvi: 0.73, evi: 0.45, soil_fertility: 3.1 }
     };
     
-    // Default fallback values (only used if weather fetch fails)
+    // Target yields (kg/ha) for different crops
+    const TARGET_YIELDS = {
+      rice: 4000,  // 4 tons/ha
+      corn: 3500   // 3.5 tons/ha
+    };
+    
     const DEFAULT_FALLBACK = {
         avg_temperature: 27.3,
         total_rainfall: 30,
@@ -425,14 +564,68 @@
     let isLoadingWeather = false;
 
     // ============================================
-    // FETCH REAL WEATHER DATA FOR A MUNICIPALITY
+    // YIELD DASHBOARD VISUALIZATION
+    // ============================================
+    
+    let dashboardCells = [];
+    const totalCells = 50; // 10x5 grid
+    
+    function initDashboardGrid() {
+      const gridContainer = document.getElementById('farmGrid');
+      if (!gridContainer) return;
+      
+      gridContainer.innerHTML = '';
+      dashboardCells = [];
+      
+      for (let i = 0; i < totalCells; i++) {
+        const div = document.createElement('div');
+        div.className = 'cell-visual empty';
+        gridContainer.appendChild(div);
+        dashboardCells.push(div);
+      }
+    }
+    
+    function updateYieldDashboard(yieldKg, cropType) {
+      const dashboard = document.getElementById('yieldDashboard');
+      if (!dashboard) return;
+      
+      // Show dashboard
+      dashboard.style.display = 'block';
+      
+      const targetYield = TARGET_YIELDS[cropType] || 4000;
+      const percentage = Math.min(100, Math.max(0, (yieldKg / targetYield) * 100));
+      const gap = Math.max(0, 100 - percentage);
+      
+      // Update text
+      document.getElementById('txtPercent').textContent = Math.round(percentage);
+      document.getElementById('txtGap').textContent = Math.round(gap);
+      document.getElementById('txtKg').textContent = Math.round(yieldKg).toLocaleString();
+      document.getElementById('txtTarget').textContent = targetYield.toLocaleString();
+      document.getElementById('dashboardCrop').textContent = cropType.charAt(0).toUpperCase() + cropType.slice(1);
+      
+      const badge = document.getElementById('centerBadge');
+      if (badge) badge.textContent = Math.round(percentage) + "%";
+      
+      // Update visual grid
+      const activeCount = Math.floor((percentage / 100) * totalCells);
+      
+      dashboardCells.forEach((cell, index) => {
+        if (index < activeCount) {
+          cell.className = 'cell-visual active';
+        } else {
+          cell.className = 'cell-visual empty';
+        }
+      });
+    }
+    
+    // ============================================
+    // FETCH REAL WEATHER DATA
     // ============================================
     
     async function fetchRealWeatherData(municipalityKey) {
       const coords = locationData[municipalityKey];
       if (!coords) return null;
       
-      // Check cache first
       const cacheKey = `weather_${municipalityKey}`;
       const cached = sessionStorage.getItem(cacheKey);
       
@@ -440,13 +633,12 @@
         const cachedData = JSON.parse(cached);
         const cacheAge = Date.now() - cachedData.timestamp;
         if (cacheAge < CACHE_EXPIRY) {
-          console.log(`✅ Using cached real weather for ${municipalityKey}`);
+          console.log(`✅ Using cached weather for ${municipalityKey}`);
           return cachedData.data;
         }
       }
       
       if (isLoadingWeather) {
-        // Wait for ongoing fetch
         await new Promise(resolve => setTimeout(resolve, 1000));
         const retryCached = sessionStorage.getItem(cacheKey);
         if (retryCached) return JSON.parse(retryCached).data;
@@ -456,7 +648,7 @@
       isLoadingWeather = true;
       
       try {
-        console.log(`🌤️ Fetching REAL weather data for ${municipalityKey}...`);
+        console.log(`🌤️ Fetching real weather for ${municipalityKey}...`);
         
         const today = new Date();
         const pastDate = new Date();
@@ -470,7 +662,7 @@
         const weatherRes = await fetch(weatherUrl);
         
         if (weatherRes.status === 429) {
-          console.log("🚫 Rate limit hit, using fallback values");
+          console.log("⚠️ Rate limit hit");
           return null;
         }
         
@@ -479,43 +671,32 @@
         const weatherJSON = await weatherRes.json();
         const allDays = weatherJSON.days;
         
-        // Calculate averages
-        let totalTemp = 0;
-        let totalRainfall = 0;
-        let totalHumidity = 0;
-        
+        let totalTemp = 0, totalRainfall = 0, totalHumidity = 0;
         for (const day of allDays) {
           totalTemp += day.temp;
           totalRainfall += day.precip;
           totalHumidity += day.humidity;
         }
         
-        const avgTemperature = totalTemp / allDays.length;
-        const totalRainfallSum = totalRainfall;
-        const avgHumidity = totalHumidity / allDays.length;
-        
         const climateData = {
-          avg_temperature: parseFloat(avgTemperature.toFixed(1)),
-          total_rainfall: parseFloat(totalRainfallSum.toFixed(0)),
-          humidity: parseFloat(avgHumidity.toFixed(0)),
+          avg_temperature: parseFloat((totalTemp / allDays.length).toFixed(1)),
+          total_rainfall: parseFloat(totalRainfall.toFixed(0)),
+          humidity: parseFloat((totalHumidity / allDays.length).toFixed(0)),
           allDays: allDays
         };
         
-        // Store in cache
         sessionStorage.setItem(cacheKey, JSON.stringify({
           data: climateData,
           timestamp: Date.now()
         }));
         
-        console.log(`💾 Real weather for ${municipalityKey}: ${avgTemperature.toFixed(1)}°C, ${totalRainfallSum.toFixed(0)}mm rain`);
-        
-        // Store in global cache
         realClimateData[municipalityKey] = climateData;
+        console.log(`💾 Real weather: ${climateData.avg_temperature}°C, ${climateData.total_rainfall}mm`);
         
         return climateData;
         
       } catch (error) {
-        console.error(`Weather fetch error for ${municipalityKey}:`, error);
+        console.error("Weather fetch error:", error);
         return null;
       } finally {
         isLoadingWeather = false;
@@ -523,7 +704,7 @@
     }
     
     // ============================================
-    // UPDATE INPUT SUMMARY WITH REAL WEATHER DATA
+    // UPDATE INPUT SUMMARY
     // ============================================
     
     async function updateInputSummaryWithRealData() {
@@ -531,28 +712,17 @@
       const municipalityKey = citySelect?.value;
       
       if (!municipalityKey) {
-        // No municipality selected - show fallback
         updateInputSummaryPanel(DEFAULT_FALLBACK);
         return;
       }
       
-      // Get soil data from locationData
       const coords = locationData[municipalityKey];
-      
-      // Try to fetch real weather data
       let climateData = realClimateData[municipalityKey];
       
       if (!climateData) {
-        // Show loading state
-        const grid = document.getElementById('inputSummaryGrid');
-        if (grid) {
-          grid.innerHTML = '<div class="input-summary-item" style="grid-column: span 4;">🌤️ Loading real weather data for ' + municipalityKey + '...</div>';
-        }
-        
         climateData = await fetchRealWeatherData(municipalityKey);
       }
       
-      // Use real data if available, otherwise fallback
       const displayData = {
         avg_temperature: climateData?.avg_temperature || DEFAULT_FALLBACK.avg_temperature,
         total_rainfall: climateData?.total_rainfall || DEFAULT_FALLBACK.total_rainfall,
@@ -565,7 +735,7 @@
         k_score: DEFAULT_FALLBACK.k_score
       };
       
-      // Also update the input fields with real values
+      // Update input fields
       document.getElementById('avg_temperature').value = displayData.avg_temperature;
       document.getElementById('total_rainfall').value = displayData.total_rainfall;
       document.getElementById('humidity').value = displayData.humidity;
@@ -574,23 +744,6 @@
       document.getElementById('soil_fertility').value = displayData.soil_fertility;
       
       updateInputSummaryPanel(displayData);
-      
-      // Add weather source indicator
-      const weatherBadge = document.getElementById('weatherSourceBadge');
-      if (weatherBadge) {
-        if (climateData) {
-          weatherBadge.style.display = 'inline-block';
-          weatherBadge.innerHTML = `🌤️ Live weather data for ${municipalityKey}`;
-          weatherBadge.style.background = '#2d6a4f';
-        } else {
-          weatherBadge.style.display = 'inline-block';
-          weatherBadge.innerHTML = `⚠️ Using estimated values (weather API limited)`;
-          weatherBadge.style.background = '#f4a261';
-        }
-        setTimeout(() => {
-          if (weatherBadge) weatherBadge.style.display = 'none';
-        }, 5000);
-      }
     }
     
     function updateInputSummaryPanel(data = null) {
@@ -601,7 +754,6 @@
       
       if (!grid) return;
       
-      // Get current values (either from passed data or from input fields)
       const avgTemp = data?.avg_temperature || document.getElementById('avg_temperature')?.value || '27.3';
       const rainfall = data?.total_rainfall || document.getElementById('total_rainfall')?.value || '30';
       const humidity = data?.humidity || document.getElementById('humidity')?.value || '75';
@@ -617,18 +769,18 @@
       grid.innerHTML = `
         <div class="input-summary-item">
           <span class="input-summary-label">📍 Location</span>
-          <span class="input-summary-value" style="font-size: 14px;">${municipality}</span>
+          <span class="input-summary-value" style="font-size: 13px;">${municipality}</span>
         </div>
         <div class="input-summary-item">
           <span class="input-summary-label">🌾 Crop</span>
-          <span class="input-summary-value" style="font-size: 14px;">${crop}</span>
+          <span class="input-summary-value" style="font-size: 13px;">${crop}</span>
         </div>
         <div class="input-summary-item">
-          <span class="input-summary-label">🌡️ Temperature</span>
+          <span class="input-summary-label">🌡️ Temp</span>
           <span class="input-summary-value">${parseFloat(avgTemp).toFixed(1)}<span class="input-summary-unit">°C</span></span>
         </div>
         <div class="input-summary-item">
-          <span class="input-summary-label">🌧️ Rainfall</span>
+          <span class="input-summary-label">🌧️ Rain</span>
           <span class="input-summary-value">${parseFloat(rainfall).toFixed(0)}<span class="input-summary-unit">mm</span></span>
         </div>
         <div class="input-summary-item">
@@ -640,11 +792,7 @@
           <span class="input-summary-value">${parseFloat(ndvi).toFixed(2)}</span>
         </div>
         <div class="input-summary-item">
-          <span class="input-summary-label">🍃 EVI</span>
-          <span class="input-summary-value">${parseFloat(evi).toFixed(2)}</span>
-        </div>
-        <div class="input-summary-item">
-          <span class="input-summary-label">🪴 Soil Fertility</span>
+          <span class="input-summary-label">🪴 Soil</span>
           <span class="input-summary-value">${parseFloat(soilFert).toFixed(1)}<span class="input-summary-unit">/5</span></span>
         </div>
         <div class="input-summary-item">
@@ -657,47 +805,6 @@
     }
     
     // ============================================
-    // API WARMUP
-    // ============================================
-    
-    let warmupCompleted = false;
-    let warmupInProgress = false;
-    
-    const APIS_TO_WARM = [
-      'https://suitability-api.onrender.com/health',
-      'https://crop-yield-api-9c1l.onrender.com/health',
-      'https://rule-based-crop-api.onrender.com/health'
-    ];
-    
-    async function warmupAllAPIs() {
-      if (warmupCompleted || warmupInProgress) return;
-      warmupInProgress = true;
-      console.log("🔥 Warming up APIs...");
-      
-      try {
-        await Promise.race([
-          Promise.all(APIS_TO_WARM.map(url => fetch(url, { method: 'GET' }).catch(() => {}))),
-          new Promise(r => setTimeout(r, 10000))
-        ]);
-        warmupCompleted = true;
-      } catch (error) {
-        console.log(`⚠️ Warmup issue: ${error.message}`);
-      } finally {
-        warmupInProgress = false;
-      }
-    }
-    
-    if (document.readyState === 'loading') {
-      document.addEventListener('DOMContentLoaded', () => setTimeout(warmupAllAPIs, 100));
-    } else {
-      setTimeout(warmupAllAPIs, 100);
-    }
-    
-    function ensureWarmup() {
-      if (!warmupCompleted && !warmupInProgress) warmupAllAPIs();
-    }
-    
-    // ============================================
     // HELPER FUNCTIONS
     // ============================================
     
@@ -706,6 +813,17 @@
       d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay() || 7));
       var yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
       return Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
+    }
+    
+    function showFeedback(message) {
+      const feedback = document.createElement('div');
+      feedback.textContent = message;
+      feedback.style.cssText = 'font-size:11px; color:#a9e06e; margin-top:5px; margin-bottom:10px; text-align:center; background:rgba(50,70,30,0.8); padding:6px; border-radius:20px;';
+      const oldFeedback = document.querySelector('.param-feedback');
+      if (oldFeedback) oldFeedback.remove();
+      feedback.className = 'param-feedback';
+      document.querySelector('.form-card')?.appendChild(feedback);
+      setTimeout(() => feedback.remove(), 3000);
     }
     
     async function resetToCurrentMunicipality() {
@@ -727,8 +845,6 @@
       }
       
       const coords = locationData[locKey];
-      
-      // Fetch REAL weather data
       const climateData = await fetchRealWeatherData(locKey);
       
       if (climateData) {
@@ -748,39 +864,8 @@
       document.getElementById('p_score').value = DEFAULT_FALLBACK.p_score;
       document.getElementById('k_score').value = DEFAULT_FALLBACK.k_score;
       
-      const displayData = {
-        avg_temperature: climateData?.avg_temperature || DEFAULT_FALLBACK.avg_temperature,
-        total_rainfall: climateData?.total_rainfall || DEFAULT_FALLBACK.total_rainfall,
-        humidity: climateData?.humidity || DEFAULT_FALLBACK.humidity,
-        ndvi: coords.ndvi,
-        evi: coords.evi,
-        soil_fertility: coords.soil_fertility,
-        n_score: DEFAULT_FALLBACK.n_score,
-        p_score: DEFAULT_FALLBACK.p_score,
-        k_score: DEFAULT_FALLBACK.k_score
-      };
-      
-      updateInputSummaryPanel(displayData);
+      updateInputSummaryPanel();
       showFeedback(`✅ Reset to ${locKey} actual weather data`);
-    }
-    
-    function showFeedback(message) {
-      const feedback = document.createElement('div');
-      feedback.textContent = message;
-      feedback.style.cssText = 'font-size:11px; color:#a9e06e; margin-top:5px; margin-bottom:10px; text-align:center; background:rgba(50,70,30,0.8); padding:6px; border-radius:20px;';
-      const oldFeedback = document.querySelector('.param-feedback');
-      if (oldFeedback) oldFeedback.remove();
-      feedback.className = 'param-feedback';
-      const advancedParams = document.getElementById('advancedParams');
-      if (advancedParams && advancedParams.style.display === 'block') {
-        const resetBtn = document.querySelector('.reset-btn');
-        if (resetBtn && resetBtn.parentNode) {
-          resetBtn.parentNode.insertBefore(feedback, resetBtn.nextSibling);
-        }
-      } else {
-        document.querySelector('.form-card')?.appendChild(feedback);
-      }
-      setTimeout(() => feedback.remove(), 3000);
     }
     
     async function onMunicipalityChange() {
@@ -790,7 +875,7 @@
       if (newMunicipality !== currentMunicipality) {
         currentMunicipality = newMunicipality;
         if (newMunicipality) {
-          await resetToCurrentMunicipality();
+          await updateInputSummaryWithRealData();
           showFeedback(`🔄 Loaded real weather data for ${newMunicipality}`);
         }
       }
@@ -812,7 +897,7 @@
     }
     
     // ============================================
-    // WEATHER DATA FOR RAW SEQUENCE
+    // MAIN PREDICTION FUNCTION
     // ============================================
     
     async function fetchWeatherDataForSequence(lat, lon, municipality) {
@@ -821,8 +906,7 @@
       
       if (cached) {
         const cachedData = JSON.parse(cached);
-        const cacheAge = Date.now() - cachedData.timestamp;
-        if (cacheAge < CACHE_EXPIRY) {
+        if (Date.now() - cachedData.timestamp < CACHE_EXPIRY) {
           return cachedData.data;
         }
       }
@@ -855,13 +939,7 @@
       }
     }
     
-    // ============================================
-    // MAIN PREDICTION FUNCTION
-    // ============================================
-    
     async function predictBoth() {
-      ensureWarmup();
-    
       const locKey = document.getElementById('city').value;
       const cropType = document.getElementById('crop').value;
       const resultsDiv = document.getElementById('results');
@@ -881,7 +959,7 @@
       resultsDiv.innerHTML = "";
       
       try {
-        // Fetch real weather data for raw sequence
+        // Fetch weather data
         const allDays = await fetchWeatherDataForSequence(coords.lat, coords.lon, municipalityName);
         
         let rawSequence = [];
@@ -909,10 +987,10 @@
           ]);
         }
         
-        // Get REAL climate data for this municipality
+        // Get real climate data
         const realClimate = await fetchRealWeatherData(locKey);
         
-        // Get user overrides (if they changed anything)
+        // Get user overrides
         const ndvi = parseFloat(document.getElementById('ndvi')?.value) || coords.ndvi;
         const evi = parseFloat(document.getElementById('evi')?.value) || coords.evi;
         const soilFertility = parseFloat(document.getElementById('soil_fertility')?.value) || coords.soil_fertility;
@@ -920,14 +998,12 @@
         const pScore = parseInt(document.getElementById('p_score')?.value) || DEFAULT_FALLBACK.p_score;
         const kScore = parseInt(document.getElementById('k_score')?.value) || DEFAULT_FALLBACK.k_score;
         
-        // Use REAL weather data for temperature, rainfall, humidity
         const avgTemperature = realClimate?.avg_temperature || DEFAULT_FALLBACK.avg_temperature;
         const totalRainfall = realClimate?.total_rainfall || DEFAULT_FALLBACK.total_rainfall;
         const humidity = realClimate?.humidity || DEFAULT_FALLBACK.humidity;
         
-        // Calculate wind/typhoon data
-        let maxWind = 0;
-        let minPressure = Infinity;
+        // Calculate wind data
+        let maxWind = 0, minPressure = Infinity;
         for (const day of allDays) {
           maxWind = Math.max(maxWind, day.windspeed);
           minPressure = Math.min(minPressure, day.pressure);
@@ -956,7 +1032,7 @@
           risk_score: risk_score
         };
         
-        console.log(`📊 Calling API for ${municipalityName}: ${avgTemperature}°C, ${totalRainfall}mm rain`);
+        console.log(`📊 Calling API for ${municipalityName}: ${avgTemperature}°C, ${totalRainfall}mm`);
         
         const response = await fetch(RULE_BASED_API_URL, {
           method: 'POST',
@@ -966,11 +1042,16 @@
         
         if (!response.ok) {
           const errorText = await response.text();
-          throw new Error(`Rule-Based API error (${response.status}): ${errorText}`);
+          throw new Error(`API error (${response.status}): ${errorText}`);
         }
         
         const result = await response.json();
         console.log("API Response:", result);
+        
+        const predictedYieldKg = result.model_results?.predicted_yield_kg || 0;
+        
+        // Update the visual dashboard with the predicted yield
+        updateYieldDashboard(predictedYieldKg, cropType);
         
         displayResults(result, cropType, municipalityName, {
           avg_temperature: avgTemperature,
@@ -997,10 +1078,6 @@
         loaderDiv.style.display = "none";
       }
     }
-    
-    // ============================================
-    // DISPLAY RESULTS
-    // ============================================
     
     function displayResults(result, cropType, municipality, usedParams = null) {
       const resultsDiv = document.getElementById('results');
@@ -1035,74 +1112,51 @@
       let recommendationsHtml = '';
       
       if (recommendations.overall) {
-        recommendationsHtml += `
-          <div style="margin-top: 15px; text-align: left; padding-top: 10px; border-top: 1px solid #ddd;">
-            <h4>📋 ${recommendations.overall.status || 'Recommendation'}</h4>
-            <p>${recommendations.overall.message || ''}</p>
-          </div>
-        `;
+        recommendationsHtml += `<div style="margin-top: 15px; text-align: left;"><h4>📋 ${recommendations.overall.status || 'Recommendation'}</h4><p>${recommendations.overall.message || ''}</p></div>`;
       }
       
       if (recommendations.planting_advice) {
-        recommendationsHtml += `
-          <div style="margin-top: 15px; text-align: left;">
-            <h4>🌱 Planting Advice</h4>
-            <p>${recommendations.planting_advice.message || ''}</p>
-          </div>
-        `;
+        recommendationsHtml += `<div style="margin-top: 15px; text-align: left;"><h4>🌱 Planting Advice</h4><p>${recommendations.planting_advice.message || ''}</p></div>`;
       }
       
       if (recommendations.soil_preparation && recommendations.soil_preparation.length) {
-        recommendationsHtml += `
-          <div style="margin-top: 15px; text-align: left;">
-            <h4>🛠️ Soil Preparation</h4>
-            ${recommendations.soil_preparation.map(p => `<p>• ${p}</p>`).join('')}
-          </div>
-        `;
+        recommendationsHtml += `<div style="margin-top: 15px; text-align: left;"><h4>🛠️ Soil Preparation</h4>${recommendations.soil_preparation.map(p => `<p>• ${p}</p>`).join('')}</div>`;
       }
       
       if (recommendations.harvest_advice && recommendations.harvest_advice.length) {
-        recommendationsHtml += `
-          <div style="margin-top: 15px; text-align: left;">
-            <h4>🌾 Harvest Advice</h4>
-            ${recommendations.harvest_advice.map(h => `<p>• ${h}</p>`).join('')}
-          </div>
-        `;
+        recommendationsHtml += `<div style="margin-top: 15px; text-align: left;"><h4>🌾 Harvest Advice</h4>${recommendations.harvest_advice.map(h => `<p>• ${h}</p>`).join('')}</div>`;
       }
       
       if (recommendations.typhoon) {
-        recommendationsHtml += `
-          <div style="margin-top: 15px; text-align: left;">
-            <h4>🌀 Typhoon Preparedness</h4>
-            <p><strong>Risk Level:</strong> ${recommendations.typhoon.risk_level || 'Unknown'}</p>
-            <p><strong>Risk Months:</strong> ${recommendations.typhoon.risk_months || 'N/A'}</p>
-            ${recommendations.typhoon.advice ? recommendations.typhoon.advice.map(a => `<p>• ${a}</p>`).join('') : ''}
-          </div>
-        `;
+        recommendationsHtml += `<div style="margin-top: 15px; text-align: left;"><h4>🌀 Typhoon Preparedness</h4><p><strong>Risk Level:</strong> ${recommendations.typhoon.risk_level || 'Unknown'}</p>${recommendations.typhoon.advice ? recommendations.typhoon.advice.map(a => `<p>• ${a}</p>`).join('') : ''}</div>`;
       }
+      
+      const targetYield = TARGET_YIELDS[cropType] || 4000;
+      const currentYield = modelResults.predicted_yield_kg || 0;
+      const yieldPercentage = (currentYield / targetYield) * 100;
       
       resultsDiv.innerHTML = `
         <div class="results-container">
           <div class="result-card">
-            <h3>🌾 ${cropType.charAt(0).toUpperCase() + cropType.slice(1)} Yield Prediction</h3>
+            <h3>🌾 ${cropType.charAt(0).toUpperCase() + cropType.slice(1)} Yield</h3>
             <div class="value">${modelResults.predicted_yield_tons ? modelResults.predicted_yield_tons.toFixed(2) : '?'} <span class="unit">tons/ha</span></div>
-            <div class="value" style="font-size: 20px;">(${modelResults.predicted_yield_kg ? modelResults.predicted_yield_kg.toLocaleString() : '?'} kg/ha)</div>
+            <div class="value" style="font-size: 20px;">(${currentYield.toLocaleString()} kg/ha)</div>
+            <p style="margin-top: 5px;">${((currentYield / targetYield) * 100).toFixed(0)}% of target (${targetYield.toLocaleString()} kg/ha)</p>
             <p style="margin-top: 10px;">Location: ${municipality}</p>
           </div>
           
           <div class="result-card">
             <h3>🌱 ${cropType.charAt(0).toUpperCase() + cropType.slice(1)} Suitability</h3>
             <div class="value ${suitabilityClass}">${suitabilityDisplay}</div>
-            <p style="margin-top: 5px;">Overall Score: ${calculatedScores.overall_suitability_score || '?'}%</p>
-            <p style="margin-top: 5px;">Climate Match: ${calculatedScores.climate_match_score || '?'}%</p>
-            <p style="margin-top: 5px;">Soil Compatibility: ${calculatedScores.soil_compatibility_score || '?'}%</p>
-            ${modelResults.suitability_confidence ? `<p>Model Confidence: ${modelResults.suitability_confidence}%</p>` : ''}
+            <p>Overall Score: ${calculatedScores.overall_suitability_score || '?'}%</p>
+            <p>Climate Match: ${calculatedScores.climate_match_score || '?'}%</p>
+            <p>Soil: ${calculatedScores.soil_compatibility_score || '?'}%</p>
             ${probabilitiesHtml}
           </div>
         </div>
         
-        <div class="result-card" style="margin-top: 20px; max-width: 600px; margin-left: auto; margin-right: auto;">
-          <h3>📋 Complete Recommendations</h3>
+        <div class="result-card" style="margin-top: 20px;">
+          <h3>📋 Recommendations</h3>
           ${recommendationsHtml || '<p>No recommendations available.</p>'}
           <div style="margin-top: 15px; text-align: left; padding-top: 10px; border-top: 1px solid #ddd; font-size: 11px;">
             <h4>📊 Weather Data Used</h4>
@@ -1110,8 +1164,10 @@
               <tr><td>🌡️ Temperature:</td><td><strong>${usedParams?.avg_temperature || '?'}°C</strong></td></tr>
               <tr><td>🌧️ Rainfall:</td><td><strong>${usedParams?.total_rainfall || '?'} mm</strong></td></tr>
               <tr><td>💧 Humidity:</td><td><strong>${usedParams?.humidity || '?'}%</strong></td></tr>
+              <tr><td>🌿 NDVI/EVI:</td><td><strong>${usedParams?.ndvi || '?'} / ${usedParams?.evi || '?'}</strong></td></tr>
+              <tr><td>🪴 Soil Fertility:</td><td><strong>${usedParams?.soil_fertility || '?'}/5</strong></td></tr>
             </table>
-            <p style="font-size: 10px; color: #8aa066; margin-top: 8px;">✓ Real-time weather data from Visual Crossing API</p>
+            <p style="font-size: 10px; color: #8aa066; margin-top: 8px;">✓ Real-time weather from Visual Crossing API</p>
           </div>
         </div>
       `;
@@ -1122,13 +1178,16 @@
     // ============================================
     
     document.addEventListener('DOMContentLoaded', function() {
+      // Initialize dashboard grid
+      initDashboardGrid();
+      
       const citySelect = document.getElementById('city');
       if (citySelect) {
         citySelect.addEventListener('change', onMunicipalityChange);
         currentMunicipality = citySelect.value;
       }
       
-      // Initialize input summary panel
+      // Initialize input summary
       updateInputSummaryPanel(DEFAULT_FALLBACK);
       
       // Attach live update listeners
@@ -1137,14 +1196,12 @@
         const element = document.getElementById(id);
         if (element) {
           element.addEventListener('input', () => updateInputSummaryPanel());
-          element.addEventListener('change', () => updateInputSummaryPanel());
         }
       });
       
       const cropSelect = document.getElementById('crop');
       if (cropSelect) cropSelect.addEventListener('change', () => updateInputSummaryPanel());
     });
-  
   </script>
 </body>
 </html>
