@@ -386,7 +386,7 @@
     </div>
   </section>
 
-  <script>
+      <script>
     // ============================================
     // CONFIGURATION
     // ============================================
@@ -394,10 +394,13 @@
     const RULE_BASED_API_URL = 'https://rule-based-crop-api.onrender.com/predict';
     const WEATHER_API_KEY = 'FMDQ3KEZ3BUFNDGYXKFYYZ8L7';
     
-    // Cache expiration time (1 week in milliseconds)
-    const CACHE_EXPIRY = 7 * 24 * 60 * 60 * 1000;
+    // Cache expiration time (1 hour for weather data - more reasonable)
+    const CACHE_EXPIRY = 60 * 60 * 1000; // 1 hour
     let isInCooldown = false;
     let cooldownTimer = null;
+    
+    // Real climate data cache for each municipality
+    let realClimateData = {};
 
     // Location database with NDVI, EVI, and soil fertility
     const locationData = {
@@ -408,7 +411,8 @@
         "Malinao":  { lat: 13.4117, lon: 123.7000, ndvi: 0.73, evi: 0.45, soil_fertility: 3.1 }
     };
     
-    const DEFAULT_CLIMATE = {
+    // Default fallback values (only used if weather fetch fails)
+    const DEFAULT_FALLBACK = {
         avg_temperature: 27.3,
         total_rainfall: 30,
         humidity: 75,
@@ -418,60 +422,178 @@
     };
     
     let currentMunicipality = "";
+    let isLoadingWeather = false;
 
     // ============================================
-    // API WARMUP
+    // FETCH REAL WEATHER DATA FOR A MUNICIPALITY
     // ============================================
     
-    let warmupCompleted = false;
-    let warmupInProgress = false;
-    
-    const APIS_TO_WARM = [
-        'https://suitability-api.onrender.com/health',
-        'https://crop-yield-api-9c1l.onrender.com/health',
-        'https://rule-based-crop-api.onrender.com/health'
-    ];
-    
-    async function warmupAllAPIs() {
-        if (warmupCompleted || warmupInProgress) return;
-        warmupInProgress = true;
-        console.log("🔥 Warming up all APIs...");
-        
-        try {
-            const warmupPromises = APIS_TO_WARM.map(async (url) => {
-                try {
-                    const response = await fetch(url, { method: 'GET', headers: { 'Content-Type': 'application/json' } });
-                    console.log(`   ✅ ${url} responded with ${response.status}`);
-                    return true;
-                } catch (error) {
-                    console.log(`   ⚠️ ${url} warmup failed: ${error.message}`);
-                    return false;
-                }
-            });
-            await Promise.race([Promise.all(warmupPromises), new Promise(r => setTimeout(r, 10000))]);
-            warmupCompleted = true;
-        } catch (error) {
-            console.log(`⚠️ Warmup issue: ${error.message}`);
-        } finally {
-            warmupInProgress = false;
+    async function fetchRealWeatherData(municipalityKey) {
+      const coords = locationData[municipalityKey];
+      if (!coords) return null;
+      
+      // Check cache first
+      const cacheKey = `weather_${municipalityKey}`;
+      const cached = sessionStorage.getItem(cacheKey);
+      
+      if (cached) {
+        const cachedData = JSON.parse(cached);
+        const cacheAge = Date.now() - cachedData.timestamp;
+        if (cacheAge < CACHE_EXPIRY) {
+          console.log(`✅ Using cached real weather for ${municipalityKey}`);
+          return cachedData.data;
         }
+      }
+      
+      if (isLoadingWeather) {
+        // Wait for ongoing fetch
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        const retryCached = sessionStorage.getItem(cacheKey);
+        if (retryCached) return JSON.parse(retryCached).data;
+        return null;
+      }
+      
+      isLoadingWeather = true;
+      
+      try {
+        console.log(`🌤️ Fetching REAL weather data for ${municipalityKey}...`);
+        
+        const today = new Date();
+        const pastDate = new Date();
+        pastDate.setDate(today.getDate() - 27);
+        
+        const formatDate = (d) => d.toISOString().split('T')[0];
+        const dateRange = `${formatDate(pastDate)}/${formatDate(today)}`;
+        
+        const weatherUrl = `https://weather.visualcrossing.com/VisualCrossingWebServices/rest/services/timeline/${coords.lat},${coords.lon}/${dateRange}?unitGroup=metric&key=${WEATHER_API_KEY}&contentType=json&include=days`;
+        
+        const weatherRes = await fetch(weatherUrl);
+        
+        if (weatherRes.status === 429) {
+          console.log("🚫 Rate limit hit, using fallback values");
+          return null;
+        }
+        
+        if (!weatherRes.ok) throw new Error(`Weather API Error: ${weatherRes.status}`);
+        
+        const weatherJSON = await weatherRes.json();
+        const allDays = weatherJSON.days;
+        
+        // Calculate averages
+        let totalTemp = 0;
+        let totalRainfall = 0;
+        let totalHumidity = 0;
+        
+        for (const day of allDays) {
+          totalTemp += day.temp;
+          totalRainfall += day.precip;
+          totalHumidity += day.humidity;
+        }
+        
+        const avgTemperature = totalTemp / allDays.length;
+        const totalRainfallSum = totalRainfall;
+        const avgHumidity = totalHumidity / allDays.length;
+        
+        const climateData = {
+          avg_temperature: parseFloat(avgTemperature.toFixed(1)),
+          total_rainfall: parseFloat(totalRainfallSum.toFixed(0)),
+          humidity: parseFloat(avgHumidity.toFixed(0)),
+          allDays: allDays
+        };
+        
+        // Store in cache
+        sessionStorage.setItem(cacheKey, JSON.stringify({
+          data: climateData,
+          timestamp: Date.now()
+        }));
+        
+        console.log(`💾 Real weather for ${municipalityKey}: ${avgTemperature.toFixed(1)}°C, ${totalRainfallSum.toFixed(0)}mm rain`);
+        
+        // Store in global cache
+        realClimateData[municipalityKey] = climateData;
+        
+        return climateData;
+        
+      } catch (error) {
+        console.error(`Weather fetch error for ${municipalityKey}:`, error);
+        return null;
+      } finally {
+        isLoadingWeather = false;
+      }
     }
     
-    if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', () => setTimeout(warmupAllAPIs, 100));
-    } else {
-        setTimeout(warmupAllAPIs, 100);
-    }
-    
-    function ensureWarmup() {
-        if (!warmupCompleted && !warmupInProgress) warmupAllAPIs();
-    }
-
     // ============================================
-    // INPUT SUMMARY PANEL - LIVE UPDATE
+    // UPDATE INPUT SUMMARY WITH REAL WEATHER DATA
     // ============================================
     
-    function updateInputSummaryPanel() {
+    async function updateInputSummaryWithRealData() {
+      const citySelect = document.getElementById('city');
+      const municipalityKey = citySelect?.value;
+      
+      if (!municipalityKey) {
+        // No municipality selected - show fallback
+        updateInputSummaryPanel(DEFAULT_FALLBACK);
+        return;
+      }
+      
+      // Get soil data from locationData
+      const coords = locationData[municipalityKey];
+      
+      // Try to fetch real weather data
+      let climateData = realClimateData[municipalityKey];
+      
+      if (!climateData) {
+        // Show loading state
+        const grid = document.getElementById('inputSummaryGrid');
+        if (grid) {
+          grid.innerHTML = '<div class="input-summary-item" style="grid-column: span 4;">🌤️ Loading real weather data for ' + municipalityKey + '...</div>';
+        }
+        
+        climateData = await fetchRealWeatherData(municipalityKey);
+      }
+      
+      // Use real data if available, otherwise fallback
+      const displayData = {
+        avg_temperature: climateData?.avg_temperature || DEFAULT_FALLBACK.avg_temperature,
+        total_rainfall: climateData?.total_rainfall || DEFAULT_FALLBACK.total_rainfall,
+        humidity: climateData?.humidity || DEFAULT_FALLBACK.humidity,
+        ndvi: coords?.ndvi || 0.70,
+        evi: coords?.evi || 0.43,
+        soil_fertility: coords?.soil_fertility || 3.0,
+        n_score: DEFAULT_FALLBACK.n_score,
+        p_score: DEFAULT_FALLBACK.p_score,
+        k_score: DEFAULT_FALLBACK.k_score
+      };
+      
+      // Also update the input fields with real values
+      document.getElementById('avg_temperature').value = displayData.avg_temperature;
+      document.getElementById('total_rainfall').value = displayData.total_rainfall;
+      document.getElementById('humidity').value = displayData.humidity;
+      document.getElementById('ndvi').value = displayData.ndvi;
+      document.getElementById('evi').value = displayData.evi;
+      document.getElementById('soil_fertility').value = displayData.soil_fertility;
+      
+      updateInputSummaryPanel(displayData);
+      
+      // Add weather source indicator
+      const weatherBadge = document.getElementById('weatherSourceBadge');
+      if (weatherBadge) {
+        if (climateData) {
+          weatherBadge.style.display = 'inline-block';
+          weatherBadge.innerHTML = `🌤️ Live weather data for ${municipalityKey}`;
+          weatherBadge.style.background = '#2d6a4f';
+        } else {
+          weatherBadge.style.display = 'inline-block';
+          weatherBadge.innerHTML = `⚠️ Using estimated values (weather API limited)`;
+          weatherBadge.style.background = '#f4a261';
+        }
+        setTimeout(() => {
+          if (weatherBadge) weatherBadge.style.display = 'none';
+        }, 5000);
+      }
+    }
+    
+    function updateInputSummaryPanel(data = null) {
       const panel = document.getElementById('inputSummaryPanel');
       const grid = document.getElementById('inputSummaryGrid');
       const citySelect = document.getElementById('city');
@@ -479,16 +601,16 @@
       
       if (!grid) return;
       
-      // Get current values from inputs
-      const avgTemp = document.getElementById('avg_temperature')?.value || '27.3';
-      const rainfall = document.getElementById('total_rainfall')?.value || '30';
-      const humidity = document.getElementById('humidity')?.value || '75';
-      const ndvi = document.getElementById('ndvi')?.value || '0.73';
-      const evi = document.getElementById('evi')?.value || '0.45';
-      const soilFert = document.getElementById('soil_fertility')?.value || '3.1';
-      const nScore = document.getElementById('n_score')?.value || '3';
-      const pScore = document.getElementById('p_score')?.value || '3';
-      const kScore = document.getElementById('k_score')?.value || '3';
+      // Get current values (either from passed data or from input fields)
+      const avgTemp = data?.avg_temperature || document.getElementById('avg_temperature')?.value || '27.3';
+      const rainfall = data?.total_rainfall || document.getElementById('total_rainfall')?.value || '30';
+      const humidity = data?.humidity || document.getElementById('humidity')?.value || '75';
+      const ndvi = data?.ndvi || document.getElementById('ndvi')?.value || '0.73';
+      const evi = data?.evi || document.getElementById('evi')?.value || '0.45';
+      const soilFert = data?.soil_fertility || document.getElementById('soil_fertility')?.value || '3.1';
+      const nScore = data?.n_score || document.getElementById('n_score')?.value || '3';
+      const pScore = data?.p_score || document.getElementById('p_score')?.value || '3';
+      const kScore = data?.k_score || document.getElementById('k_score')?.value || '3';
       const municipality = citySelect?.options[citySelect.selectedIndex]?.text || 'Not selected';
       const crop = cropSelect?.options[cropSelect.selectedIndex]?.text || 'Not selected';
       
@@ -531,28 +653,48 @@
         </div>
       `;
       
-      // Show the panel
       panel.style.display = 'block';
     }
     
-    // Attach live update listeners to all input fields
-    function attachLiveUpdateListeners() {
-      const inputIds = ['avg_temperature', 'total_rainfall', 'humidity', 'ndvi', 'evi', 'soil_fertility', 'n_score', 'p_score', 'k_score'];
-      inputIds.forEach(id => {
-        const element = document.getElementById(id);
-        if (element) {
-          element.addEventListener('input', updateInputSummaryPanel);
-          element.addEventListener('change', updateInputSummaryPanel);
-        }
-      });
+    // ============================================
+    // API WARMUP
+    // ============================================
+    
+    let warmupCompleted = false;
+    let warmupInProgress = false;
+    
+    const APIS_TO_WARM = [
+      'https://suitability-api.onrender.com/health',
+      'https://crop-yield-api-9c1l.onrender.com/health',
+      'https://rule-based-crop-api.onrender.com/health'
+    ];
+    
+    async function warmupAllAPIs() {
+      if (warmupCompleted || warmupInProgress) return;
+      warmupInProgress = true;
+      console.log("🔥 Warming up APIs...");
       
-      const citySelect = document.getElementById('city');
-      const cropSelect = document.getElementById('crop');
-      if (citySelect) citySelect.addEventListener('change', () => {
-        updateInputSummaryPanel();
-        onMunicipalityChange();
-      });
-      if (cropSelect) cropSelect.addEventListener('change', updateInputSummaryPanel);
+      try {
+        await Promise.race([
+          Promise.all(APIS_TO_WARM.map(url => fetch(url, { method: 'GET' }).catch(() => {}))),
+          new Promise(r => setTimeout(r, 10000))
+        ]);
+        warmupCompleted = true;
+      } catch (error) {
+        console.log(`⚠️ Warmup issue: ${error.message}`);
+      } finally {
+        warmupInProgress = false;
+      }
+    }
+    
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', () => setTimeout(warmupAllAPIs, 100));
+    } else {
+      setTimeout(warmupAllAPIs, 100);
+    }
+    
+    function ensureWarmup() {
+      if (!warmupCompleted && !warmupInProgress) warmupAllAPIs();
     }
     
     // ============================================
@@ -560,23 +702,23 @@
     // ============================================
     
     function getWeekNumber(d) {
-        d = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
-        d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay() || 7));
-        var yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
-        return Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
+      d = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+      d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay() || 7));
+      var yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+      return Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
     }
     
-    function resetToCurrentMunicipality() {
+    async function resetToCurrentMunicipality() {
       const citySelect = document.getElementById('city');
       const locKey = citySelect.value;
       
       if (!locKey) {
-        document.getElementById('avg_temperature').value = DEFAULT_CLIMATE.avg_temperature;
-        document.getElementById('total_rainfall').value = DEFAULT_CLIMATE.total_rainfall;
-        document.getElementById('humidity').value = DEFAULT_CLIMATE.humidity;
-        document.getElementById('n_score').value = DEFAULT_CLIMATE.n_score;
-        document.getElementById('p_score').value = DEFAULT_CLIMATE.p_score;
-        document.getElementById('k_score').value = DEFAULT_CLIMATE.k_score;
+        document.getElementById('avg_temperature').value = DEFAULT_FALLBACK.avg_temperature;
+        document.getElementById('total_rainfall').value = DEFAULT_FALLBACK.total_rainfall;
+        document.getElementById('humidity').value = DEFAULT_FALLBACK.humidity;
+        document.getElementById('n_score').value = DEFAULT_FALLBACK.n_score;
+        document.getElementById('p_score').value = DEFAULT_FALLBACK.p_score;
+        document.getElementById('k_score').value = DEFAULT_FALLBACK.k_score;
         document.getElementById('ndvi').value = 0.70;
         document.getElementById('evi').value = 0.43;
         document.getElementById('soil_fertility').value = 3.0;
@@ -585,21 +727,41 @@
       }
       
       const coords = locationData[locKey];
-      if (coords) {
-        document.getElementById('avg_temperature').value = DEFAULT_CLIMATE.avg_temperature;
-        document.getElementById('total_rainfall').value = DEFAULT_CLIMATE.total_rainfall;
-        document.getElementById('humidity').value = DEFAULT_CLIMATE.humidity;
-        document.getElementById('ndvi').value = coords.ndvi;
-        document.getElementById('evi').value = coords.evi;
-        document.getElementById('soil_fertility').value = coords.soil_fertility;
-        document.getElementById('n_score').value = DEFAULT_CLIMATE.n_score;
-        document.getElementById('p_score').value = DEFAULT_CLIMATE.p_score;
-        document.getElementById('k_score').value = DEFAULT_CLIMATE.k_score;
-        updateInputSummaryPanel();
-        
-        // Show feedback
-        showFeedback(`✅ Reset to ${locKey} actual data`);
+      
+      // Fetch REAL weather data
+      const climateData = await fetchRealWeatherData(locKey);
+      
+      if (climateData) {
+        document.getElementById('avg_temperature').value = climateData.avg_temperature;
+        document.getElementById('total_rainfall').value = climateData.total_rainfall;
+        document.getElementById('humidity').value = climateData.humidity;
+      } else {
+        document.getElementById('avg_temperature').value = DEFAULT_FALLBACK.avg_temperature;
+        document.getElementById('total_rainfall').value = DEFAULT_FALLBACK.total_rainfall;
+        document.getElementById('humidity').value = DEFAULT_FALLBACK.humidity;
       }
+      
+      document.getElementById('ndvi').value = coords.ndvi;
+      document.getElementById('evi').value = coords.evi;
+      document.getElementById('soil_fertility').value = coords.soil_fertility;
+      document.getElementById('n_score').value = DEFAULT_FALLBACK.n_score;
+      document.getElementById('p_score').value = DEFAULT_FALLBACK.p_score;
+      document.getElementById('k_score').value = DEFAULT_FALLBACK.k_score;
+      
+      const displayData = {
+        avg_temperature: climateData?.avg_temperature || DEFAULT_FALLBACK.avg_temperature,
+        total_rainfall: climateData?.total_rainfall || DEFAULT_FALLBACK.total_rainfall,
+        humidity: climateData?.humidity || DEFAULT_FALLBACK.humidity,
+        ndvi: coords.ndvi,
+        evi: coords.evi,
+        soil_fertility: coords.soil_fertility,
+        n_score: DEFAULT_FALLBACK.n_score,
+        p_score: DEFAULT_FALLBACK.p_score,
+        k_score: DEFAULT_FALLBACK.k_score
+      };
+      
+      updateInputSummaryPanel(displayData);
+      showFeedback(`✅ Reset to ${locKey} actual weather data`);
     }
     
     function showFeedback(message) {
@@ -615,19 +777,21 @@
         if (resetBtn && resetBtn.parentNode) {
           resetBtn.parentNode.insertBefore(feedback, resetBtn.nextSibling);
         }
+      } else {
+        document.querySelector('.form-card')?.appendChild(feedback);
       }
-      setTimeout(() => feedback.remove(), 2500);
+      setTimeout(() => feedback.remove(), 3000);
     }
     
-    function onMunicipalityChange() {
+    async function onMunicipalityChange() {
       const citySelect = document.getElementById('city');
       const newMunicipality = citySelect.value;
       
       if (newMunicipality !== currentMunicipality) {
         currentMunicipality = newMunicipality;
         if (newMunicipality) {
-          resetToCurrentMunicipality();
-          showFeedback(`🔄 Parameters auto-reset for ${newMunicipality}`);
+          await resetToCurrentMunicipality();
+          showFeedback(`🔄 Loaded real weather data for ${newMunicipality}`);
         }
       }
     }
@@ -648,79 +812,47 @@
     }
     
     // ============================================
-    // WEATHER DATA FETCHING
+    // WEATHER DATA FOR RAW SEQUENCE
     // ============================================
     
-    async function fetchWeatherData(lat, lon, municipality) {
-        if (isInCooldown) {
-            const cached = sessionStorage.getItem(`weather_${municipality}`);
-            if (cached) return JSON.parse(cached).data;
-            throw new Error("Rate limited and no cache available.");
+    async function fetchWeatherDataForSequence(lat, lon, municipality) {
+      const cacheKey = `weather_seq_${municipality}`;
+      const cached = sessionStorage.getItem(cacheKey);
+      
+      if (cached) {
+        const cachedData = JSON.parse(cached);
+        const cacheAge = Date.now() - cachedData.timestamp;
+        if (cacheAge < CACHE_EXPIRY) {
+          return cachedData.data;
         }
+      }
+      
+      const today = new Date();
+      const pastDate = new Date();
+      pastDate.setDate(today.getDate() - 27);
+      
+      const formatDate = (d) => d.toISOString().split('T')[0];
+      const dateRange = `${formatDate(pastDate)}/${formatDate(today)}`;
+      
+      const weatherUrl = `https://weather.visualcrossing.com/VisualCrossingWebServices/rest/services/timeline/${lat},${lon}/${dateRange}?unitGroup=metric&key=${WEATHER_API_KEY}&contentType=json&include=days`;
+      
+      try {
+        const weatherRes = await fetch(weatherUrl);
+        if (!weatherRes.ok) throw new Error(`Weather API Error: ${weatherRes.status}`);
         
-        const cacheKey = `weather_${municipality}`;
-        const cached = sessionStorage.getItem(cacheKey);
+        const weatherJSON = await weatherRes.json();
+        const allDays = weatherJSON.days;
         
-        if (cached) {
-            const cachedData = JSON.parse(cached);
-            const cacheAge = Date.now() - cachedData.timestamp;
-            if (cacheAge < CACHE_EXPIRY) {
-                console.log(`✅ Using cached weather data for ${municipality}`);
-                return cachedData.data;
-            } else {
-                sessionStorage.removeItem(cacheKey);
-            }
-        }
+        sessionStorage.setItem(cacheKey, JSON.stringify({
+          data: allDays,
+          timestamp: Date.now()
+        }));
         
-        console.log(`🌤️ Fetching fresh weather data for ${municipality}...`);
-        
-        const today = new Date();
-        const pastDate = new Date();
-        pastDate.setDate(today.getDate() - 27);
-        
-        const formatDate = (d) => d.toISOString().split('T')[0];
-        const dateRange = `${formatDate(pastDate)}/${formatDate(today)}`;
-        
-        const weatherUrl = `https://weather.visualcrossing.com/VisualCrossingWebServices/rest/services/timeline/${lat},${lon}/${dateRange}?unitGroup=metric&key=${WEATHER_API_KEY}&contentType=json&include=days`;
-        
-        try {
-            const weatherRes = await fetch(weatherUrl);
-            
-            if (weatherRes.status === 429) {
-                console.log("🚫 Rate limit hit!");
-                isInCooldown = true;
-                if (cooldownTimer) clearTimeout(cooldownTimer);
-                cooldownTimer = setTimeout(() => { isInCooldown = false; }, 15 * 60 * 1000);
-                const cachedData = sessionStorage.getItem(cacheKey);
-                if (cachedData) return JSON.parse(cachedData).data;
-                throw new Error("Rate limit reached. Please wait.");
-            }
-            
-            if (!weatherRes.ok) throw new Error(`Weather API Error: ${weatherRes.status}`);
-            
-            const weatherJSON = await weatherRes.json();
-            const allDays = weatherJSON.days;
-            
-            let totalTemp = 0, totalRainfall = 0, maxWind = 0, minPressure = Infinity;
-            for (const day of allDays) {
-                totalTemp += day.temp;
-                totalRainfall += day.precip;
-                maxWind = Math.max(maxWind, day.windspeed);
-                minPressure = Math.min(minPressure, day.pressure);
-            }
-            
-            const avgTemp = totalTemp / allDays.length;
-            const maxWindKts = maxWind * 0.539957;
-            
-            const result = { allDays, avgTemperature: avgTemp, totalRainfall, maxWindKts, minPressure };
-            
-            sessionStorage.setItem(cacheKey, JSON.stringify({ data: result, timestamp: Date.now() }));
-            return result;
-            
-        } catch (error) {
-            console.error("Weather fetch error:", error);
-            throw error;
-        }
+        return allDays;
+      } catch (error) {
+        console.error("Weather fetch error:", error);
+        throw error;
+      }
     }
     
     // ============================================
@@ -728,139 +860,142 @@
     // ============================================
     
     async function predictBoth() {
-        ensureWarmup();
+      ensureWarmup();
+    
+      const locKey = document.getElementById('city').value;
+      const cropType = document.getElementById('crop').value;
+      const resultsDiv = document.getElementById('results');
+      const loaderDiv = document.getElementById('dualLoader');
       
-        const locKey = document.getElementById('city').value;
-        const cropType = document.getElementById('crop').value;
-        const resultsDiv = document.getElementById('results');
-        const loaderDiv = document.getElementById('dualLoader');
+      if (!locKey || !cropType) {
+        alert("Please select both a municipality and a crop.");
+        return;
+      }
+      
+      let municipalityName = locKey;
+      if (locKey === "Pioduran") municipalityName = "Pio Duran";
+      
+      const coords = locationData[locKey];
+      
+      loaderDiv.style.display = "flex";
+      resultsDiv.innerHTML = "";
+      
+      try {
+        // Fetch real weather data for raw sequence
+        const allDays = await fetchWeatherDataForSequence(coords.lat, coords.lon, municipalityName);
         
-        if (!locKey || !cropType) {
-            alert("Please select both a municipality and a crop.");
-            return;
+        let rawSequence = [];
+        let lastSeason = null;
+        
+        for (let i = 0; i < 4; i++) {
+          const weekBlock = allDays.slice(i * 7, (i * 7) + 7);
+          if (weekBlock.length === 0) break;
+          
+          const tmax = Math.max(...weekBlock.map(d => d.tempmax));
+          const tmin = Math.min(...weekBlock.map(d => d.tempmin));
+          const tave = weekBlock.reduce((acc, d) => acc + d.temp, 0) / weekBlock.length;
+          const rain = weekBlock.reduce((acc, d) => acc + d.precip, 0);
+          const hum = weekBlock.reduce((acc, d) => acc + d.humidity, 0) / weekBlock.length;
+          const solar = weekBlock.reduce((acc, d) => acc + d.solarradiation, 0) / weekBlock.length;
+          const wind = weekBlock.reduce((acc, d) => acc + d.windspeed, 0) / weekBlock.length;
+          
+          const dateObj = new Date(weekBlock[0].datetime);
+          lastSeason = (dateObj.getMonth() + 1) >= 6 ? 2 : 1;
+          
+          rawSequence.push([
+            coords.ndvi, coords.evi,
+            tmax, tmin, tave, rain, hum, solar, wind,
+            dateObj.getFullYear(), getWeekNumber(dateObj), lastSeason
+          ]);
         }
         
-        let municipalityName = locKey;
-        if (locKey === "Pioduran") municipalityName = "Pio Duran";
+        // Get REAL climate data for this municipality
+        const realClimate = await fetchRealWeatherData(locKey);
         
-        const coords = locationData[locKey];
+        // Get user overrides (if they changed anything)
+        const ndvi = parseFloat(document.getElementById('ndvi')?.value) || coords.ndvi;
+        const evi = parseFloat(document.getElementById('evi')?.value) || coords.evi;
+        const soilFertility = parseFloat(document.getElementById('soil_fertility')?.value) || coords.soil_fertility;
+        const nScore = parseInt(document.getElementById('n_score')?.value) || DEFAULT_FALLBACK.n_score;
+        const pScore = parseInt(document.getElementById('p_score')?.value) || DEFAULT_FALLBACK.p_score;
+        const kScore = parseInt(document.getElementById('k_score')?.value) || DEFAULT_FALLBACK.k_score;
         
-        loaderDiv.style.display = "flex";
-        resultsDiv.innerHTML = "";
+        // Use REAL weather data for temperature, rainfall, humidity
+        const avgTemperature = realClimate?.avg_temperature || DEFAULT_FALLBACK.avg_temperature;
+        const totalRainfall = realClimate?.total_rainfall || DEFAULT_FALLBACK.total_rainfall;
+        const humidity = realClimate?.humidity || DEFAULT_FALLBACK.humidity;
         
-        try {
-            const weatherData = await fetchWeatherData(coords.lat, coords.lon, municipalityName);
-            const allDays = weatherData.allDays;
-            
-            let rawSequence = [];
-            let lastSeason = null;
-            
-            for (let i = 0; i < 4; i++) {
-                const weekBlock = allDays.slice(i * 7, (i * 7) + 7);
-                if (weekBlock.length === 0) break;
-                
-                const tmax = Math.max(...weekBlock.map(d => d.tempmax));
-                const tmin = Math.min(...weekBlock.map(d => d.tempmin));
-                const tave = weekBlock.reduce((acc, d) => acc + d.temp, 0) / weekBlock.length;
-                const rain = weekBlock.reduce((acc, d) => acc + d.precip, 0);
-                const hum = weekBlock.reduce((acc, d) => acc + d.humidity, 0) / weekBlock.length;
-                const solar = weekBlock.reduce((acc, d) => acc + d.solarradiation, 0) / weekBlock.length;
-                const wind = weekBlock.reduce((acc, d) => acc + d.windspeed, 0) / weekBlock.length;
-                
-                const dateObj = new Date(weekBlock[0].datetime);
-                lastSeason = (dateObj.getMonth() + 1) >= 6 ? 2 : 1;
-                
-                rawSequence.push([
-                    coords.ndvi, coords.evi,
-                    tmax, tmin, tave, rain, hum, solar, wind,
-                    dateObj.getFullYear(), getWeekNumber(dateObj), lastSeason
-                ]);
-            }
-            
-            let totalTemp = 0, totalRainfall = 0, maxWind = 0, minPressure = Infinity;
-            for (const day of allDays) {
-                totalTemp += day.temp;
-                totalRainfall += day.precip;
-                maxWind = Math.max(maxWind, day.windspeed);
-                minPressure = Math.min(minPressure, day.pressure);
-            }
-            
-            const avgTemperature = totalTemp / allDays.length;
-            const maxWindKts = maxWind * 0.539957;
-            const duration_hrs = allDays.filter(d => d.windspeed > 63).length * 24;
-            const risk_score = maxWindKts > 100 ? 3 : (maxWindKts > 64 ? 2 : 1);
-            
-            // Get user overrides from inputs (these are now editable!)
-            const ndvi = parseFloat(document.getElementById('ndvi')?.value) || coords.ndvi;
-            const evi = parseFloat(document.getElementById('evi')?.value) || coords.evi;
-            const soilFertility = parseFloat(document.getElementById('soil_fertility')?.value) || coords.soil_fertility;
-            const nScore = parseInt(document.getElementById('n_score')?.value) || 3;
-            const pScore = parseInt(document.getElementById('p_score')?.value) || 3;
-            const kScore = parseInt(document.getElementById('k_score')?.value) || 3;
-            const humidity = parseFloat(document.getElementById('humidity')?.value) || 75;
-            const userAvgTemp = parseFloat(document.getElementById('avg_temperature')?.value) || avgTemperature;
-            const userTotalRainfall = parseFloat(document.getElementById('total_rainfall')?.value) || totalRainfall;
-            
-            const requestBody = {
-                crop: cropType,
-                municipality: municipalityName,
-                avg_temperature: userAvgTemp,
-                total_rainfall: userTotalRainfall,
-                humidity: humidity,
-                ndvi: ndvi,
-                evi: evi,
-                soil_fertility: soilFertility,
-                n_score: nScore,
-                p_score: pScore,
-                k_score: kScore,
-                raw_sequence: rawSequence,
-                season: lastSeason || 2,
-                max_wind_kts: maxWindKts,
-                min_pres_mb: minPressure,
-                duration_hrs: duration_hrs,
-                risk_score: risk_score
-            };
-            
-            console.log("Calling Rule-Based API...", requestBody);
-            
-            const response = await fetch(RULE_BASED_API_URL, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(requestBody)
-            });
-            
-            if (!response.ok) {
-                const errorText = await response.text();
-                throw new Error(`Rule-Based API error (${response.status}): ${errorText}`);
-            }
-            
-            const result = await response.json();
-            console.log("API Response:", result);
-            
-            displayResults(result, cropType, municipalityName, {
-                avg_temperature: userAvgTemp,
-                total_rainfall: userTotalRainfall,
-                humidity: humidity,
-                ndvi: ndvi,
-                evi: evi,
-                soil_fertility: soilFertility,
-                n_score: nScore,
-                p_score: pScore,
-                k_score: kScore
-            });
-            
-        } catch (error) {
-            console.error("Prediction error:", error);
-            resultsDiv.innerHTML = `
-                <div class="result-card" style="background: rgba(255,255,255,0.95);">
-                    <h3>Error</h3>
-                    <div class="value" style="color: red;">${error.message}</div>
-                    <p>Please try again later.</p>
-                </div>
-            `;
-        } finally {
-            loaderDiv.style.display = "none";
+        // Calculate wind/typhoon data
+        let maxWind = 0;
+        let minPressure = Infinity;
+        for (const day of allDays) {
+          maxWind = Math.max(maxWind, day.windspeed);
+          minPressure = Math.min(minPressure, day.pressure);
         }
+        const maxWindKts = maxWind * 0.539957;
+        const duration_hrs = allDays.filter(d => d.windspeed > 63).length * 24;
+        const risk_score = maxWindKts > 100 ? 3 : (maxWindKts > 64 ? 2 : 1);
+        
+        const requestBody = {
+          crop: cropType,
+          municipality: municipalityName,
+          avg_temperature: avgTemperature,
+          total_rainfall: totalRainfall,
+          humidity: humidity,
+          ndvi: ndvi,
+          evi: evi,
+          soil_fertility: soilFertility,
+          n_score: nScore,
+          p_score: pScore,
+          k_score: kScore,
+          raw_sequence: rawSequence,
+          season: lastSeason || 2,
+          max_wind_kts: maxWindKts,
+          min_pres_mb: minPressure,
+          duration_hrs: duration_hrs,
+          risk_score: risk_score
+        };
+        
+        console.log(`📊 Calling API for ${municipalityName}: ${avgTemperature}°C, ${totalRainfall}mm rain`);
+        
+        const response = await fetch(RULE_BASED_API_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(requestBody)
+        });
+        
+        if (!response.ok) {
+          const errorText = await response.text();
+          throw new Error(`Rule-Based API error (${response.status}): ${errorText}`);
+        }
+        
+        const result = await response.json();
+        console.log("API Response:", result);
+        
+        displayResults(result, cropType, municipalityName, {
+          avg_temperature: avgTemperature,
+          total_rainfall: totalRainfall,
+          humidity: humidity,
+          ndvi: ndvi,
+          evi: evi,
+          soil_fertility: soilFertility,
+          n_score: nScore,
+          p_score: pScore,
+          k_score: kScore
+        });
+        
+      } catch (error) {
+        console.error("Prediction error:", error);
+        resultsDiv.innerHTML = `
+          <div class="result-card" style="background: rgba(255,255,255,0.95);">
+            <h3>Error</h3>
+            <div class="value" style="color: red;">${error.message}</div>
+            <p>Please try again later.</p>
+          </div>
+        `;
+      } finally {
+        loaderDiv.style.display = "none";
+      }
     }
     
     // ============================================
@@ -868,119 +1003,118 @@
     // ============================================
     
     function displayResults(result, cropType, municipality, usedParams = null) {
-        const resultsDiv = document.getElementById('results');
-        
-        const modelResults = result.model_results || {};
-        const calculatedScores = result.calculated_scores || {};
-        const recommendations = result.recommendations || {};
-        
-        const suitability = modelResults.suitability || 'Medium';
-        const suitabilityClass = `suitability-${suitability}`;
-        
-        const suitabilityDisplay = {
-            'High': '🌟 Highly Suitable',
-            'Medium': '✅ Moderately Suitable',
-            'Low': '⚠️ Marginally Suitable'
-        }[suitability] || suitability;
-        
-        let probabilitiesHtml = '';
-        if (modelResults.suitability_probabilities) {
-            probabilitiesHtml = '<div style="margin-top: 15px;">';
-            for (const [level, prob] of Object.entries(modelResults.suitability_probabilities)) {
-                probabilitiesHtml += `
-                    <div class="probability-bar">
-                        <div class="probability-fill" style="width: ${prob}%;"></div>
-                    </div>
-                    <div class="probability-text">${level}: ${prob}%</div>
-                `;
-            }
-            probabilitiesHtml += '</div>';
-        }
-        
-        let recommendationsHtml = '';
-        
-        if (recommendations.overall) {
-            recommendationsHtml += `
-                <div style="margin-top: 15px; text-align: left; padding-top: 10px; border-top: 1px solid #ddd;">
-                    <h4>📋 ${recommendations.overall.status || 'Recommendation'}</h4>
-                    <p>${recommendations.overall.message || ''}</p>
-                </div>
-            `;
-        }
-        
-        if (recommendations.planting_advice) {
-            recommendationsHtml += `
-                <div style="margin-top: 15px; text-align: left;">
-                    <h4>🌱 Planting Advice</h4>
-                    <p>${recommendations.planting_advice.message || ''}</p>
-                </div>
-            `;
-        }
-        
-        if (recommendations.soil_preparation && recommendations.soil_preparation.length) {
-            recommendationsHtml += `
-                <div style="margin-top: 15px; text-align: left;">
-                    <h4>🛠️ Soil Preparation</h4>
-                    ${recommendations.soil_preparation.map(p => `<p>• ${p}</p>`).join('')}
-                </div>
-            `;
-        }
-        
-        if (recommendations.harvest_advice && recommendations.harvest_advice.length) {
-            recommendationsHtml += `
-                <div style="margin-top: 15px; text-align: left;">
-                    <h4>🌾 Harvest Advice</h4>
-                    ${recommendations.harvest_advice.map(h => `<p>• ${h}</p>`).join('')}
-                </div>
-            `;
-        }
-        
-        if (recommendations.typhoon) {
-            recommendationsHtml += `
-                <div style="margin-top: 15px; text-align: left;">
-                    <h4>🌀 Typhoon Preparedness</h4>
-                    <p><strong>Risk Level:</strong> ${recommendations.typhoon.risk_level || 'Unknown'}</p>
-                    <p><strong>Risk Months:</strong> ${recommendations.typhoon.risk_months || 'N/A'}</p>
-                    ${recommendations.typhoon.advice ? recommendations.typhoon.advice.map(a => `<p>• ${a}</p>`).join('') : ''}
-                </div>
-            `;
-        }
-        
-        resultsDiv.innerHTML = `
-            <div class="results-container">
-                <div class="result-card">
-                    <h3>🌾 ${cropType.charAt(0).toUpperCase() + cropType.slice(1)} Yield Prediction</h3>
-                    <div class="value">${modelResults.predicted_yield_tons ? modelResults.predicted_yield_tons.toFixed(2) : '?'} <span class="unit">tons/ha</span></div>
-                    <div class="value" style="font-size: 20px;">(${modelResults.predicted_yield_kg ? modelResults.predicted_yield_kg.toLocaleString() : '?'} kg/ha)</div>
-                    <p style="margin-top: 10px;">Location: ${municipality}</p>
-                </div>
-                
-                <div class="result-card">
-                    <h3>🌱 ${cropType.charAt(0).toUpperCase() + cropType.slice(1)} Suitability</h3>
-                    <div class="value ${suitabilityClass}">${suitabilityDisplay}</div>
-                    <p style="margin-top: 5px;">Overall Score: ${calculatedScores.overall_suitability_score || '?'}%</p>
-                    <p style="margin-top: 5px;">Climate Match: ${calculatedScores.climate_match_score || '?'}%</p>
-                    <p style="margin-top: 5px;">Soil Compatibility: ${calculatedScores.soil_compatibility_score || '?'}%</p>
-                    ${modelResults.suitability_confidence ? `<p>Model Confidence: ${modelResults.suitability_confidence}%</p>` : ''}
-                    ${probabilitiesHtml}
-                </div>
+      const resultsDiv = document.getElementById('results');
+      
+      const modelResults = result.model_results || {};
+      const calculatedScores = result.calculated_scores || {};
+      const recommendations = result.recommendations || {};
+      
+      const suitability = modelResults.suitability || 'Medium';
+      const suitabilityClass = `suitability-${suitability}`;
+      
+      const suitabilityDisplay = {
+        'High': '🌟 Highly Suitable',
+        'Medium': '✅ Moderately Suitable',
+        'Low': '⚠️ Marginally Suitable'
+      }[suitability] || suitability;
+      
+      let probabilitiesHtml = '';
+      if (modelResults.suitability_probabilities) {
+        probabilitiesHtml = '<div style="margin-top: 15px;">';
+        for (const [level, prob] of Object.entries(modelResults.suitability_probabilities)) {
+          probabilitiesHtml += `
+            <div class="probability-bar">
+              <div class="probability-fill" style="width: ${prob}%;"></div>
             </div>
-            
-            <div class="result-card" style="margin-top: 20px; max-width: 600px; margin-left: auto; margin-right: auto;">
-                <h3>📋 Complete Recommendations</h3>
-                ${recommendationsHtml || '<p>No recommendations available.</p>'}
-            </div>
+            <div class="probability-text">${level}: ${prob}%</div>
+          `;
+        }
+        probabilitiesHtml += '</div>';
+      }
+      
+      let recommendationsHtml = '';
+      
+      if (recommendations.overall) {
+        recommendationsHtml += `
+          <div style="margin-top: 15px; text-align: left; padding-top: 10px; border-top: 1px solid #ddd;">
+            <h4>📋 ${recommendations.overall.status || 'Recommendation'}</h4>
+            <p>${recommendations.overall.message || ''}</p>
+          </div>
         `;
+      }
+      
+      if (recommendations.planting_advice) {
+        recommendationsHtml += `
+          <div style="margin-top: 15px; text-align: left;">
+            <h4>🌱 Planting Advice</h4>
+            <p>${recommendations.planting_advice.message || ''}</p>
+          </div>
+        `;
+      }
+      
+      if (recommendations.soil_preparation && recommendations.soil_preparation.length) {
+        recommendationsHtml += `
+          <div style="margin-top: 15px; text-align: left;">
+            <h4>🛠️ Soil Preparation</h4>
+            ${recommendations.soil_preparation.map(p => `<p>• ${p}</p>`).join('')}
+          </div>
+        `;
+      }
+      
+      if (recommendations.harvest_advice && recommendations.harvest_advice.length) {
+        recommendationsHtml += `
+          <div style="margin-top: 15px; text-align: left;">
+            <h4>🌾 Harvest Advice</h4>
+            ${recommendations.harvest_advice.map(h => `<p>• ${h}</p>`).join('')}
+          </div>
+        `;
+      }
+      
+      if (recommendations.typhoon) {
+        recommendationsHtml += `
+          <div style="margin-top: 15px; text-align: left;">
+            <h4>🌀 Typhoon Preparedness</h4>
+            <p><strong>Risk Level:</strong> ${recommendations.typhoon.risk_level || 'Unknown'}</p>
+            <p><strong>Risk Months:</strong> ${recommendations.typhoon.risk_months || 'N/A'}</p>
+            ${recommendations.typhoon.advice ? recommendations.typhoon.advice.map(a => `<p>• ${a}</p>`).join('') : ''}
+          </div>
+        `;
+      }
+      
+      resultsDiv.innerHTML = `
+        <div class="results-container">
+          <div class="result-card">
+            <h3>🌾 ${cropType.charAt(0).toUpperCase() + cropType.slice(1)} Yield Prediction</h3>
+            <div class="value">${modelResults.predicted_yield_tons ? modelResults.predicted_yield_tons.toFixed(2) : '?'} <span class="unit">tons/ha</span></div>
+            <div class="value" style="font-size: 20px;">(${modelResults.predicted_yield_kg ? modelResults.predicted_yield_kg.toLocaleString() : '?'} kg/ha)</div>
+            <p style="margin-top: 10px;">Location: ${municipality}</p>
+          </div>
+          
+          <div class="result-card">
+            <h3>🌱 ${cropType.charAt(0).toUpperCase() + cropType.slice(1)} Suitability</h3>
+            <div class="value ${suitabilityClass}">${suitabilityDisplay}</div>
+            <p style="margin-top: 5px;">Overall Score: ${calculatedScores.overall_suitability_score || '?'}%</p>
+            <p style="margin-top: 5px;">Climate Match: ${calculatedScores.climate_match_score || '?'}%</p>
+            <p style="margin-top: 5px;">Soil Compatibility: ${calculatedScores.soil_compatibility_score || '?'}%</p>
+            ${modelResults.suitability_confidence ? `<p>Model Confidence: ${modelResults.suitability_confidence}%</p>` : ''}
+            ${probabilitiesHtml}
+          </div>
+        </div>
         
-        const cached = sessionStorage.getItem(`weather_${municipality}`);
-        if (cached) {
-            const cacheData = JSON.parse(cached);
-            const cacheAge = Math.round((Date.now() - cacheData.timestamp) / 1000);
-            const indicator = document.createElement('div');
-            indicator.className = 'cache-badge';
-            indicator.textContent = `📦 Weather data cached (${Math.floor(cacheAge / 60)} min ${cacheAge % 60} sec old)`;
-            resultsDiv.appendChild(indicator);
-        }
+        <div class="result-card" style="margin-top: 20px; max-width: 600px; margin-left: auto; margin-right: auto;">
+          <h3>📋 Complete Recommendations</h3>
+          ${recommendationsHtml || '<p>No recommendations available.</p>'}
+          <div style="margin-top: 15px; text-align: left; padding-top: 10px; border-top: 1px solid #ddd; font-size: 11px;">
+            <h4>📊 Weather Data Used</h4>
+            <table style="width: 100%;">
+              <tr><td>🌡️ Temperature:</td><td><strong>${usedParams?.avg_temperature || '?'}°C</strong></td></tr>
+              <tr><td>🌧️ Rainfall:</td><td><strong>${usedParams?.total_rainfall || '?'} mm</strong></td></tr>
+              <tr><td>💧 Humidity:</td><td><strong>${usedParams?.humidity || '?'}%</strong></td></tr>
+            </table>
+            <p style="font-size: 10px; color: #8aa066; margin-top: 8px;">✓ Real-time weather data from Visual Crossing API</p>
+          </div>
+        </div>
+      `;
     }
     
     // ============================================
@@ -995,17 +1129,22 @@
       }
       
       // Initialize input summary panel
-      updateInputSummaryPanel();
-      attachLiveUpdateListeners();
+      updateInputSummaryPanel(DEFAULT_FALLBACK);
       
-      // Also update panel when advanced params are toggled
-      const toggleBtn = document.getElementById('toggleParamsBtn');
-      if (toggleBtn) {
-        toggleBtn.addEventListener('click', function() {
-          setTimeout(updateInputSummaryPanel, 100);
-        });
-      }
+      // Attach live update listeners
+      const inputIds = ['avg_temperature', 'total_rainfall', 'humidity', 'ndvi', 'evi', 'soil_fertility', 'n_score', 'p_score', 'k_score'];
+      inputIds.forEach(id => {
+        const element = document.getElementById(id);
+        if (element) {
+          element.addEventListener('input', () => updateInputSummaryPanel());
+          element.addEventListener('change', () => updateInputSummaryPanel());
+        }
+      });
+      
+      const cropSelect = document.getElementById('crop');
+      if (cropSelect) cropSelect.addEventListener('change', () => updateInputSummaryPanel());
     });
+  
   </script>
 </body>
 </html>
