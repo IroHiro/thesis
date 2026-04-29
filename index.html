@@ -590,6 +590,43 @@
   margin-bottom: 6px;
   color: #2B6E3C;
 }
+.farm-explanation {
+  margin-top: 14px;
+  background: #F3F8EF;
+  border-radius: 14px;
+  padding: 10px 14px;
+}
+
+.farm-explanation-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+  color: #2B6E3C;
+}
+
+.farm-explanation-header h4 {
+  font-size: 0.9rem;
+}
+
+.farm-explanation-header span {
+  font-size: 1.2rem;
+  font-weight: bold;
+}
+
+.farm-explanation-content {
+  max-height: 0;
+  overflow: hidden;
+  transition: all 0.3s ease;
+  font-size: 0.85rem;
+  color: #3F5840;
+  line-height: 1.5;
+}
+
+.farm-explanation.active .farm-explanation-content {
+  max-height: 300px;
+  margin-top: 10px;
+}
     .faq-actions {
       display: flex;
       align-items: center;
@@ -1024,21 +1061,33 @@
         <p class="farm-preview-text">
           Sample visual estimate of crop yield potential per hectare.
         </p>
-        <div class="farm-explanation">
-      <h4><br>📊 What this means</h4>
-      <p>
-      This grid shows how much of your land is good for growing crops.
-      </p>
-      <p>
-      <br>  🌱 Green boxes = areas where crops can grow well <br>
-            🟫 Brown boxes = areas that may need improvement <br>
-      </p>
-      <p>
-      <br>  The percentage (82%) shows how much of your land has good conditions. <br>
+<div class="farm-explanation">
+
+  <div class="farm-explanation-header" onclick="toggleExplanation()">
+    <h4>📊 What this means</h4>
+    <span id="explainIcon">+</span>
+  </div>
+
+  <div class="farm-explanation-content" id="farmExplainContent">
+    <p>This grid shows how much of your land is good for growing crops.</p>
+
+    <p>
+      🌱 Green boxes = areas where crops can grow well <br>
+      🟫 Brown boxes = areas that may need improvement
+    </p>
+
+    <p>
+      The percentage (82%) shows how much of your land has good conditions.
       The more green, the higher your possible harvest.
-      </p>
-    </div>
-      </div>
+    </p>
+
+    <p>
+      If most boxes are green, expect better harvest.
+      If many are brown, improving soil or water can help.
+    </p>
+  </div>
+
+</div>
     </div>
 
   </div>
@@ -1787,73 +1836,123 @@
         document.body.classList.remove("modal-open");
       }
     });
-    
-    // FAQ accordion
-    document.querySelectorAll(".faq-question").forEach(question => {
-      question.addEventListener("click", () => {
-        const card = question.parentElement;
-        document.querySelectorAll(".faq-card").forEach(item => {
-          if (item !== card) item.classList.remove("active");
-        });
-        card.classList.toggle("active");
+// ===============================
+// FARM EXPLANATION DROPDOWN
+// ===============================
+function toggleExplanation() {
+  const box = document.querySelector(".farm-explanation");
+  const icon = document.getElementById("explainIcon");
+
+  if (!box || !icon) return;
+
+  box.classList.toggle("active");
+
+  icon.textContent = box.classList.contains("active") ? "−" : "+";
+}
+
+
+// ===============================
+// FAQ ACCORDION + STAR RATING + FEEDBACK
+// ===============================
+document.addEventListener("DOMContentLoaded", function () {
+
+  // FAQ accordion
+  document.querySelectorAll(".faq-question").forEach(question => {
+    question.addEventListener("click", () => {
+      const card = question.parentElement;
+
+      document.querySelectorAll(".faq-card").forEach(item => {
+        if (item !== card) {
+          item.classList.remove("active");
+        }
       });
+
+      card.classList.toggle("active");
     });
-    
-    // Star rating
-    const stars = document.querySelectorAll("#starRating i");
-    stars.forEach((star, index) => {
-      star.addEventListener("click", () => {
-        const value = parseInt(star.getAttribute("data-value"));
-        stars.forEach((s, i) => {
-          if (i < value) {
-            s.classList.add("active");
-            s.className = "fas fa-star";
-          } else {
-            s.classList.remove("active");
-            s.className = "far fa-star";
-          }
-        });
-        document.getElementById("ratingValue").value = value;
+  });
+
+
+  // Star rating
+  const stars = document.querySelectorAll("#starRating i");
+
+  stars.forEach((star, index) => {
+    star.addEventListener("click", () => {
+      const value = index + 1;
+
+      stars.forEach((s, i) => {
+        if (i < value) {
+          s.classList.add("active");
+          s.className = "fas fa-star active";
+        } else {
+          s.classList.remove("active");
+          s.className = "far fa-star";
+        }
       });
+
+      const ratingValue = document.getElementById("ratingValue");
+      if (ratingValue) {
+        ratingValue.value = value;
+      }
     });
-    
-    // Feedback submit
-    const feedbackBtn = document.querySelector(".feedback-btn");
-    const feedbackText = document.querySelector(".feedback-section textarea");
+  });
+
+
+  // Feedback submit
+  const feedbackBtn = document.querySelector(".feedback-btn");
+  const feedbackText = document.querySelector(".feedback-section textarea");
+
+  if (feedbackBtn && feedbackText) {
     feedbackBtn.addEventListener("click", () => {
-      const rating = document.getElementById("ratingValue").value;
+      const rating = document.getElementById("ratingValue")?.value || 0;
       const feedback = feedbackText.value;
+
       if (rating > 0 || feedback.trim()) {
         alert("Thank you for your feedback!");
+
         feedbackText.value = "";
-        stars.forEach(s => { s.classList.remove("active"); s.className = "far fa-star"; });
-        document.getElementById("ratingValue").value = "0";
+
+        stars.forEach(s => {
+          s.classList.remove("active");
+          s.className = "far fa-star";
+        });
+
+        const ratingValue = document.getElementById("ratingValue");
+        if (ratingValue) {
+          ratingValue.value = "0";
+        }
+
       } else {
         alert("Please provide a rating or feedback.");
       }
     });
+  }
+
+
+  // FAQ speak button
+  document.querySelectorAll(".speak-btn").forEach(btn => {
+    btn.addEventListener("click", (e) => {
+      e.stopPropagation();
+
+      const card = e.target.closest(".faq-card");
+      if (!card) return;
+
+      const question = card.querySelector(".faq-question h4")?.innerText || "";
+      const answer = card.querySelector(".faq-answer")?.textContent || "";
+
+      const fullText = `${question}. ${answer}`;
+      const speech = new SpeechSynthesisUtterance(fullText);
+
+      speech.lang = "en-US";
+      speech.rate = 0.95;
+      speech.pitch = 1;
+
+      speechSynthesis.cancel();
+      speechSynthesis.speak(speech);
+    });
   });
-       document.querySelectorAll(".speak-btn").forEach((btn) => {
-      btn.addEventListener("click", (e) => {
 
-        const card = e.target.closest(".faq-card");
-
-        const question = card.querySelector(".faq-question h4").innerText;
-        const answer = card.querySelector(".faq-answer").textContent;
-
-        // Combine question + answer
-        const fullText = `${question}. ${answer}`;
-
-        const speech = new SpeechSynthesisUtterance(fullText);
-
-        speech.lang = "en-US"; // change if needed
-        speech.rate = 0.95;   // slightly slower = easier to understand
-        speech.pitch = 1;
-
-        speechSynthesis.cancel(); // stop previous speech
-        speechSynthesis.speak(speech);
-      });
-      });
+});
+  
 </script>
 </body>
 </html>
