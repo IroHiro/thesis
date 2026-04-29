@@ -1250,36 +1250,6 @@
 
       // Update the visual dashboard with the predicted yield
       updateYieldDashboard(predictedYieldKg, cropType);
-
-      // Show dashboard after results
-       <!--  setTimeout(() => {
-        const dashboardHtml = `
-          <div id="yieldDashboard" class="dashboard-card">
-            <h3>🌾 Visual Yield Dashboard</h3>
-            <div class="header-stats">
-              <span class="yield-achieved">📊 YIELD ACHIEVED: <span id="txtPercent">0</span>%</span>
-              <span class="gap-remaining">⚠️ GAP REMAINING: <span id="txtGap">0</span>%</span>
-            </div>
-            <div class="farm-wrapper">
-              <div id="farmGrid" class="grid-visual"></div>
-              <div id="centerBadge" class="badge-visual">0%</div>
-            </div>
-            <div class="footer-data">
-              <span>🌾 CROP: <strong id="dashboardCrop">Rice</strong></span>
-              <span>📈 CURRENT YIELD: <strong id="txtKg">0</strong> kg/ha</span>
-              <span>🎯 TARGET: <strong id="txtTarget">4000</strong> kg/ha</span>
-            </div>
-          </div>
-        `;
-        const resultsDivInner = document.getElementById('results');
-        if (resultsDivInner && !document.getElementById('yieldDashboard')) {
-          resultsDivInner.insertAdjacentHTML('beforeend', dashboardHtml);
-          initDashboardGrid();
-          updateYieldDashboard(predictedYieldKg, cropType);
-        } else {
-          updateYieldDashboard(predictedYieldKg, cropType);
-        }
-      }, 100);  -->
       
     } catch (error) {
       console.error("Prediction error:", error);
@@ -1290,111 +1260,114 @@
   }
   
   function displayResults(result, cropType, municipality, usedParams) {
-    const resultsDiv = document.getElementById('results');
-    const modelResults = result.model_results || {};
-    const calculatedScores = result.calculated_scores || {};
-    const recommendations = result.recommendations || {};
-    const suitability = modelResults.suitability || 'Medium';
-    const suitabilityClass = `suitability-${suitability}`;
-    const suitabilityDisplay = { 'High': '🌟 Highly Suitable', 'Medium': '✅ Moderately Suitable', 'Low': '⚠️ Marginally Suitable' }[suitability] || suitability;
-    
-    let probabilitiesHtml = '';
-    if (modelResults.suitability_probabilities) {
-      probabilitiesHtml = '<div style="margin-top: 15px;">';
-      for (const [level, prob] of Object.entries(modelResults.suitability_probabilities)) {
-        probabilitiesHtml += `<div class="probability-bar"><div class="probability-fill" style="width: ${prob}%;"></div></div><div class="probability-text">${level}: ${prob}%</div>`;
-      }
-      probabilitiesHtml += '</div>';
+  const resultsDiv = document.getElementById('results');
+  const modelResults = result.model_results || {};
+  const calculatedScores = result.calculated_scores || {};
+  const recommendations = result.recommendations || {};
+  const suitability = modelResults.suitability || 'Medium';
+  const suitabilityClass = `suitability-${suitability}`;
+  const suitabilityDisplay = { 'High': '🌟 Highly Suitable', 'Medium': '✅ Moderately Suitable', 'Low': '⚠️ Marginally Suitable' }[suitability] || suitability;
+  
+  let probabilitiesHtml = '';
+  if (modelResults.suitability_probabilities) {
+    probabilitiesHtml = '<div style="margin-top: 15px;">';
+    for (const [level, prob] of Object.entries(modelResults.suitability_probabilities)) {
+      probabilitiesHtml += `<div class="probability-bar"><div class="probability-fill" style="width: ${prob}%;"></div></div><div class="probability-text">${level}: ${prob}%</div>`;
     }
-    
-    let recommendationsHtml = '';
-    if (recommendations.overall) recommendationsHtml += `<div><h4>📋 ${recommendations.overall.status || 'Recommendation'}</h4><p>${recommendations.overall.message || ''}</p></div>`;
-    if (recommendations.planting_advice) recommendationsHtml += `<div><h4>🌱 Planting Advice</h4><p>${recommendations.planting_advice.message || ''}</p></div>`;
-    if (recommendations.soil_preparation && recommendations.soil_preparation.length) recommendationsHtml += `<div><h4>🛠️ Soil Preparation</h4>${recommendations.soil_preparation.map(p => `<p>• ${p}</p>`).join('')}</div>`;
-    if (recommendations.harvest_advice && recommendations.harvest_advice.length) recommendationsHtml += `<div><h4>🌾 Harvest Advice</h4>${recommendations.harvest_advice.map(h => `<p>• ${h}</p>`).join('')}</div>`;
-    
-    const currentYield = modelResults.predicted_yield_kg || 0;
-    const targetYield = TARGET_YIELDS[cropType] || 4000;
-    
-    resultsDiv.innerHTML = `
-        <!-- LEFT COLUMN: Yield Prediction + Dashboard (stacked) -->
-        <div style="display: flex; flex-direction: column; gap: 20px;">
-          <!-- Yield Prediction Card -->
-          <div class="result-card">
-            <h3>🌾 ${cropType.charAt(0).toUpperCase() + cropType.slice(1)} Yield Prediction</h3>
-            <div class="value">${modelResults.predicted_yield_tons ? modelResults.predicted_yield_tons.toFixed(2) : '?'} <span class="unit">tons/ha</span></div>
-            <div class="value" style="font-size: 20px;">(${currentYield.toLocaleString()} kg/ha)</div>
-            <p>${((currentYield / targetYield) * 100).toFixed(0)}% of target (${targetYield.toLocaleString()} kg/ha)</p>
-            <p>Location: ${municipality}</p>
-          </div>
-          
-          <!-- Visual Yield Dashboard (will be filled by setTimeout) -->
-          <div id="yieldDashboard" class="dashboard-card">
-            <h3>🌾 Visual Yield Dashboard</h3>
-            <div class="header-stats">
-              <span class="yield-achieved">📊 YIELD ACHIEVED: <span id="txtPercent">0</span>%</span>
-              <span class="gap-remaining">⚠️ GAP REMAINING: <span id="txtGap">0</span>%</span>
-            </div>
-            <div class="farm-wrapper">
-              <div id="farmGrid" class="grid-visual"></div>
-              <div id="centerBadge" class="badge-visual">0%</div>
-            </div>
-            <div class="footer-data">
-              <span>🌾 CROP: <strong id="dashboardCrop">Rice</strong></span>
-              <span>📈 CURRENT YIELD: <strong id="txtKg">0</strong> kg/ha</span>
-              <span>🎯 TARGET: <strong id="txtTarget">4000</strong> kg/ha</span>
-            </div>
-          </div>
+    probabilitiesHtml += '</div>';
+  }
+  
+  let recommendationsHtml = '';
+  if (recommendations.overall) recommendationsHtml += `<div><h4>📋 ${recommendations.overall.status || 'Recommendation'}</h4><p>${recommendations.overall.message || ''}</p></div>`;
+  if (recommendations.planting_advice) recommendationsHtml += `<div><h4>🌱 Planting Advice</h4><p>${recommendations.planting_advice.message || ''}</p></div>`;
+  if (recommendations.soil_preparation && recommendations.soil_preparation.length) recommendationsHtml += `<div><h4>🛠️ Soil Preparation</h4>${recommendations.soil_preparation.map(p => `<p>• ${p}</p>`).join('')}</div>`;
+  if (recommendations.harvest_advice && recommendations.harvest_advice.length) recommendationsHtml += `<div><h4>🌾 Harvest Advice</h4>${recommendations.harvest_advice.map(h => `<p>• ${h}</p>`).join('')}</div>`;
+  
+  const currentYield = modelResults.predicted_yield_kg || 0;
+  const targetYield = TARGET_YIELDS[cropType] || 4000;
+  
+  resultsDiv.innerHTML = `
+    <!-- Two columns: Left (Yield + Dashboard) and Right (Suitability) -->
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+      
+      <!-- LEFT COLUMN: Yield Prediction + Dashboard (stacked) -->
+      <div style="display: flex; flex-direction: column; gap: 20px;">
+        <!-- Yield Prediction Card -->
+        <div class="result-card">
+          <h3>🌾 ${cropType.charAt(0).toUpperCase() + cropType.slice(1)} Yield Prediction</h3>
+          <div class="value">${modelResults.predicted_yield_tons ? modelResults.predicted_yield_tons.toFixed(2) : '?'} <span class="unit">tons/ha</span></div>
+          <div class="value" style="font-size: 20px;">(${currentYield.toLocaleString()} kg/ha)</div>
+          <p>${((currentYield / targetYield) * 100).toFixed(0)}% of target (${targetYield.toLocaleString()} kg/ha)</p>
+          <p>Location: ${municipality}</p>
         </div>
         
-        <!-- Right Column: Suitability -->
-        <div class="result-card">
-          <h3>🌱 ${cropType.charAt(0).toUpperCase() + cropType.slice(1)} Suitability</h3>
-          <div class="value ${suitabilityClass}">${suitabilityDisplay}</div>
-          <p>Overall Score: ${calculatedScores.overall_suitability_score || '?'}%</p>
-          <p>Climate Match: ${calculatedScores.climate_match_score || '?'}%</p>
-          <p>Soil Compatibility: ${calculatedScores.soil_compatibility_score || '?'}%</p>
-          ${probabilitiesHtml}
-        </div>
-        
-        <!-- Full Width: Recommendations -->
-        <div class="result-card">
-          <h3>📋 Recommendations</h3>
-          ${recommendationsHtml || '<p>No recommendations available.</p>'}
-          <div style="margin-top: 12px; padding-top: 10px; border-top: 1px solid #ddd; font-size: 11px;">
-            <h4>📊 Weather Data Used</h4>
-            <table style="width:100%">
-              <tr><td>🌡️ Temperature:</td><td><strong>${usedParams?.avg_temperature || '?'}°C</strong></td></tr>
-              <tr><td>🌧️ Rainfall:</td><td><strong>${usedParams?.total_rainfall || '?'} mm</strong></td></tr>
-              <tr><td>💧 Humidity:</td><td><strong>${usedParams?.humidity || '?'}%</strong></td></tr>
-              <tr><td>🌿 NDVI/EVI:</td><td><strong>${usedParams?.ndvi || '?'} / ${usedParams?.evi || '?'}</strong></td></tr>
-              <tr><td>🪴 Soil Fertility:</td><td><strong>${usedParams?.soil_fertility || '?'}/5</strong></td></tr>
-            </table>
-            <p style="font-size: 10px; margin-top: 8px;">✓ Real-time weather from Visual Crossing API</p>
+        <!-- Visual Yield Dashboard -->
+        <div id="yieldDashboard" class="dashboard-card">
+          <h3>🌾 Visual Yield Dashboard</h3>
+          <div class="header-stats">
+            <span class="yield-achieved">📊 YIELD ACHIEVED: <span id="txtPercent">0</span>%</span>
+            <span class="gap-remaining">⚠️ GAP REMAINING: <span id="txtGap">0</span>%</span>
+          </div>
+          <div class="farm-wrapper">
+            <div id="farmGrid" class="grid-visual"></div>
+            <div id="centerBadge" class="badge-visual">0%</div>
+          </div>
+          <div class="footer-data">
+            <span>🌾 CROP: <strong id="dashboardCrop">Rice</strong></span>
+            <span>📈 CURRENT YIELD: <strong id="txtKg">0</strong> kg/ha</span>
+            <span>🎯 TARGET: <strong id="txtTarget">4000</strong> kg/ha</span>
           </div>
         </div>
       </div>
-
-       <!-- Visual Yield Dashboard - NOW OUTSIDE the container, full width -->
-       
-    <!--  <div id="yieldDashboard" class="dashboard-card" style="margin-top: 20px;">
-        <h3>🌾 Visual Yield Dashboard</h3>
-        <div class="header-stats">
-          <span class="yield-achieved">📊 YIELD ACHIEVED: <span id="txtPercent">0</span>%</span>
-          <span class="gap-remaining">⚠️ GAP REMAINING: <span id="txtGap">0</span>%</span>
-        </div>
-        <div class="farm-wrapper">
-          <div id="farmGrid" class="grid-visual"></div>
-          <div id="centerBadge" class="badge-visual">0%</div>
-        </div>
-        <div class="footer-data">
-          <span>🌾 CROP: <strong id="dashboardCrop">Rice</strong></span>
-          <span>📈 CURRENT YIELD: <strong id="txtKg">0</strong> kg/ha</span>
-          <span>🎯 TARGET: <strong id="txtTarget">4000</strong> kg/ha</span>
-        </div>
-      </div> -->
-    `;
-  }
+      
+      <!-- RIGHT COLUMN: Suitability -->
+      <div class="result-card">
+        <h3>🌱 ${cropType.charAt(0).toUpperCase() + cropType.slice(1)} Suitability</h3>
+        <div class="value ${suitabilityClass}">${suitabilityDisplay}</div>
+        <p>Overall Score: ${calculatedScores.overall_suitability_score || '?'}%</p>
+        <p>Climate Match: ${calculatedScores.climate_match_score || '?'}%</p>
+        <p>Soil Compatibility: ${calculatedScores.soil_compatibility_score || '?'}%</p>
+        ${probabilitiesHtml}
+      </div>
+    </div>
+    
+    <!-- FULL WIDTH: Recommendations below both columns -->
+    <div class="result-card" style="margin-top: 20px;">
+      <h3>📋 Recommendations</h3>
+      ${recommendationsHtml || '<p>No recommendations available.</p>'}
+      <div style="margin-top: 12px; padding-top: 10px; border-top: 1px solid #ddd; font-size: 11px;">
+        <h4>📊 Weather Data Used</h4>
+        <table style="width:100%">
+          <tr>
+            <td>🌡️ Temperature:</td>
+            <td><strong>${usedParams?.avg_temperature || '?'}°C</strong></td>
+           </tr>
+          <tr>
+            <td>🌧️ Rainfall:</td>
+            <td><strong>${usedParams?.total_rainfall || '?'} mm</strong></td>
+           </tr>
+          <tr>
+            <td>💧 Humidity:</td>
+            <td><strong>${usedParams?.humidity || '?'}%</strong></td>
+           </tr>
+          <tr>
+            <td>🌿 NDVI/EVI:</td>
+            <td><strong>${usedParams?.ndvi || '?'} / ${usedParams?.evi || '?'}</strong></td>
+           </tr>
+          <tr>
+            <td>🪴 Soil Fertility:</td>
+            <td><strong>${usedParams?.soil_fertility || '?'}/5</strong></td>
+           </tr>
+         </table>
+        <p style="font-size: 10px; margin-top: 8px;">✓ Real-time weather from Visual Crossing API</p>
+      </div>
+    </div>
+  `;
+  
+  // Initialize the dashboard grid after HTML is inserted
+  initDashboardGrid();
+  updateYieldDashboard(currentYield, cropType);
+}
 
   // ============================================
   // MODAL & UI EVENT HANDLERS
