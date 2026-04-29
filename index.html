@@ -1503,7 +1503,7 @@
       <div class="left-column-stack">
         <div class="result-card">
           <h3>🌾 ${cropType.charAt(0).toUpperCase() + cropType.slice(1)} Yield Prediction</h3>
-          <div class="value">${modelResults.predicted_yield_tons ? modelResults.predicted_yield_tons.toFixed(2) : '?'} <span class="unit">tons/ha</span></div>
+          <div class="value">${(currentYield / 1000).toFixed(2)} <span class="unit">tons/ha</span></div>
           <div class="value" style="font-size: 20px;">(${currentYield.toLocaleString()} kg/ha)</div>
           <p>${((currentYield / targetYield) * 100).toFixed(0)}% of target (${targetYield.toLocaleString()} kg/ha)</p>
           <p>Location: ${municipality}</p>
