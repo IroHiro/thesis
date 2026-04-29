@@ -1,263 +1,399 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Crop Suitability & Yield Prediction | Smart Agriculture Albay</title>
-  <link rel="stylesheet" href="style.css" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Crop Suitability & Yield Prediction | TerraSight</title>
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <!-- Font Awesome 6 -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
   <style>
-    /* Additional styles for dual results */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      background: linear-gradient(135deg, #FCF9F2 0%, #F8F5EA 100%);
+      font-family: 'Inter', 'Plus Jakarta Sans', system-ui, sans-serif;
+      color: #1A2E1F;
+      line-height: 1.4;
+      overflow-x: hidden;
+      padding-top: 120px;
+    }
+
+    body.modal-open {
+      overflow: hidden;
+    }
+
+    .container {
+      max-width: 1280px;
+      margin: 0 auto;
+      padding: 0 32px;
+    }
+
+    .header {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      z-index: 1000;
+      background: linear-gradient(135deg, #FCF9F2 0%, #F8F5EA 100%);
+      box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    }
+
+    .navbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 28px 0 24px;
+      flex-wrap: wrap;
+      gap: 20px;
+    }
+
+    .logo {
+      font-size: 2rem;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      background: linear-gradient(135deg, #1F6530, #3C8849);
+      background-clip: text;
+      -webkit-background-clip: text;
+      color: transparent;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 36px;
+      align-items: center;
+    }
+
+    .nav-links a {
+      text-decoration: none;
+      font-weight: 600;
+      color: #2C3E2B;
+      font-size: 1rem;
+      transition: all 0.2s ease;
+    }
+
+    .nav-links a:hover {
+      color: #2B6E3C;
+    }
+
+    .hero {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      min-height: 85vh;
+      padding: 40px 0 80px;
+    }
+
+    .hero-grid {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 48px;
+    }
+
+    .hero-content {
+      flex: 1.2;
+      min-width: 280px;
+    }
+
+    .hero-badge {
+      background: #E9F4E5;
+      display: inline-block;
+      padding: 6px 14px;
+      border-radius: 40px;
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: #2C6E3A;
+      margin-bottom: 24px;
+    }
+
+    .hero-content h1 {
+      font-size: 4rem;
+      font-weight: 800;
+      line-height: 1.2;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      margin-bottom: 20px;
+      color: #1C2F1A;
+      letter-spacing: -0.02em;
+    }
+
+    .hero-content .highlight {
+      background: linear-gradient(120deg, #DCF5D4, #BDE5B0);
+      background-repeat: no-repeat;
+      background-size: 100% 40%;
+      background-position: bottom;
+      padding: 0 4px;
+    }
+
+    .hero-sub {
+      font-size: 1.25rem;
+      color: #3F5840;
+      margin-bottom: 32px;
+      max-width: 90%;
+      font-weight: 400;
+      line-height: 1.5;
+    }
+
+    .cta-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 18px;
+      margin: 32px 0 24px;
+    }
+
+    .btn-primary {
+      background: #2B6E3C;
+      color: white;
+      border: none;
+      padding: 14px 32px;
+      font-weight: 700;
+      font-size: 1rem;
+      border-radius: 60px;
+      cursor: pointer;
+      transition: all 0.25s ease;
+      box-shadow: 0 6px 14px rgba(43, 110, 60, 0.2);
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      font-family: inherit;
+    }
+
+    .btn-primary:hover {
+      background: #1F5A2E;
+      transform: translateY(-2px);
+    }
+
+    .btn-outline {
+      background: transparent;
+      border: 1.5px solid #BED6B6;
+      padding: 14px 28px;
+      font-weight: 600;
+      border-radius: 60px;
+      color: #2A5C2E;
+      transition: all 0.2s;
+      cursor: pointer;
+      font-family: inherit;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .btn-outline:hover {
+      background: #F2F8EF;
+      border-color: #8FBC8A;
+    }
+
+    .trust-note {
+      display: flex;
+      gap: 24px;
+      margin-top: 28px;
+      color: #52734D;
+      flex-wrap: wrap;
+    }
+
+    /* Modal Styles */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      width: 100%;
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+      background: rgba(0,0,0,0.35);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      opacity: 0;
+      visibility: hidden;
+      transition: 0.3s ease;
+      z-index: 9999;
+      overflow: hidden;
+    }
+
+    .modal-overlay.active {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    .modal-card {
+      background: white;
+      border-radius: 48px;
+      padding: 32px 36px;
+      max-width: 580px;
+      width: 100%;
+      max-height: 85vh;
+      overflow-y: auto;
+      text-align: center;
+      box-shadow: 0 30px 45px rgba(0,0,0,0.2);
+      margin: auto;
+    }
+
+    .modal-card::-webkit-scrollbar {
+      width: 6px;
+    }
+    .modal-card::-webkit-scrollbar-track {
+      background: #E2EADB;
+      border-radius: 10px;
+    }
+    .modal-card::-webkit-scrollbar-thumb {
+      background: #2B6E3C;
+      border-radius: 10px;
+    }
+
+    .result-message {
+      margin-top: 20px;
+      background: #E9F4E2;
+      border-radius: 24px;
+      padding: 16px;
+      font-weight: 500;
+      text-align: left;
+      max-height: 400px;
+      overflow-y: auto;
+    }
+
+    .input-group {
+      margin-bottom: 20px;
+      text-align: left;
+    }
+
+    .input-group label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: 600;
+      color: #2C5C2E;
+    }
+
+    .input-group input, .input-group select {
+      width: 100%;
+      padding: 14px 16px;
+      border-radius: 100px;
+      border: 1px solid #CBE0C4;
+      background: #FEFEF7;
+      font-size: 1rem;
+      font-family: inherit;
+      outline: none;
+      transition: 0.2s;
+    }
+
+    .input-group input:focus, .input-group select:focus {
+      border-color: #3F9E4A;
+      box-shadow: 0 0 0 2px rgba(63,158,74,0.2);
+    }
+
+    .modal-actions {
+      display: flex;
+      gap: 12px;
+      justify-content: center;
+      margin-top: 10px;
+    }
+
+    /* Results styling inside modal */
     .results-container {
       display: flex;
-      gap: 20px;
-      margin-top: 20px;
-      flex-wrap: wrap;
-      justify-content: center;
+      flex-direction: column;
+      gap: 16px;
     }
+
     .result-card {
-      background: rgba(255,255,255,0.95);
-      border-radius: 15px;
-      padding: 20px;
-      min-width: 250px;
-      text-align: center;
-      box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+      background: white;
+      border-radius: 20px;
+      padding: 16px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+      border: 1px solid #DCE9D4;
     }
+
     .result-card h3 {
-      margin: 0 0 10px 0;
-      color: #2d6a4f;
+      color: #2B6E3C;
+      margin-bottom: 12px;
+      font-size: 1.1rem;
     }
+
     .result-card .value {
       font-size: 28px;
       font-weight: bold;
-      color: #1b4332;
+      color: #1A5C2E;
     }
+
     .result-card .unit {
       font-size: 14px;
       color: #666;
     }
-    .suitability-High {
-      color: #2d6a4f;
-    }
-    .suitability-Medium {
-      color: #f4a261;
-    }
-    .suitability-Low {
-      color: #d62828;
-    }
+
+    .suitability-High { color: #2B6E3C; font-weight: bold; }
+    .suitability-Medium { color: #f4a261; font-weight: bold; }
+    .suitability-Low { color: #d62828; font-weight: bold; }
+
     .probability-bar {
-      background: #e9ecef;
-      border-radius: 10px;
-      height: 20px;
+      background: #E8EDE4;
+      border-radius: 30px;
+      height: 12px;
       margin: 10px 0;
       overflow: hidden;
     }
+
     .probability-fill {
-      background: #2d6a4f;
+      background: #2B6E3C;
       height: 100%;
-      border-radius: 10px;
+      border-radius: 30px;
       transition: width 0.3s ease;
     }
+
     .probability-text {
-      font-size: 12px;
+      font-size: 11px;
       margin-top: 5px;
     }
-    /* LOADER */
-    .single-spinner {
-      display: flex;
-      justify-content: center;
-      margin-top: 15px;
-    }
-    
-    .spinner-small {
-      width: 30px;
-      height: 30px;
-      border: 4px solid #ccc;
-      border-top: 4px solid #8fa163;
-      border-radius: 50%;
-      animation: spin 1s linear infinite;
-    }
-    @keyframes spin {
-      0% { transform: rotate(0deg); }
-      100% { transform: rotate(360deg); }
-    }
+
     .cache-badge {
       font-size: 10px;
-      background: #e9ecef;
+      background: #E9F4E2;
       display: inline-block;
       padding: 2px 8px;
-      border-radius: 10px;
-      margin-top: 5px;
-    }
-
-    /* Input field styles */
-    .form-card input {
-      width: 100%;
-      padding: 12px 14px;
-      margin-bottom: 18px;
-      background-color: #2e3c1c;
-      color: #ffffff;
-      border: 1px solid #7f9a4e;
-      border-radius: 14px;
-      font-size: 0.95rem;
-      transition: all 0.2s ease;
-      outline: none;
-    }
-
-    .form-card input:hover {
-      background-color: #3c4d25;
-      border-color: #a9c97a;
-    }
-
-    .form-card input:focus {
-      border-color: #cfe49e;
-      box-shadow: 0 0 0 3px rgba(160, 190, 100, 0.3);
-    }
-
-    .form-card input::placeholder {
-      color: #8aa066;
-      font-size: 0.85rem;
-    }
-
-    .form-card h4 {
-      font-size: 0.95rem;
-      margin-bottom: 12px;
-      color: #d4e6a5;
-      font-weight: 600;
-    }
-
-    /* Toggle button style */
-    #toggleParamsBtn {
-      margin-top: 15px !important;
-      margin-bottom: 10px !important;
-      background: #5a6e3a !important;
-      color: white !important;
-      transition: all 0.2s ease;
-    }
-
-    #toggleParamsBtn:hover {
-      opacity: 0.9;
-      transform: translateY(-1px);
-      background: #6d8548 !important;
-    }
-
-    /* Reset button style */
-    .reset-btn {
-      background: #4a5a30 !important;
-      color: #eef5dc !important;
-      margin-top: 5px !important;
-      margin-bottom: 15px !important;
-      font-size: 0.85rem !important;
-      padding: 8px !important;
-    }
-
-    .reset-btn:hover {
-      background: #5a6e3a !important;
-      color: white !important;
-    }
-
-    /* Input Summary Panel */
-    .input-summary-panel {
-      background: rgba(30, 45, 20, 0.95);
-      backdrop-filter: blur(8px);
       border-radius: 20px;
-      padding: 20px;
-      margin-top: 20px;
-      border: 1px solid rgba(160, 190, 100, 0.4);
-      transition: all 0.3s ease;
+      margin-top: 10px;
     }
 
-    .input-summary-panel h3 {
-      color: #e0f0bc;
-      font-size: 1.2rem;
-      margin-bottom: 15px;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      border-left: 3px solid #a9c97a;
-      padding-left: 12px;
-    }
-
-    .input-summary-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-      gap: 12px;
-    }
-
-    .input-summary-item {
-      background: rgba(20, 30, 12, 0.6);
-      border-radius: 12px;
-      padding: 8px 10px;
-      text-align: center;
-      transition: transform 0.2s ease;
-    }
-
-    .input-summary-item:hover {
-      transform: translateY(-2px);
-      background: rgba(40, 60, 25, 0.7);
-    }
-
-    .input-summary-label {
-      font-size: 9px;
-      color: #b8cc8a;
-      letter-spacing: 0.5px;
-      margin-bottom: 4px;
-      display: block;
-      text-transform: uppercase;
-    }
-
-    .input-summary-value {
-      font-size: 16px;
-      font-weight: 700;
-      color: #f9ffea;
-    }
-
-    .input-summary-unit {
-      font-size: 9px;
-      color: #8aa066;
-      margin-left: 2px;
-    }
-
-    /* Yield Dashboard Integration Styles */
+    /* Yield Dashboard inside modal */
     .dashboard-card {
-      background: rgba(255, 255, 255, 0.95);
-      backdrop-filter: blur(8px);
+      background: #F7FBF4;
       border-radius: 24px;
-      padding: 20px;
+      padding: 16px;
       margin-top: 20px;
-      box-shadow: 0 12px 28px rgba(0, 0, 0, 0.2);
-      border: 1px solid rgba(160, 190, 100, 0.3);
+      border: 1px solid #DCE9D4;
     }
 
     .dashboard-card h3 {
-      color: #2d6a4f;
-      margin-bottom: 15px;
-      font-size: 1.2rem;
-      display: flex;
-      align-items: center;
-      gap: 8px;
+      color: #2B6E3C;
+      margin-bottom: 12px;
+      font-size: 1rem;
     }
 
     .header-stats {
       display: flex;
       justify-content: space-between;
-      align-items: center;
       margin-bottom: 15px;
-      font-weight: bold;
-      font-size: 0.85rem;
+      font-size: 0.8rem;
       flex-wrap: wrap;
-      gap: 10px;
+      gap: 8px;
     }
 
-    .yield-achieved { color: #2e7d32; }
-    .gap-remaining { color: #f4a261; }
+    .yield-achieved { color: #2e7d32; font-weight: bold; }
+    .gap-remaining { color: #f4a261; font-weight: bold; }
 
     .farm-wrapper {
       position: relative;
-      border: 8px solid #a67c52;
+      border: 6px solid #a67c52;
       border-radius: 12px;
       background: #c19a6b;
       overflow: hidden;
-      margin-bottom: 15px;
+      margin-bottom: 12px;
     }
 
     .grid-visual {
@@ -281,7 +417,7 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 14px;
+      font-size: 12px;
       height: 100%;
     }
 
@@ -298,9 +434,9 @@
       transform: translate(-50%, -50%);
       background: rgba(255, 255, 255, 0.85);
       backdrop-filter: blur(4px);
-      padding: 10px 20px;
+      padding: 8px 16px;
       border-radius: 40px;
-      font-size: 2rem;
+      font-size: 1.5rem;
       font-weight: 900;
       color: #1b5e20;
       z-index: 10;
@@ -310,898 +446,839 @@
     .footer-data {
       display: flex;
       justify-content: space-between;
-      border-top: 1px solid #ddd;
-      padding-top: 12px;
-      font-size: 0.85rem;
+      padding-top: 10px;
+      font-size: 0.75rem;
       flex-wrap: wrap;
-      gap: 10px;
+      gap: 8px;
     }
 
     .footer-data span {
-      background: #f5f5f5;
+      background: white;
       padding: 4px 10px;
       border-radius: 20px;
     }
 
-    /* Parameter feedback animation */
-    .param-feedback {
-      animation: fadeOut 2s ease forwards;
-      font-size: 11px;
-      color: #cfe09c;
-      margin-top: 5px;
-      margin-bottom: 10px;
+    /* FAQ Modal */
+    .faq-modal {
+      background: white;
+      width: 100%;
+      max-width: 750px;
+      max-height: 85vh;
+      overflow-y: auto;
+      border-radius: 35px;
+      padding: 30px;
+      box-shadow: 0 25px 50px rgba(0,0,0,0.25);
+    }
+
+    .faq-subtitle {
+      text-align: center;
+      color: #4E6B48;
+      margin-bottom: 25px;
+    }
+
+    .faq-container {
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+    }
+
+    .faq-card {
+      background: #F7FBF4;
+      border: 1px solid #DCE9D4;
+      border-radius: 20px;
+      overflow: hidden;
+      transition: 0.3s ease;
+    }
+
+    .faq-card:hover {
+      border-color: #2B6E3C;
+    }
+
+    .faq-question {
+      padding: 18px 20px;
+      cursor: pointer;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-weight: 600;
+      color: #1F4E2B;
+    }
+
+    .faq-question h4 {
+      font-size: 1rem;
+    }
+
+    .faq-question span {
+      font-size: 1.3rem;
+      font-weight: bold;
+      color: #2B6E3C;
+    }
+
+    .faq-answer {
+      max-height: 0;
+      overflow: hidden;
+      padding: 0 20px;
+      color: #4E6B48;
+      line-height: 1.6;
+      transition: all 0.3s ease;
+    }
+
+    .faq-card.active .faq-answer {
+      max-height: 200px;
+      padding: 0 20px 20px;
+    }
+
+    .faq-card.active .faq-question span {
+      transform: rotate(45deg);
+    }
+
+    .faq-close-btn {
+      float: right;
+      margin-bottom: 20px;
+    }
+
+    /* Footer */
+    .terrasight-footer {
+      background: linear-gradient(135deg, #EDF7E8, #F8FBF5);
+      border-top: 1px solid #dce8d5;
+      padding: 20px 35px;
+      margin-top: 60px;
+    }
+
+    .footer-container {
+      max-width: 1300px;
+      margin: auto;
+    }
+
+    .footer-row {
+      display: grid;
+      grid-template-columns: 1fr 1.3fr 1fr;
+      align-items: center;
+      gap: 20px;
+    }
+
+    .footer-contact {
+      font-size: 0.85rem;
+      color: #5f6b5f;
+      line-height: 1.6;
+    }
+
+    .footer-contact h4 {
+      color: #2B6E3C;
+      margin-bottom: 8px;
+      font-size: 0.95rem;
+    }
+
+    .partnership-section {
       text-align: center;
     }
 
-    @keyframes fadeOut {
-      0% { opacity: 1; }
-      70% { opacity: 1; }
-      100% { opacity: 0; display: none; }
+    .partnership-section h4 {
+      font-size: 0.9rem;
+      color: #2B6E3C;
+      margin-bottom: 12px;
     }
 
-    /* Responsive */
-    @media (max-width: 680px) {
-      .navbar {
-        padding: 0 20px;
-      }
-      .nav-links {
-        gap: 24px;
-      }
-      .hero-content h1 {
-        font-size: 1.7rem;
-      }
-      .hero-content p {
-        font-size: 1rem;
-      }
-      .form-card {
-        padding: 24px 20px;
-        max-width: 95%;
-      }
-      .result-card .value {
-        font-size: 28px !important;
-      }
-      .results-container {
-        gap: 16px !important;
-      }
-      .input-summary-grid {
-        grid-template-columns: repeat(2, 1fr);
-      }
-      .badge-visual {
-        font-size: 1.2rem;
-        padding: 6px 12px;
-      }
-      .cell-visual.active::after {
-        font-size: 10px;
+    .partner-row {
+      display: flex;
+      justify-content: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .partner-row img {
+      width: 38px;
+      height: 38px;
+      object-fit: contain;
+      background: white;
+      padding: 5px;
+      border-radius: 10px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    }
+
+    .feedback-section {
+      background: white;
+      padding: 15px;
+      border-radius: 18px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+    }
+
+    .feedback-section h4 {
+      color: #2B6E3C;
+      font-size: 0.95rem;
+      margin-bottom: 8px;
+    }
+
+    .stars {
+      color: #f5b301;
+      font-size: 1rem;
+      margin-bottom: 10px;
+    }
+
+    .stars i {
+      font-size: 20px;
+      color: #ccc;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+
+    .stars i.active {
+      color: #f4b400;
+    }
+
+    .feedback-section textarea {
+      width: 100%;
+      height: 60px;
+      border: 1px solid #dce8d5;
+      border-radius: 12px;
+      padding: 10px;
+      resize: none;
+      font-family: inherit;
+      font-size: 0.8rem;
+      margin-bottom: 10px;
+    }
+
+    .feedback-btn {
+      width: 100%;
+      background: #2B6E3C;
+      color: white;
+      border: none;
+      padding: 10px;
+      border-radius: 25px;
+      cursor: pointer;
+      font-size: 0.85rem;
+    }
+
+    .feedback-btn:hover {
+      background: #20552d;
+    }
+
+    .footer-bottom {
+      text-align: center;
+      margin-top: 15px;
+      padding-top: 12px;
+      border-top: 1px solid #dce8d5;
+      font-size: 0.75rem;
+      color: #6b7768;
+    }
+
+    .loader-spinner {
+      display: inline-block;
+      width: 20px;
+      height: 20px;
+      border: 2px solid #E9F4E2;
+      border-top: 2px solid #2B6E3C;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin-right: 8px;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    @media (max-width: 880px) {
+      .hero-content h1 { font-size: 3rem; }
+      .container { padding: 0 24px; }
+      .navbar { flex-direction: column; align-items: flex-start; }
+      .nav-links { flex-wrap: wrap; gap: 20px; }
+      .footer-row {
+        grid-template-columns: 1fr;
+        text-align: center;
       }
     }
+
+    @media (max-width: 720px) {
+      .hero-grid { flex-direction: column; }
+      .hero-content h1 { font-size: 2.6rem; }
+      .modal-card { padding: 24px 20px; }
+      .badge-visual { font-size: 1rem; padding: 4px 10px; }
+    }
+
+    .fade-up { animation: fadeUp 0.6s ease-out forwards; }
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .delay-1 { animation-delay: 0.1s; }
   </style>
 </head>
 <body>
 
-  <!-- Navigation Bar -->
-  <header class="navbar">
-    <nav>
-      <ul class="nav-links">
-        <li><a href="index.html">Home</a></li>
-        <li><a href="map.html">Crop Map</a></li>
-        <li><a href="about.html">About</a></li>
-        <li><a href="faqs.html">FAQs</a></li>
-      </ul>
-    </nav>
-  </header>
+<div class="container">
+  <nav class="navbar fade-up">
+    <div class="logo">🌱 TerraSight</div>
+    <div class="nav-links">
+      <a href="#">Home</a>
+      <a href="#" id="aboutNav">About</a>
+      <a href="#" id="Map">Crop Map</a>
+    </div>
+  </nav>
 
-  <!-- HERO SECTION -->
-  <section class="hero">
-    <div class="overlay"></div>
-
-    <div class="hero-content">
-      <h1>
-        Data-Driven Crop Suitability and Yield Prediction for Climate-Adaptive
-        Agriculture in Albay using Random Forest and LSTM models
-      </h1>
-      <p>Your guide to crop suitability and yield forecasting.</p>
-
-      <!-- FORM CARD -->
-      <div class="form-card">
-        <label for="city">📍 Select Your Municipality/City</label>
-        <select id="city">
-          <option value="">-- Select Municipality/City --</option>
-          <option value="Malinao">Malinao</option>
-          <option value="Pioduran">Pio Duran</option>
-          <option value="Ligao">Ligao City</option>
-          <option value="Polangui">Polangui</option>
-          <option value="Oas">Oas</option>
-        </select>
-
-        <label for="crop">🌾 Select a Crop</label>
-        <select id="crop">
-          <option value="">-- Select Crop --</option>
-          <option value="rice">Rice</option>
-          <option value="corn">Corn</option>
-        </select>
-
-        <button onclick="predictBoth()">🔮 Get Complete Prediction</button>
-
-        <!-- Input Parameters Summary Panel -->
-        <div id="inputSummaryPanel" class="input-summary-panel" style="display: none;">
-          <h3>📋 Current Input Parameters</h3>
-          <div id="inputSummaryGrid" class="input-summary-grid">
-            <div class="input-summary-item">Loading weather data...</div>
-          </div>
+  <main class="hero">
+    <div class="hero-grid">
+      <div class="hero-content fade-up delay-1">
+        <div class="hero-badge"><i class="fas fa-chart-line"></i> Your guide to crop suitability and yield forecasting</div>
+        <h1>Smart crop<br><span class="highlight">suitability</span></h1>
+        <p class="hero-sub">Get instant crop suitability scores and yield predictions in <strong>minutes, not weeks.</strong><br>Data-driven insights for rice & corn.</p>
+        <div class="cta-group">
+          <button class="btn-primary" id="getPlanBtn"> <i class="fas fa-chart-simple"></i> Check crop suitability </button>
+          <button class="btn-outline" id="learnMoreBtn"><i class="fas fa-circle-question"></i> FAQs </button>
         </div>
-
-        <!-- Single Loader -->
-        <div class="single-spinner" id="dualLoader" style="display: none;">
-          <div class="spinner-small"></div>
-        </div>
-
-        <!-- Results Display -->
-        <div id="results" style="margin-top: 20px;"></div>
-
-        <!-- YIELD DASHBOARD - Visual Farm Representation -->
-        <div id="yieldDashboard" class="dashboard-card" style="display: none;">
-          <h3>🌾 Visual Yield Dashboard</h3>
-          <div class="header-stats">
-            <span class="yield-achieved">📊 YIELD ACHIEVED: <span id="txtPercent">0</span>%</span>
-            <span class="gap-remaining">⚠️ GAP REMAINING: <span id="txtGap">0</span>%</span>
-          </div>
-
-          <div class="farm-wrapper">
-            <div id="farmGrid" class="grid-visual"></div>
-            <div id="centerBadge" class="badge-visual">0%</div>
-          </div>
-
-          <div class="footer-data">
-            <span>🌾 CROP: <strong id="dashboardCrop">Rice</strong></span>
-            <span>📈 CURRENT YIELD: <strong id="txtKg">0</strong> kg/ha</span>
-            <span>🎯 TARGET: <strong id="txtTarget">4000</strong> kg/ha</span>
-          </div>
-        </div>
-
-        <!-- Toggle Button for Advanced Parameters -->
-        <button type="button" id="toggleParamsBtn" onclick="toggleAdvancedParams()" style="margin-top: 20px;">
-          ⚙️ Show Advanced Parameters
-        </button>
-
-        <!-- Advanced Parameters (hidden by default) -->
-        <div id="advancedParams" style="display: none;">
-          <div style="border-top: 1px solid #8fa163; margin: 10px 0 15px 0;"></div>
-          <h4 style="color: #dbe7b3; margin-bottom: 12px;">📊 Override Model Parameters</h4>
-          <p style="font-size: 11px; color: #c8dd9e; margin-bottom: 15px;">✏️ Edit these values to customize your prediction</p>
-          
-          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
-            <div>
-              <label for="avg_temperature">🌡️ Temperature (°C)</label>
-              <input type="number" id="avg_temperature" step="0.1" placeholder="e.g., 27.3" value="27.3">
-            </div>
-            <div>
-              <label for="total_rainfall">🌧️ Rainfall (mm)</label>
-              <input type="number" id="total_rainfall" step="0.1" placeholder="e.g., 30" value="30">
-            </div>
-            <div>
-              <label for="humidity">💧 Humidity (%)</label>
-              <input type="number" id="humidity" step="1" placeholder="e.g., 75" value="75">
-            </div>
-            <div>
-              <label for="ndvi">🌿 NDVI (0-1)</label>
-              <input type="number" id="ndvi" step="0.01" min="0" max="1" placeholder="e.g., 0.73" value="0.73">
-            </div>
-            <div>
-              <label for="evi">🍃 EVI (0-1)</label>
-              <input type="number" id="evi" step="0.01" min="0" max="1" placeholder="e.g., 0.45" value="0.45">
-            </div>
-            <div>
-              <label for="soil_fertility">🪴 Soil Fertility (1-5)</label>
-              <input type="number" id="soil_fertility" step="0.1" min="1" max="5" placeholder="e.g., 3.1" value="3.1">
-            </div>
-            <div>
-              <label for="n_score">🧪 Nitrogen (1-5)</label>
-              <input type="number" id="n_score" step="1" min="1" max="5" placeholder="e.g., 3" value="3">
-            </div>
-            <div>
-              <label for="p_score">🧪 Phosphorus (1-5)</label>
-              <input type="number" id="p_score" step="1" min="1" max="5" placeholder="e.g., 3" value="3">
-            </div>
-            <div>
-              <label for="k_score">🧪 Potassium (1-5)</label>
-              <input type="number" id="k_score" step="1" min="1" max="5" placeholder="e.g., 3" value="3">
-            </div>
-          </div>
-          
-          <!-- Reset to Default Button -->
-          <button type="button" class="reset-btn" onclick="resetToCurrentMunicipality()">
-            🔄 Reset to Municipality Defaults
-          </button>
-          
-          <div style="border-top: 1px solid #8fa163; margin: 15px 0 10px 0;"></div>
-          <p style="font-size: 12px; color: #b8cc8a; text-align: center;">ℹ️ Values auto-reset when municipality changes. Changes reflect immediately in the summary above.</p>
+        <div class="trust-note">
+          <span><i class="fas fa-clock"></i> Instant predictions</span>
+          <span><i class="fas fa-cloud-sun"></i> Real weather data</span>
+          <span><i class="fas fa-chart-line"></i> AI-powered analysis</span>
         </div>
       </div>
     </div>
-  </section>
+  </main>
+</div>
 
-  <script>
-    // ============================================
-    // CONFIGURATION
-    // ============================================
-    
-    const RULE_BASED_API_URL = 'https://rule-based-crop-api.onrender.com/predict';
-    const WEATHER_API_KEY = 'FMDQ3KEZ3BUFNDGYXKFYYZ8L7';
-    
-    // Cache expiration time (1 hour for weather data)
-    const CACHE_EXPIRY = 60 * 60 * 1000;
-    let isInCooldown = false;
-    let cooldownTimer = null;
-    
-    // Real climate data cache
-    let realClimateData = {};
+<footer class="terrasight-footer">
+  <div class="footer-container">
+    <div class="footer-row">
+      <div class="footer-contact">
+        <h4>Contact Us</h4>
+        <p>📧 terrasight@gmail.com</p>
+        <p>📞 +63 900 000 0000</p>
+        <p>📍 Albay, Philippines</p>
+      </div>
+      <div class="partnership-section">
+        <h4>In Partnership With</h4>
+        <div class="partner-row">
+          <img src="images/logo4.png" alt="Partner" onerror="this.style.display='none'">
+          <img src="images/logo5.png" alt="Partner" onerror="this.style.display='none'">
+          <img src="images/logo3.png" alt="Partner" onerror="this.style.display='none'">
+          <img src="images/logo1.png" alt="Partner" onerror="this.style.display='none'">
+          <img src="images/logo2.png" alt="Partner" onerror="this.style.display='none'">
+          <img src="images/APAO.png" alt="Partner" onerror="this.style.display='none'">
+          <img src="images/DA.png" alt="Partner" onerror="this.style.display='none'">
+        </div>
+      </div>
+      <div class="feedback-section">
+        <h4>Rate Your Experience</h4>
+        <div class="stars" id="starRating">
+          <i class="far fa-star" data-value="1"></i>
+          <i class="far fa-star" data-value="2"></i>
+          <i class="far fa-star" data-value="3"></i>
+          <i class="far fa-star" data-value="4"></i>
+          <i class="far fa-star" data-value="5"></i>
+        </div>
+        <input type="hidden" id="ratingValue" value="0">
+        <textarea placeholder="Share feedback or suggestions..."></textarea>
+        <button class="feedback-btn">Submit Feedback</button>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      © 2026 TerraSight | Crop Suitability & Yield Prediction System
+    </div>
+  </div>
+</footer>
 
-    // Location database with NDVI, EVI, and soil fertility
-    const locationData = {
-        "Polangui": { lat: 13.2933, lon: 123.4853, ndvi: 0.74, evi: 0.46, soil_fertility: 3.2 },
-        "Oas":      { lat: 13.2583, lon: 123.4967, ndvi: 0.72, evi: 0.44, soil_fertility: 3.0 },
-        "Ligao":    { lat: 13.2422, lon: 123.5372, ndvi: 0.71, evi: 0.43, soil_fertility: 3.5 },
-        "Pioduran": { lat: 13.0450, lon: 123.4561, ndvi: 0.69, evi: 0.40, soil_fertility: 2.8 },
-        "Malinao":  { lat: 13.4117, lon: 123.7000, ndvi: 0.73, evi: 0.45, soil_fertility: 3.1 }
-    };
-    
-    // Target yields (kg/ha) for different crops
-    const TARGET_YIELDS = {
-      rice: 4000,  // 4 tons/ha
-      corn: 3500   // 3.5 tons/ha
-    };
-    
-    const DEFAULT_FALLBACK = {
-        avg_temperature: 27.3,
-        total_rainfall: 30,
-        humidity: 75,
-        n_score: 3,
-        p_score: 3,
-        k_score: 3
-    };
-    
-    let currentMunicipality = "";
-    let isLoadingWeather = false;
+<!-- Prediction Modal -->
+<div id="planModal" class="modal-overlay">
+  <div class="modal-card">
+    <button id="closeModalBtn" class="btn-outline" style="float:right; padding:6px 12px;">✖</button>
+    <i class="fas fa-chart-line" style="font-size: 2.5rem; color: #3F9E4A;"></i>
+    <h3>🌾 Crop Suitability Check</h3>
+    <p>Enter your municipality and preferred crop.</p>
 
-    // ============================================
-    // YIELD DASHBOARD VISUALIZATION
-    // ============================================
-    
-    let dashboardCells = [];
-    const totalCells = 50; // 10x5 grid
-    
-    function initDashboardGrid() {
-      const gridContainer = document.getElementById('farmGrid');
-      if (!gridContainer) return;
-      
-      gridContainer.innerHTML = '';
-      dashboardCells = [];
-      
-      for (let i = 0; i < totalCells; i++) {
-        const div = document.createElement('div');
-        div.className = 'cell-visual empty';
-        gridContainer.appendChild(div);
-        dashboardCells.push(div);
-      }
+    <div class="input-group">
+      <label for="city">📍 Select municipality</label>
+      <select id="city">
+        <option value="">-- Select Municipality --</option>
+        <option value="Polangui">Polangui</option>
+        <option value="Malinao">Malinao</option>
+        <option value="Pioduran">Pio Duran</option>
+        <option value="Oas">Oas</option>
+        <option value="Ligao">Ligao City</option>
+      </select>
+    </div>
+
+    <div class="input-group">
+      <label for="crop">🌱 Select crop</label>
+      <select id="crop">
+        <option value="">-- Select Crop --</option>
+        <option value="rice">🌾 Rice</option>
+        <option value="corn">🌽 Corn</option>
+      </select>
+    </div>
+
+    <div class="modal-actions">
+      <button class="btn-primary" onclick="predictBoth()">🔮 Analyze</button>
+    </div>
+
+    <div id="dualLoader" style="display:none; margin-top:15px; text-align:center;">
+      <span class="loader-spinner"></span> Analyzing weather & crop data...
+    </div>
+
+    <div id="results" class="result-message"></div>
+  </div>
+</div>
+
+<!-- FAQ Modal -->
+<div id="howModal" class="modal-overlay">
+  <div class="faq-modal">
+    <button id="closeHowModal" class="btn-outline faq-close-btn">✖</button>
+    <h3>❓ Frequently Asked Questions</h3>
+    <p class="faq-subtitle">Quick answers about TerraSight and how to use the platform.</p>
+    <div class="faq-container">
+      <div class="faq-card"><div class="faq-question"><h4>What is TerraSight?</h4><span>+</span></div><div class="faq-answer">TerraSight is a crop suitability and yield prediction platform that helps farmers make smarter planting decisions using weather, soil, and vegetation data.</div></div>
+      <div class="faq-card"><div class="faq-question"><h4>How do I use TerraSight?</h4><span>+</span></div><div class="faq-answer">Select your municipality, choose your preferred crop, and click analyze to receive crop suitability scores and yield predictions.</div></div>
+      <div class="faq-card"><div class="faq-question"><h4>Why is my municipality not listed?</h4><span>+</span></div><div class="faq-answer">The system currently supports Polangui, Oas, Ligao, Malinao, and Pio Duran based on available agricultural datasets.</div></div>
+      <div class="faq-card"><div class="faq-question"><h4>What crops are supported?</h4><span>+</span></div><div class="faq-answer">TerraSight currently supports Rice and Corn crop analysis.</div></div>
+      <div class="faq-card"><div class="faq-question"><h4>Where does the data come from?</h4><span>+</span></div><div class="faq-answer">Data comes from weather APIs, vegetation indices (NDVI/EVI), and local agricultural records.</div></div>
+    </div>
+  </div>
+</div>
+
+<script>
+  // ============================================
+  // CONFIGURATION
+  // ============================================
+  
+  const RULE_BASED_API_URL = 'https://rule-based-crop-api.onrender.com/predict';
+  const WEATHER_API_KEY = 'FMDQ3KEZ3BUFNDGYXKFYYZ8L7';
+  const CACHE_EXPIRY = 60 * 60 * 1000; // 1 hour
+  
+  let isInCooldown = false;
+  let cooldownTimer = null;
+  let realClimateData = {};
+
+  const locationData = {
+      "Polangui": { lat: 13.2933, lon: 123.4853, ndvi: 0.74, evi: 0.46, soil_fertility: 3.2 },
+      "Oas":      { lat: 13.2583, lon: 123.4967, ndvi: 0.72, evi: 0.44, soil_fertility: 3.0 },
+      "Ligao":    { lat: 13.2422, lon: 123.5372, ndvi: 0.71, evi: 0.43, soil_fertility: 3.5 },
+      "Pioduran": { lat: 13.0450, lon: 123.4561, ndvi: 0.69, evi: 0.40, soil_fertility: 2.8 },
+      "Malinao":  { lat: 13.4117, lon: 123.7000, ndvi: 0.73, evi: 0.45, soil_fertility: 3.1 }
+  };
+
+  const TARGET_YIELDS = { rice: 4000, corn: 3500 };
+  const DEFAULT_FALLBACK = { avg_temperature: 27.3, total_rainfall: 30, humidity: 75, n_score: 3, p_score: 3, k_score: 3 };
+
+  // ============================================
+  // YIELD DASHBOARD
+  // ============================================
+  
+  let dashboardCells = [];
+  const totalCells = 50;
+
+  function initDashboardGrid() {
+    const gridContainer = document.getElementById('farmGrid');
+    if (!gridContainer) return;
+    gridContainer.innerHTML = '';
+    dashboardCells = [];
+    for (let i = 0; i < totalCells; i++) {
+      const div = document.createElement('div');
+      div.className = 'cell-visual empty';
+      gridContainer.appendChild(div);
+      dashboardCells.push(div);
     }
-    
-    function updateYieldDashboard(yieldKg, cropType) {
-      const dashboard = document.getElementById('yieldDashboard');
-      if (!dashboard) return;
-      
-      // Show dashboard
-      dashboard.style.display = 'block';
-      
-      const targetYield = TARGET_YIELDS[cropType] || 4000;
-      const percentage = Math.min(100, Math.max(0, (yieldKg / targetYield) * 100));
-      const gap = Math.max(0, 100 - percentage);
-      
-      // Update text
-      document.getElementById('txtPercent').textContent = Math.round(percentage);
-      document.getElementById('txtGap').textContent = Math.round(gap);
-      document.getElementById('txtKg').textContent = Math.round(yieldKg).toLocaleString();
-      document.getElementById('txtTarget').textContent = targetYield.toLocaleString();
-      document.getElementById('dashboardCrop').textContent = cropType.charAt(0).toUpperCase() + cropType.slice(1);
-      
-      const badge = document.getElementById('centerBadge');
-      if (badge) badge.textContent = Math.round(percentage) + "%";
-      
-      // Update visual grid
-      const activeCount = Math.floor((percentage / 100) * totalCells);
-      
-      dashboardCells.forEach((cell, index) => {
-        if (index < activeCount) {
-          cell.className = 'cell-visual active';
-        } else {
-          cell.className = 'cell-visual empty';
-        }
-      });
+  }
+
+  function updateYieldDashboard(yieldKg, cropType) {
+    const dashboard = document.getElementById('yieldDashboard');
+    if (!dashboard) return;
+    dashboard.style.display = 'block';
+    const targetYield = TARGET_YIELDS[cropType] || 4000;
+    const percentage = Math.min(100, Math.max(0, (yieldKg / targetYield) * 100));
+    const gap = Math.max(0, 100 - percentage);
+    document.getElementById('txtPercent').textContent = Math.round(percentage);
+    document.getElementById('txtGap').textContent = Math.round(gap);
+    document.getElementById('txtKg').textContent = Math.round(yieldKg).toLocaleString();
+    document.getElementById('txtTarget').textContent = targetYield.toLocaleString();
+    document.getElementById('dashboardCrop').textContent = cropType.charAt(0).toUpperCase() + cropType.slice(1);
+    const badge = document.getElementById('centerBadge');
+    if (badge) badge.textContent = Math.round(percentage) + "%";
+    const activeCount = Math.floor((percentage / 100) * totalCells);
+    dashboardCells.forEach((cell, index) => {
+      cell.className = index < activeCount ? 'cell-visual active' : 'cell-visual empty';
+    });
+  }
+
+  // ============================================
+  // WEATHER FUNCTIONS
+  // ============================================
+  
+  async function fetchRealWeatherData(municipalityKey) {
+    const coords = locationData[municipalityKey];
+    if (!coords) return null;
+    const cacheKey = `weather_${municipalityKey}`;
+    const cached = sessionStorage.getItem(cacheKey);
+    if (cached) {
+      const cachedData = JSON.parse(cached);
+      if (Date.now() - cachedData.timestamp < CACHE_EXPIRY) return cachedData.data;
     }
-    
-    // ============================================
-    // FETCH REAL WEATHER DATA
-    // ============================================
-    
-    async function fetchRealWeatherData(municipalityKey) {
-      const coords = locationData[municipalityKey];
-      if (!coords) return null;
-      
-      const cacheKey = `weather_${municipalityKey}`;
-      const cached = sessionStorage.getItem(cacheKey);
-      
-      if (cached) {
-        const cachedData = JSON.parse(cached);
-        const cacheAge = Date.now() - cachedData.timestamp;
-        if (cacheAge < CACHE_EXPIRY) {
-          console.log(`✅ Using cached weather for ${municipalityKey}`);
-          return cachedData.data;
-        }
-      }
-      
-      if (isLoadingWeather) {
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        const retryCached = sessionStorage.getItem(cacheKey);
-        if (retryCached) return JSON.parse(retryCached).data;
-        return null;
-      }
-      
-      isLoadingWeather = true;
-      
-      try {
-        console.log(`🌤️ Fetching real weather for ${municipalityKey}...`);
-        
-        const today = new Date();
-        const pastDate = new Date();
-        pastDate.setDate(today.getDate() - 27);
-        
-        const formatDate = (d) => d.toISOString().split('T')[0];
-        const dateRange = `${formatDate(pastDate)}/${formatDate(today)}`;
-        
-        const weatherUrl = `https://weather.visualcrossing.com/VisualCrossingWebServices/rest/services/timeline/${coords.lat},${coords.lon}/${dateRange}?unitGroup=metric&key=${WEATHER_API_KEY}&contentType=json&include=days`;
-        
-        const weatherRes = await fetch(weatherUrl);
-        
-        if (weatherRes.status === 429) {
-          console.log("⚠️ Rate limit hit");
-          return null;
-        }
-        
-        if (!weatherRes.ok) throw new Error(`Weather API Error: ${weatherRes.status}`);
-        
-        const weatherJSON = await weatherRes.json();
-        const allDays = weatherJSON.days;
-        
-        let totalTemp = 0, totalRainfall = 0, totalHumidity = 0;
-        for (const day of allDays) {
-          totalTemp += day.temp;
-          totalRainfall += day.precip;
-          totalHumidity += day.humidity;
-        }
-        
-        const climateData = {
-          avg_temperature: parseFloat((totalTemp / allDays.length).toFixed(1)),
-          total_rainfall: parseFloat(totalRainfall.toFixed(0)),
-          humidity: parseFloat((totalHumidity / allDays.length).toFixed(0)),
-          allDays: allDays
-        };
-        
-        sessionStorage.setItem(cacheKey, JSON.stringify({
-          data: climateData,
-          timestamp: Date.now()
-        }));
-        
-        realClimateData[municipalityKey] = climateData;
-        console.log(`💾 Real weather: ${climateData.avg_temperature}°C, ${climateData.total_rainfall}mm`);
-        
-        return climateData;
-        
-      } catch (error) {
-        console.error("Weather fetch error:", error);
-        return null;
-      } finally {
-        isLoadingWeather = false;
-      }
-    }
-    
-    // ============================================
-    // UPDATE INPUT SUMMARY
-    // ============================================
-    
-    async function updateInputSummaryWithRealData() {
-      const citySelect = document.getElementById('city');
-      const municipalityKey = citySelect?.value;
-      
-      if (!municipalityKey) {
-        updateInputSummaryPanel(DEFAULT_FALLBACK);
-        return;
-      }
-      
-      const coords = locationData[municipalityKey];
-      let climateData = realClimateData[municipalityKey];
-      
-      if (!climateData) {
-        climateData = await fetchRealWeatherData(municipalityKey);
-      }
-      
-      const displayData = {
-        avg_temperature: climateData?.avg_temperature || DEFAULT_FALLBACK.avg_temperature,
-        total_rainfall: climateData?.total_rainfall || DEFAULT_FALLBACK.total_rainfall,
-        humidity: climateData?.humidity || DEFAULT_FALLBACK.humidity,
-        ndvi: coords?.ndvi || 0.70,
-        evi: coords?.evi || 0.43,
-        soil_fertility: coords?.soil_fertility || 3.0,
-        n_score: DEFAULT_FALLBACK.n_score,
-        p_score: DEFAULT_FALLBACK.p_score,
-        k_score: DEFAULT_FALLBACK.k_score
-      };
-      
-      // Update input fields
-      document.getElementById('avg_temperature').value = displayData.avg_temperature;
-      document.getElementById('total_rainfall').value = displayData.total_rainfall;
-      document.getElementById('humidity').value = displayData.humidity;
-      document.getElementById('ndvi').value = displayData.ndvi;
-      document.getElementById('evi').value = displayData.evi;
-      document.getElementById('soil_fertility').value = displayData.soil_fertility;
-      
-      updateInputSummaryPanel(displayData);
-    }
-    
-    function updateInputSummaryPanel(data = null) {
-      const panel = document.getElementById('inputSummaryPanel');
-      const grid = document.getElementById('inputSummaryGrid');
-      const citySelect = document.getElementById('city');
-      const cropSelect = document.getElementById('crop');
-      
-      if (!grid) return;
-      
-      const avgTemp = data?.avg_temperature || document.getElementById('avg_temperature')?.value || '27.3';
-      const rainfall = data?.total_rainfall || document.getElementById('total_rainfall')?.value || '30';
-      const humidity = data?.humidity || document.getElementById('humidity')?.value || '75';
-      const ndvi = data?.ndvi || document.getElementById('ndvi')?.value || '0.73';
-      const evi = data?.evi || document.getElementById('evi')?.value || '0.45';
-      const soilFert = data?.soil_fertility || document.getElementById('soil_fertility')?.value || '3.1';
-      const nScore = data?.n_score || document.getElementById('n_score')?.value || '3';
-      const pScore = data?.p_score || document.getElementById('p_score')?.value || '3';
-      const kScore = data?.k_score || document.getElementById('k_score')?.value || '3';
-      const municipality = citySelect?.options[citySelect.selectedIndex]?.text || 'Not selected';
-      const crop = cropSelect?.options[cropSelect.selectedIndex]?.text || 'Not selected';
-      
-      grid.innerHTML = `
-        <div class="input-summary-item">
-          <span class="input-summary-label">📍 Location</span>
-          <span class="input-summary-value" style="font-size: 13px;">${municipality}</span>
-        </div>
-        <div class="input-summary-item">
-          <span class="input-summary-label">🌾 Crop</span>
-          <span class="input-summary-value" style="font-size: 13px;">${crop}</span>
-        </div>
-        <div class="input-summary-item">
-          <span class="input-summary-label">🌡️ Temp</span>
-          <span class="input-summary-value">${parseFloat(avgTemp).toFixed(1)}<span class="input-summary-unit">°C</span></span>
-        </div>
-        <div class="input-summary-item">
-          <span class="input-summary-label">🌧️ Rain</span>
-          <span class="input-summary-value">${parseFloat(rainfall).toFixed(0)}<span class="input-summary-unit">mm</span></span>
-        </div>
-        <div class="input-summary-item">
-          <span class="input-summary-label">💧 Humidity</span>
-          <span class="input-summary-value">${parseFloat(humidity).toFixed(0)}<span class="input-summary-unit">%</span></span>
-        </div>
-        <div class="input-summary-item">
-          <span class="input-summary-label">🌿 NDVI</span>
-          <span class="input-summary-value">${parseFloat(ndvi).toFixed(2)}</span>
-        </div>
-        <div class="input-summary-item">
-          <span class="input-summary-label">🪴 Soil</span>
-          <span class="input-summary-value">${parseFloat(soilFert).toFixed(1)}<span class="input-summary-unit">/5</span></span>
-        </div>
-        <div class="input-summary-item">
-          <span class="input-summary-label">🧪 N/P/K</span>
-          <span class="input-summary-value">${nScore}/${pScore}/${kScore}</span>
-        </div>
-      `;
-      
-      panel.style.display = 'block';
-    }
-    
-    // ============================================
-    // HELPER FUNCTIONS
-    // ============================================
-    
-    function getWeekNumber(d) {
-      d = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
-      d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay() || 7));
-      var yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
-      return Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
-    }
-    
-    function showFeedback(message) {
-      const feedback = document.createElement('div');
-      feedback.textContent = message;
-      feedback.style.cssText = 'font-size:11px; color:#a9e06e; margin-top:5px; margin-bottom:10px; text-align:center; background:rgba(50,70,30,0.8); padding:6px; border-radius:20px;';
-      const oldFeedback = document.querySelector('.param-feedback');
-      if (oldFeedback) oldFeedback.remove();
-      feedback.className = 'param-feedback';
-      document.querySelector('.form-card')?.appendChild(feedback);
-      setTimeout(() => feedback.remove(), 3000);
-    }
-    
-    async function resetToCurrentMunicipality() {
-      const citySelect = document.getElementById('city');
-      const locKey = citySelect.value;
-      
-      if (!locKey) {
-        document.getElementById('avg_temperature').value = DEFAULT_FALLBACK.avg_temperature;
-        document.getElementById('total_rainfall').value = DEFAULT_FALLBACK.total_rainfall;
-        document.getElementById('humidity').value = DEFAULT_FALLBACK.humidity;
-        document.getElementById('n_score').value = DEFAULT_FALLBACK.n_score;
-        document.getElementById('p_score').value = DEFAULT_FALLBACK.p_score;
-        document.getElementById('k_score').value = DEFAULT_FALLBACK.k_score;
-        document.getElementById('ndvi').value = 0.70;
-        document.getElementById('evi').value = 0.43;
-        document.getElementById('soil_fertility').value = 3.0;
-        updateInputSummaryPanel();
-        return;
-      }
-      
-      const coords = locationData[locKey];
-      const climateData = await fetchRealWeatherData(locKey);
-      
-      if (climateData) {
-        document.getElementById('avg_temperature').value = climateData.avg_temperature;
-        document.getElementById('total_rainfall').value = climateData.total_rainfall;
-        document.getElementById('humidity').value = climateData.humidity;
-      } else {
-        document.getElementById('avg_temperature').value = DEFAULT_FALLBACK.avg_temperature;
-        document.getElementById('total_rainfall').value = DEFAULT_FALLBACK.total_rainfall;
-        document.getElementById('humidity').value = DEFAULT_FALLBACK.humidity;
-      }
-      
-      document.getElementById('ndvi').value = coords.ndvi;
-      document.getElementById('evi').value = coords.evi;
-      document.getElementById('soil_fertility').value = coords.soil_fertility;
-      document.getElementById('n_score').value = DEFAULT_FALLBACK.n_score;
-      document.getElementById('p_score').value = DEFAULT_FALLBACK.p_score;
-      document.getElementById('k_score').value = DEFAULT_FALLBACK.k_score;
-      
-      updateInputSummaryPanel();
-      showFeedback(`✅ Reset to ${locKey} actual weather data`);
-    }
-    
-    async function onMunicipalityChange() {
-      const citySelect = document.getElementById('city');
-      const newMunicipality = citySelect.value;
-      
-      if (newMunicipality !== currentMunicipality) {
-        currentMunicipality = newMunicipality;
-        if (newMunicipality) {
-          await updateInputSummaryWithRealData();
-          showFeedback(`🔄 Loaded real weather data for ${newMunicipality}`);
-        }
-      }
-    }
-    
-    function toggleAdvancedParams() {
-      const paramsDiv = document.getElementById('advancedParams');
-      const toggleBtn = document.getElementById('toggleParamsBtn');
-      
-      if (paramsDiv.style.display === 'none') {
-        paramsDiv.style.display = 'block';
-        toggleBtn.innerHTML = '🔽 Hide Advanced Parameters';
-        toggleBtn.style.background = '#8fa163';
-      } else {
-        paramsDiv.style.display = 'none';
-        toggleBtn.innerHTML = '⚙️ Show Advanced Parameters';
-        toggleBtn.style.background = '#5a6e3a';
-      }
-    }
-    
-    // ============================================
-    // MAIN PREDICTION FUNCTION
-    // ============================================
-    
-    async function fetchWeatherDataForSequence(lat, lon, municipality) {
-      const cacheKey = `weather_seq_${municipality}`;
-      const cached = sessionStorage.getItem(cacheKey);
-      
-      if (cached) {
-        const cachedData = JSON.parse(cached);
-        if (Date.now() - cachedData.timestamp < CACHE_EXPIRY) {
-          return cachedData.data;
-        }
-      }
-      
+    try {
       const today = new Date();
       const pastDate = new Date();
       pastDate.setDate(today.getDate() - 27);
-      
       const formatDate = (d) => d.toISOString().split('T')[0];
       const dateRange = `${formatDate(pastDate)}/${formatDate(today)}`;
-      
-      const weatherUrl = `https://weather.visualcrossing.com/VisualCrossingWebServices/rest/services/timeline/${lat},${lon}/${dateRange}?unitGroup=metric&key=${WEATHER_API_KEY}&contentType=json&include=days`;
-      
-      try {
-        const weatherRes = await fetch(weatherUrl);
-        if (!weatherRes.ok) throw new Error(`Weather API Error: ${weatherRes.status}`);
-        
-        const weatherJSON = await weatherRes.json();
-        const allDays = weatherJSON.days;
-        
-        sessionStorage.setItem(cacheKey, JSON.stringify({
-          data: allDays,
-          timestamp: Date.now()
-        }));
-        
-        return allDays;
-      } catch (error) {
-        console.error("Weather fetch error:", error);
-        throw error;
+      const weatherUrl = `https://weather.visualcrossing.com/VisualCrossingWebServices/rest/services/timeline/${coords.lat},${coords.lon}/${dateRange}?unitGroup=metric&key=${WEATHER_API_KEY}&contentType=json&include=days`;
+      const weatherRes = await fetch(weatherUrl);
+      if (weatherRes.status === 429) return null;
+      if (!weatherRes.ok) throw new Error(`Weather API Error: ${weatherRes.status}`);
+      const weatherJSON = await weatherRes.json();
+      const allDays = weatherJSON.days;
+      let totalTemp = 0, totalRainfall = 0, totalHumidity = 0;
+      for (const day of allDays) {
+        totalTemp += day.temp;
+        totalRainfall += day.precip;
+        totalHumidity += day.humidity;
       }
+      const climateData = {
+        avg_temperature: parseFloat((totalTemp / allDays.length).toFixed(1)),
+        total_rainfall: parseFloat(totalRainfall.toFixed(0)),
+        humidity: parseFloat((totalHumidity / allDays.length).toFixed(0)),
+        allDays: allDays
+      };
+      sessionStorage.setItem(cacheKey, JSON.stringify({ data: climateData, timestamp: Date.now() }));
+      return climateData;
+    } catch (error) {
+      console.error("Weather fetch error:", error);
+      return null;
+    }
+  }
+
+  async function fetchWeatherDataForSequence(lat, lon, municipality) {
+    const cacheKey = `weather_seq_${municipality}`;
+    const cached = sessionStorage.getItem(cacheKey);
+    if (cached) {
+      const cachedData = JSON.parse(cached);
+      if (Date.now() - cachedData.timestamp < CACHE_EXPIRY) return cachedData.data;
+    }
+    const today = new Date();
+    const pastDate = new Date();
+    pastDate.setDate(today.getDate() - 27);
+    const formatDate = (d) => d.toISOString().split('T')[0];
+    const dateRange = `${formatDate(pastDate)}/${formatDate(today)}`;
+    const weatherUrl = `https://weather.visualcrossing.com/VisualCrossingWebServices/rest/services/timeline/${lat},${lon}/${dateRange}?unitGroup=metric&key=${WEATHER_API_KEY}&contentType=json&include=days`;
+    try {
+      const weatherRes = await fetch(weatherUrl);
+      if (!weatherRes.ok) throw new Error(`Weather API Error: ${weatherRes.status}`);
+      const weatherJSON = await weatherRes.json();
+      const allDays = weatherJSON.days;
+      sessionStorage.setItem(cacheKey, JSON.stringify({ data: allDays, timestamp: Date.now() }));
+      return allDays;
+    } catch (error) {
+      console.error("Weather fetch error:", error);
+      throw error;
+    }
+  }
+
+  function getWeekNumber(d) {
+    d = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+    d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay() || 7));
+    var yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+    return Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
+  }
+
+  // ============================================
+  // PREDICTION FUNCTION
+  // ============================================
+  
+  async function predictBoth() {
+    const locKey = document.getElementById('city').value;
+    const cropType = document.getElementById('crop').value;
+    const resultsDiv = document.getElementById('results');
+    const loaderDiv = document.getElementById('dualLoader');
+    
+    if (!locKey || !cropType) {
+      alert("Please select both a municipality and a crop.");
+      return;
     }
     
-    async function predictBoth() {
-      const locKey = document.getElementById('city').value;
-      const cropType = document.getElementById('crop').value;
-      const resultsDiv = document.getElementById('results');
-      const loaderDiv = document.getElementById('dualLoader');
+    let municipalityName = locKey;
+    if (locKey === "Pioduran") municipalityName = "Pio Duran";
+    if (locKey === "Ligao") municipalityName = "Ligao";
+    
+    const coords = locationData[locKey];
+    if (!coords) {
+      alert("Location data not found.");
+      return;
+    }
+    
+    loaderDiv.style.display = "flex";
+    resultsDiv.innerHTML = "";
+    
+    try {
+      const allDays = await fetchWeatherDataForSequence(coords.lat, coords.lon, municipalityName);
       
-      if (!locKey || !cropType) {
-        alert("Please select both a municipality and a crop.");
-        return;
+      let rawSequence = [];
+      let lastSeason = null;
+      
+      for (let i = 0; i < 4; i++) {
+        const weekBlock = allDays.slice(i * 7, (i * 7) + 7);
+        if (weekBlock.length === 0) break;
+        const tmax = Math.max(...weekBlock.map(d => d.tempmax));
+        const tmin = Math.min(...weekBlock.map(d => d.tempmin));
+        const tave = weekBlock.reduce((acc, d) => acc + d.temp, 0) / weekBlock.length;
+        const rain = weekBlock.reduce((acc, d) => acc + d.precip, 0);
+        const hum = weekBlock.reduce((acc, d) => acc + d.humidity, 0) / weekBlock.length;
+        const solar = weekBlock.reduce((acc, d) => acc + d.solarradiation, 0) / weekBlock.length;
+        const wind = weekBlock.reduce((acc, d) => acc + d.windspeed, 0) / weekBlock.length;
+        const dateObj = new Date(weekBlock[0].datetime);
+        lastSeason = (dateObj.getMonth() + 1) >= 6 ? 2 : 1;
+        rawSequence.push([coords.ndvi, coords.evi, tmax, tmin, tave, rain, hum, solar, wind, dateObj.getFullYear(), getWeekNumber(dateObj), lastSeason]);
       }
       
-      let municipalityName = locKey;
-      if (locKey === "Pioduran") municipalityName = "Pio Duran";
+      const realClimate = await fetchRealWeatherData(locKey);
+      const avgTemperature = realClimate?.avg_temperature || DEFAULT_FALLBACK.avg_temperature;
+      const totalRainfall = realClimate?.total_rainfall || DEFAULT_FALLBACK.total_rainfall;
+      const humidity = realClimate?.humidity || DEFAULT_FALLBACK.humidity;
       
-      const coords = locationData[locKey];
+      let maxWind = 0, minPressure = Infinity;
+      for (const day of allDays) {
+        maxWind = Math.max(maxWind, day.windspeed);
+        minPressure = Math.min(minPressure, day.pressure);
+      }
+      const maxWindKts = maxWind * 0.539957;
+      const duration_hrs = allDays.filter(d => d.windspeed > 63).length * 24;
+      const risk_score = maxWindKts > 100 ? 3 : (maxWindKts > 64 ? 2 : 1);
       
-      loaderDiv.style.display = "flex";
-      resultsDiv.innerHTML = "";
+      const requestBody = {
+        crop: cropType,
+        municipality: municipalityName,
+        avg_temperature: avgTemperature,
+        total_rainfall: totalRainfall,
+        humidity: humidity,
+        ndvi: coords.ndvi,
+        evi: coords.evi,
+        soil_fertility: coords.soil_fertility,
+        n_score: 3,
+        p_score: 3,
+        k_score: 3,
+        raw_sequence: rawSequence,
+        season: lastSeason || 2,
+        max_wind_kts: maxWindKts,
+        min_pres_mb: minPressure,
+        duration_hrs: duration_hrs,
+        risk_score: risk_score
+      };
       
-      try {
-        // Fetch weather data
-        const allDays = await fetchWeatherDataForSequence(coords.lat, coords.lon, municipalityName);
-        
-        let rawSequence = [];
-        let lastSeason = null;
-        
-        for (let i = 0; i < 4; i++) {
-          const weekBlock = allDays.slice(i * 7, (i * 7) + 7);
-          if (weekBlock.length === 0) break;
-          
-          const tmax = Math.max(...weekBlock.map(d => d.tempmax));
-          const tmin = Math.min(...weekBlock.map(d => d.tempmin));
-          const tave = weekBlock.reduce((acc, d) => acc + d.temp, 0) / weekBlock.length;
-          const rain = weekBlock.reduce((acc, d) => acc + d.precip, 0);
-          const hum = weekBlock.reduce((acc, d) => acc + d.humidity, 0) / weekBlock.length;
-          const solar = weekBlock.reduce((acc, d) => acc + d.solarradiation, 0) / weekBlock.length;
-          const wind = weekBlock.reduce((acc, d) => acc + d.windspeed, 0) / weekBlock.length;
-          
-          const dateObj = new Date(weekBlock[0].datetime);
-          lastSeason = (dateObj.getMonth() + 1) >= 6 ? 2 : 1;
-          
-          rawSequence.push([
-            coords.ndvi, coords.evi,
-            tmax, tmin, tave, rain, hum, solar, wind,
-            dateObj.getFullYear(), getWeekNumber(dateObj), lastSeason
-          ]);
-        }
-        
-        // Get real climate data
-        const realClimate = await fetchRealWeatherData(locKey);
-        
-        // Get user overrides
-        const ndvi = parseFloat(document.getElementById('ndvi')?.value) || coords.ndvi;
-        const evi = parseFloat(document.getElementById('evi')?.value) || coords.evi;
-        const soilFertility = parseFloat(document.getElementById('soil_fertility')?.value) || coords.soil_fertility;
-        const nScore = parseInt(document.getElementById('n_score')?.value) || DEFAULT_FALLBACK.n_score;
-        const pScore = parseInt(document.getElementById('p_score')?.value) || DEFAULT_FALLBACK.p_score;
-        const kScore = parseInt(document.getElementById('k_score')?.value) || DEFAULT_FALLBACK.k_score;
-        
-        const avgTemperature = realClimate?.avg_temperature || DEFAULT_FALLBACK.avg_temperature;
-        const totalRainfall = realClimate?.total_rainfall || DEFAULT_FALLBACK.total_rainfall;
-        const humidity = realClimate?.humidity || DEFAULT_FALLBACK.humidity;
-        
-        // Calculate wind data
-        let maxWind = 0, minPressure = Infinity;
-        for (const day of allDays) {
-          maxWind = Math.max(maxWind, day.windspeed);
-          minPressure = Math.min(minPressure, day.pressure);
-        }
-        const maxWindKts = maxWind * 0.539957;
-        const duration_hrs = allDays.filter(d => d.windspeed > 63).length * 24;
-        const risk_score = maxWindKts > 100 ? 3 : (maxWindKts > 64 ? 2 : 1);
-        
-        const requestBody = {
-          crop: cropType,
-          municipality: municipalityName,
-          avg_temperature: avgTemperature,
-          total_rainfall: totalRainfall,
-          humidity: humidity,
-          ndvi: ndvi,
-          evi: evi,
-          soil_fertility: soilFertility,
-          n_score: nScore,
-          p_score: pScore,
-          k_score: kScore,
-          raw_sequence: rawSequence,
-          season: lastSeason || 2,
-          max_wind_kts: maxWindKts,
-          min_pres_mb: minPressure,
-          duration_hrs: duration_hrs,
-          risk_score: risk_score
-        };
-        
-        console.log(`📊 Calling API for ${municipalityName}: ${avgTemperature}°C, ${totalRainfall}mm`);
-        
-        const response = await fetch(RULE_BASED_API_URL, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(requestBody)
-        });
-        
-        if (!response.ok) {
-          const errorText = await response.text();
-          throw new Error(`API error (${response.status}): ${errorText}`);
-        }
-        
-        const result = await response.json();
-        console.log("API Response:", result);
-        
-        const predictedYieldKg = result.model_results?.predicted_yield_kg || 0;
-        
-        // Update the visual dashboard with the predicted yield
-        updateYieldDashboard(predictedYieldKg, cropType);
-        
-        displayResults(result, cropType, municipalityName, {
-          avg_temperature: avgTemperature,
-          total_rainfall: totalRainfall,
-          humidity: humidity,
-          ndvi: ndvi,
-          evi: evi,
-          soil_fertility: soilFertility,
-          n_score: nScore,
-          p_score: pScore,
-          k_score: kScore
-        });
-        
-      } catch (error) {
-        console.error("Prediction error:", error);
-        resultsDiv.innerHTML = `
-          <div class="result-card" style="background: rgba(255,255,255,0.95);">
-            <h3>Error</h3>
-            <div class="value" style="color: red;">${error.message}</div>
-            <p>Please try again later.</p>
+      console.log("Calling API for:", municipalityName);
+      
+      const response = await fetch(RULE_BASED_API_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(requestBody)
+      });
+      
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`API error (${response.status}): ${errorText}`);
+      }
+      
+      const result = await response.json();
+      const predictedYieldKg = result.model_results?.predicted_yield_kg || 0;
+      
+      displayResults(result, cropType, municipalityName, {
+        avg_temperature: avgTemperature,
+        total_rainfall: totalRainfall,
+        humidity: humidity,
+        ndvi: coords.ndvi,
+        evi: coords.evi,
+        soil_fertility: coords.soil_fertility,
+        n_score: 3,
+        p_score: 3,
+        k_score: 3
+      });
+      
+      // Show dashboard after results
+      setTimeout(() => {
+        const dashboardHtml = `
+          <div id="yieldDashboard" class="dashboard-card">
+            <h3>🌾 Visual Yield Dashboard</h3>
+            <div class="header-stats">
+              <span class="yield-achieved">📊 YIELD ACHIEVED: <span id="txtPercent">0</span>%</span>
+              <span class="gap-remaining">⚠️ GAP REMAINING: <span id="txtGap">0</span>%</span>
+            </div>
+            <div class="farm-wrapper">
+              <div id="farmGrid" class="grid-visual"></div>
+              <div id="centerBadge" class="badge-visual">0%</div>
+            </div>
+            <div class="footer-data">
+              <span>🌾 CROP: <strong id="dashboardCrop">Rice</strong></span>
+              <span>📈 CURRENT YIELD: <strong id="txtKg">0</strong> kg/ha</span>
+              <span>🎯 TARGET: <strong id="txtTarget">4000</strong> kg/ha</span>
+            </div>
           </div>
         `;
-      } finally {
-        loaderDiv.style.display = "none";
+        const resultsDivInner = document.getElementById('results');
+        if (resultsDivInner && !document.getElementById('yieldDashboard')) {
+          resultsDivInner.insertAdjacentHTML('beforeend', dashboardHtml);
+          initDashboardGrid();
+          updateYieldDashboard(predictedYieldKg, cropType);
+        } else {
+          updateYieldDashboard(predictedYieldKg, cropType);
+        }
+      }, 100);
+      
+    } catch (error) {
+      console.error("Prediction error:", error);
+      resultsDiv.innerHTML = `<div class="result-card"><h3>Error</h3><p style="color: red;">${error.message}</p><p>Please try again later.</p></div>`;
+    } finally {
+      loaderDiv.style.display = "none";
+    }
+  }
+  
+  function displayResults(result, cropType, municipality, usedParams) {
+    const resultsDiv = document.getElementById('results');
+    const modelResults = result.model_results || {};
+    const calculatedScores = result.calculated_scores || {};
+    const recommendations = result.recommendations || {};
+    const suitability = modelResults.suitability || 'Medium';
+    const suitabilityClass = `suitability-${suitability}`;
+    const suitabilityDisplay = { 'High': '🌟 Highly Suitable', 'Medium': '✅ Moderately Suitable', 'Low': '⚠️ Marginally Suitable' }[suitability] || suitability;
+    
+    let probabilitiesHtml = '';
+    if (modelResults.suitability_probabilities) {
+      probabilitiesHtml = '<div style="margin-top: 15px;">';
+      for (const [level, prob] of Object.entries(modelResults.suitability_probabilities)) {
+        probabilitiesHtml += `<div class="probability-bar"><div class="probability-fill" style="width: ${prob}%;"></div></div><div class="probability-text">${level}: ${prob}%</div>`;
       }
+      probabilitiesHtml += '</div>';
     }
     
-    function displayResults(result, cropType, municipality, usedParams = null) {
-      const resultsDiv = document.getElementById('results');
-      
-      const modelResults = result.model_results || {};
-      const calculatedScores = result.calculated_scores || {};
-      const recommendations = result.recommendations || {};
-      
-      const suitability = modelResults.suitability || 'Medium';
-      const suitabilityClass = `suitability-${suitability}`;
-      
-      const suitabilityDisplay = {
-        'High': '🌟 Highly Suitable',
-        'Medium': '✅ Moderately Suitable',
-        'Low': '⚠️ Marginally Suitable'
-      }[suitability] || suitability;
-      
-      let probabilitiesHtml = '';
-      if (modelResults.suitability_probabilities) {
-        probabilitiesHtml = '<div style="margin-top: 15px;">';
-        for (const [level, prob] of Object.entries(modelResults.suitability_probabilities)) {
-          probabilitiesHtml += `
-            <div class="probability-bar">
-              <div class="probability-fill" style="width: ${prob}%;"></div>
-            </div>
-            <div class="probability-text">${level}: ${prob}%</div>
-          `;
-        }
-        probabilitiesHtml += '</div>';
-      }
-      
-      let recommendationsHtml = '';
-      
-      if (recommendations.overall) {
-        recommendationsHtml += `<div style="margin-top: 15px; text-align: left;"><h4>📋 ${recommendations.overall.status || 'Recommendation'}</h4><p>${recommendations.overall.message || ''}</p></div>`;
-      }
-      
-      if (recommendations.planting_advice) {
-        recommendationsHtml += `<div style="margin-top: 15px; text-align: left;"><h4>🌱 Planting Advice</h4><p>${recommendations.planting_advice.message || ''}</p></div>`;
-      }
-      
-      if (recommendations.soil_preparation && recommendations.soil_preparation.length) {
-        recommendationsHtml += `<div style="margin-top: 15px; text-align: left;"><h4>🛠️ Soil Preparation</h4>${recommendations.soil_preparation.map(p => `<p>• ${p}</p>`).join('')}</div>`;
-      }
-      
-      if (recommendations.harvest_advice && recommendations.harvest_advice.length) {
-        recommendationsHtml += `<div style="margin-top: 15px; text-align: left;"><h4>🌾 Harvest Advice</h4>${recommendations.harvest_advice.map(h => `<p>• ${h}</p>`).join('')}</div>`;
-      }
-      
-      if (recommendations.typhoon) {
-        recommendationsHtml += `<div style="margin-top: 15px; text-align: left;"><h4>🌀 Typhoon Preparedness</h4><p><strong>Risk Level:</strong> ${recommendations.typhoon.risk_level || 'Unknown'}</p>${recommendations.typhoon.advice ? recommendations.typhoon.advice.map(a => `<p>• ${a}</p>`).join('') : ''}</div>`;
-      }
-      
-      const targetYield = TARGET_YIELDS[cropType] || 4000;
-      const currentYield = modelResults.predicted_yield_kg || 0;
-      const yieldPercentage = (currentYield / targetYield) * 100;
-      
-      resultsDiv.innerHTML = `
-        <div class="results-container">
-          <div class="result-card">
-            <h3>🌾 ${cropType.charAt(0).toUpperCase() + cropType.slice(1)} Yield</h3>
-            <div class="value">${modelResults.predicted_yield_tons ? modelResults.predicted_yield_tons.toFixed(2) : '?'} <span class="unit">tons/ha</span></div>
-            <div class="value" style="font-size: 20px;">(${currentYield.toLocaleString()} kg/ha)</div>
-            <p style="margin-top: 5px;">${((currentYield / targetYield) * 100).toFixed(0)}% of target (${targetYield.toLocaleString()} kg/ha)</p>
-            <p style="margin-top: 10px;">Location: ${municipality}</p>
-          </div>
-          
-          <div class="result-card">
-            <h3>🌱 ${cropType.charAt(0).toUpperCase() + cropType.slice(1)} Suitability</h3>
-            <div class="value ${suitabilityClass}">${suitabilityDisplay}</div>
-            <p>Overall Score: ${calculatedScores.overall_suitability_score || '?'}%</p>
-            <p>Climate Match: ${calculatedScores.climate_match_score || '?'}%</p>
-            <p>Soil: ${calculatedScores.soil_compatibility_score || '?'}%</p>
-            ${probabilitiesHtml}
-          </div>
+    let recommendationsHtml = '';
+    if (recommendations.overall) recommendationsHtml += `<div><h4>📋 ${recommendations.overall.status || 'Recommendation'}</h4><p>${recommendations.overall.message || ''}</p></div>`;
+    if (recommendations.planting_advice) recommendationsHtml += `<div><h4>🌱 Planting Advice</h4><p>${recommendations.planting_advice.message || ''}</p></div>`;
+    if (recommendations.soil_preparation && recommendations.soil_preparation.length) recommendationsHtml += `<div><h4>🛠️ Soil Preparation</h4>${recommendations.soil_preparation.map(p => `<p>• ${p}</p>`).join('')}</div>`;
+    if (recommendations.harvest_advice && recommendations.harvest_advice.length) recommendationsHtml += `<div><h4>🌾 Harvest Advice</h4>${recommendations.harvest_advice.map(h => `<p>• ${h}</p>`).join('')}</div>`;
+    
+    const currentYield = modelResults.predicted_yield_kg || 0;
+    const targetYield = TARGET_YIELDS[cropType] || 4000;
+    
+    resultsDiv.innerHTML = `
+      <div class="results-container">
+        <div class="result-card">
+          <h3>🌾 ${cropType.charAt(0).toUpperCase() + cropType.slice(1)} Yield Prediction</h3>
+          <div class="value">${modelResults.predicted_yield_tons ? modelResults.predicted_yield_tons.toFixed(2) : '?'} <span class="unit">tons/ha</span></div>
+          <div class="value" style="font-size: 20px;">(${currentYield.toLocaleString()} kg/ha)</div>
+          <p>${((currentYield / targetYield) * 100).toFixed(0)}% of target (${targetYield.toLocaleString()} kg/ha)</p>
+          <p>Location: ${municipality}</p>
         </div>
-        
-        <div class="result-card" style="margin-top: 20px;">
+        <div class="result-card">
+          <h3>🌱 ${cropType.charAt(0).toUpperCase() + cropType.slice(1)} Suitability</h3>
+          <div class="value ${suitabilityClass}">${suitabilityDisplay}</div>
+          <p>Overall Score: ${calculatedScores.overall_suitability_score || '?'}%</p>
+          <p>Climate Match: ${calculatedScores.climate_match_score || '?'}%</p>
+          <p>Soil Compatibility: ${calculatedScores.soil_compatibility_score || '?'}%</p>
+          ${probabilitiesHtml}
+        </div>
+        <div class="result-card">
           <h3>📋 Recommendations</h3>
           ${recommendationsHtml || '<p>No recommendations available.</p>'}
-          <div style="margin-top: 15px; text-align: left; padding-top: 10px; border-top: 1px solid #ddd; font-size: 11px;">
+          <div style="margin-top: 12px; padding-top: 10px; border-top: 1px solid #ddd; font-size: 11px;">
             <h4>📊 Weather Data Used</h4>
-            <table style="width: 100%;">
+            <table style="width:100%">
               <tr><td>🌡️ Temperature:</td><td><strong>${usedParams?.avg_temperature || '?'}°C</strong></td></tr>
               <tr><td>🌧️ Rainfall:</td><td><strong>${usedParams?.total_rainfall || '?'} mm</strong></td></tr>
               <tr><td>💧 Humidity:</td><td><strong>${usedParams?.humidity || '?'}%</strong></td></tr>
               <tr><td>🌿 NDVI/EVI:</td><td><strong>${usedParams?.ndvi || '?'} / ${usedParams?.evi || '?'}</strong></td></tr>
               <tr><td>🪴 Soil Fertility:</td><td><strong>${usedParams?.soil_fertility || '?'}/5</strong></td></tr>
             </table>
-            <p style="font-size: 10px; color: #8aa066; margin-top: 8px;">✓ Real-time weather from Visual Crossing API</p>
+            <p style="font-size: 10px; margin-top: 8px;">✓ Real-time weather from Visual Crossing API</p>
           </div>
         </div>
-      `;
-    }
+      </div>
+    `;
+  }
+
+  // ============================================
+  // MODAL & UI EVENT HANDLERS
+  // ============================================
+  
+  document.addEventListener("DOMContentLoaded", function () {
+    const openBtn = document.getElementById("getPlanBtn");
+    const modal = document.getElementById("planModal");
+    const closeBtn = document.getElementById("closeModalBtn");
+    const howBtn = document.getElementById("learnMoreBtn");
+    const howModal = document.getElementById("howModal");
+    const closeHow = document.getElementById("closeHowModal");
     
-    // ============================================
-    // INITIALIZE
-    // ============================================
-    
-    document.addEventListener('DOMContentLoaded', function() {
-      // Initialize dashboard grid
-      initDashboardGrid();
-      
-      const citySelect = document.getElementById('city');
-      if (citySelect) {
-        citySelect.addEventListener('change', onMunicipalityChange);
-        currentMunicipality = citySelect.value;
-      }
-      
-      // Initialize input summary
-      updateInputSummaryPanel(DEFAULT_FALLBACK);
-      
-      // Attach live update listeners
-      const inputIds = ['avg_temperature', 'total_rainfall', 'humidity', 'ndvi', 'evi', 'soil_fertility', 'n_score', 'p_score', 'k_score'];
-      inputIds.forEach(id => {
-        const element = document.getElementById(id);
-        if (element) {
-          element.addEventListener('input', () => updateInputSummaryPanel());
-        }
-      });
-      
-      const cropSelect = document.getElementById('crop');
-      if (cropSelect) cropSelect.addEventListener('change', () => updateInputSummaryPanel());
+    openBtn.addEventListener("click", function () {
+      modal.classList.add("active");
+      document.body.classList.add("modal-open");
     });
-  </script>
+    
+    closeBtn.addEventListener("click", function () {
+      modal.classList.remove("active");
+      document.body.classList.remove("modal-open");
+    });
+    
+    modal.addEventListener("click", function (e) {
+      if (e.target === modal) {
+        modal.classList.remove("active");
+        document.body.classList.remove("modal-open");
+      }
+    });
+    
+    howBtn.addEventListener("click", () => {
+      howModal.classList.add("active");
+      document.body.classList.add("modal-open");
+    });
+    
+    closeHow.addEventListener("click", () => {
+      howModal.classList.remove("active");
+      document.body.classList.remove("modal-open");
+    });
+    
+    howModal.addEventListener("click", (e) => {
+      if (e.target === howModal) {
+        howModal.classList.remove("active");
+        document.body.classList.remove("modal-open");
+      }
+    });
+    
+    // FAQ accordion
+    document.querySelectorAll(".faq-question").forEach(question => {
+      question.addEventListener("click", () => {
+        const card = question.parentElement;
+        document.querySelectorAll(".faq-card").forEach(item => {
+          if (item !== card) item.classList.remove("active");
+        });
+        card.classList.toggle("active");
+      });
+    });
+    
+    // Star rating
+    const stars = document.querySelectorAll("#starRating i");
+    stars.forEach((star, index) => {
+      star.addEventListener("click", () => {
+        const value = parseInt(star.getAttribute("data-value"));
+        stars.forEach((s, i) => {
+          if (i < value) {
+            s.classList.add("active");
+            s.className = "fas fa-star";
+          } else {
+            s.classList.remove("active");
+            s.className = "far fa-star";
+          }
+        });
+        document.getElementById("ratingValue").value = value;
+      });
+    });
+    
+    // Feedback submit
+    const feedbackBtn = document.querySelector(".feedback-btn");
+    const feedbackText = document.querySelector(".feedback-section textarea");
+    feedbackBtn.addEventListener("click", () => {
+      const rating = document.getElementById("ratingValue").value;
+      const feedback = feedbackText.value;
+      if (rating > 0 || feedback.trim()) {
+        alert("Thank you for your feedback!");
+        feedbackText.value = "";
+        stars.forEach(s => { s.classList.remove("active"); s.className = "far fa-star"; });
+        document.getElementById("ratingValue").value = "0";
+      } else {
+        alert("Please provide a rating or feedback.");
+      }
+    });
+  });
+</script>
 </body>
 </html>
