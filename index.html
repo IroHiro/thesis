@@ -841,7 +841,10 @@
   
   const RULE_BASED_API_URL = 'https://rule-based-crop-api.onrender.com/predict';
   const WEATHER_API_KEY = 'FMDQ3KEZ3BUFNDGYXKFYYZ8L7';
-  const CACHE_EXPIRY = 60 * 60 * 1000; // 1 hour
+  const CACHE_EXPIRY = 7 * 24 * 60 * 60 * 1000; // 1 hour
+  // Individual API endpoints for wake-up
+  const SUITABILITY_API_URL = 'https://suitability-api.onrender.com/predict';
+  const YIELD_API_URL = 'https://crop-yield-api-9c1l.onrender.com/predict';
   
   let isInCooldown = false;
   let cooldownTimer = null;
@@ -858,6 +861,95 @@
   const TARGET_YIELDS = { rice: 4000, corn: 3500 };
   const DEFAULT_FALLBACK = { avg_temperature: 27.3, total_rainfall: 30, humidity: 75, n_score: 3, p_score: 3, k_score: 3 };
 
+  // ============================================
+  // API WAKE-UP FUNCTION - Call this BEFORE any prediction
+  // ============================================
+  
+  let apisWarmedUp = false;
+  let warmupInProgress = false;
+  
+  async function wakeUpAPIs() {
+      // If already warmed up, skip
+      if (apisWarmedUp) {
+          console.log("✅ APIs already warmed up");
+          return true;
+      }
+      
+      // If warmup in progress, wait for it
+      if (warmupInProgress) {
+          console.log("⏳ Warmup in progress, waiting...");
+          await new Promise(resolve => {
+              const checkInterval = setInterval(() => {
+                  if (!warmupInProgress) {
+                      clearInterval(checkInterval);
+                      resolve();
+                  }
+              }, 500);
+          });
+          return apisWarmedUp;
+      }
+      
+      warmupInProgress = true;
+      console.log("🔥 Waking up APIs (this may take 15-20 seconds on first run)...");
+      
+      // Show wake-up indicator in modal
+      const resultsDiv = document.getElementById('results');
+      if (resultsDiv) {
+          resultsDiv.innerHTML = '<div style="text-align: center; padding: 20px;"><span class="loader-spinner"></span> Waking up servers (15-20 sec)...</div>';
+      }
+      
+      const apisToWake = [
+          { name: "Suitability API", url: SUITABILITY_API_URL, payload: { crop: "rice", ndvi: 0.7, evi: 0.4, temperature: 27, rainfall: 100, soil_fertility: 3, n_score: 3, p_score: 3, k_score: 3, humidity: 75 } },
+          { name: "Yield API", url: YIELD_API_URL, payload: { raw_sequence: [[0.7,0.4,30,25,27,50,70,200,10,2024,1,1]], crop_encoded: 0, municipality: "Test", season: 1, max_wind_kts: 10, min_pres_mb: 1010, duration_hrs: 0, risk_score: 1 } }
+      ];
+      
+      const wakeupPromises = apisToWake.map(async (api) => {
+          try {
+              console.log(`   ⏳ Waking ${api.name}...`);
+              const controller = new AbortController();
+              const timeoutId = setTimeout(() => controller.abort(), 25000);
+              
+              const response = await fetch(api.url, {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify(api.payload),
+                  signal: controller.signal
+              }).catch(() => null);
+              
+              clearTimeout(timeoutId);
+              
+              if (response && response.ok) {
+                  console.log(`   ✅ ${api.name} is awake (status: ${response.status})`);
+                  return true;
+              } else if (response && response.status === 429) {
+                  console.log(`   ⚠️ ${api.name} rate limited but warming up...`);
+                  return true; // Still count as "awake" - it's responding
+              } else {
+                  console.log(`   ⚠️ ${api.name} returned ${response?.status}, but wake attempt made`);
+                  return false;
+              }
+          } catch (error) {
+              console.log(`   ⚠️ ${api.name} wake attempt: ${error.message}`);
+              return false;
+          }
+      });
+      
+      await Promise.all(wakeupPromises);
+      
+      // Additional delay to let servers fully initialize
+      await new Promise(resolve => setTimeout(resolve, 3000));
+      
+      warmupInProgress = false;
+      apisWarmedUp = true;
+      console.log("✅ API warmup complete!");
+      
+      if (resultsDiv && resultsDiv.innerHTML.includes("Waking up servers")) {
+          resultsDiv.innerHTML = '<div style="text-align: center; padding: 20px; color: #2B6E3C;">✅ Servers ready! Click Analyze again.</div>';
+      }
+      
+      return true;
+  }
+  
   // ============================================
   // YIELD DASHBOARD
   // ============================================
@@ -990,6 +1082,7 @@
       alert("Please select both a municipality and a crop.");
       return;
     }
+    await wakeUpAPIs();
     
     let municipalityName = locKey;
     if (locKey === "Pioduran") municipalityName = "Pio Duran";
