@@ -1937,7 +1937,18 @@ document.addEventListener("DOMContentLoaded", function () {
   });
 
 });
-  
+  document.addEventListener("DOMContentLoaded", function () {
+  const toggleBtn = document.getElementById("farmExplainToggle");
+  const box = document.querySelector(".farm-explanation");
+  const icon = document.getElementById("explainIcon");
+
+  if (toggleBtn && box && icon) {
+    toggleBtn.addEventListener("click", function () {
+      box.classList.toggle("active");
+      icon.textContent = box.classList.contains("active") ? "−" : "+";
+    });
+  }
+});
 </script>
 </body>
 </html>
