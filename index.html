@@ -372,9 +372,10 @@
     .dashboard-card {
       background: #F7FBF4;
       border-radius: 24px;
-      padding: 16px;
+      padding: 16px 20px;  /* Reduced padding */
       margin-top: 20px;
       border: 1px solid #DCE9D4;
+      max-width: 100%;
     }
 
     .dashboard-card h3 {
@@ -402,12 +403,15 @@
       background: #c19a6b;
       overflow: hidden;
       margin-bottom: 12px;
+      max-width: 80%;  /* Limit width */
+      margin-left: auto;
+      margin-right: auto;
     }
 
     .grid-visual {
       display: grid;
       grid-template-columns: repeat(10, 1fr);
-      gap: 2px;
+      gap: 1px;
       padding: 5px;
     }
 
@@ -425,7 +429,7 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 12px;
+      font-size: 10px;
       height: 100%;
     }
 
@@ -442,9 +446,9 @@
       transform: translate(-50%, -50%);
       background: rgba(255, 255, 255, 0.85);
       backdrop-filter: blur(4px);
-      padding: 8px 16px;
+      padding: 6px 12px;
       border-radius: 40px;
-      font-size: 1.5rem;
+      font-size: 1.2rem;
       font-weight: 900;
       color: #1b5e20;
       z-index: 10;
@@ -1243,36 +1247,9 @@
         p_score: 3,
         k_score: 3
       });
-      
-      // Show dashboard after results
-      setTimeout(() => {
-        const dashboardHtml = `
-          <div id="yieldDashboard" class="dashboard-card">
-            <h3>🌾 Visual Yield Dashboard</h3>
-            <div class="header-stats">
-              <span class="yield-achieved">📊 YIELD ACHIEVED: <span id="txtPercent">0</span>%</span>
-              <span class="gap-remaining">⚠️ GAP REMAINING: <span id="txtGap">0</span>%</span>
-            </div>
-            <div class="farm-wrapper">
-              <div id="farmGrid" class="grid-visual"></div>
-              <div id="centerBadge" class="badge-visual">0%</div>
-            </div>
-            <div class="footer-data">
-              <span>🌾 CROP: <strong id="dashboardCrop">Rice</strong></span>
-              <span>📈 CURRENT YIELD: <strong id="txtKg">0</strong> kg/ha</span>
-              <span>🎯 TARGET: <strong id="txtTarget">4000</strong> kg/ha</span>
-            </div>
-          </div>
-        `;
-        const resultsDivInner = document.getElementById('results');
-        if (resultsDivInner && !document.getElementById('yieldDashboard')) {
-          resultsDivInner.insertAdjacentHTML('beforeend', dashboardHtml);
-          initDashboardGrid();
-          updateYieldDashboard(predictedYieldKg, cropType);
-        } else {
-          updateYieldDashboard(predictedYieldKg, cropType);
-        }
-      }, 100);
+
+      // Update the visual dashboard with the predicted yield
+      updateYieldDashboard(predictedYieldKg, cropType);
       
     } catch (error) {
       console.error("Prediction error:", error);
@@ -1330,6 +1307,24 @@
           <p>Soil Compatibility: ${calculatedScores.soil_compatibility_score || '?'}%</p>
           ${probabilitiesHtml}
         </div>
+
+        <!-- Visual Yield Dashboard - Full width but slightly smaller -->
+      <div id="yieldDashboard" class="dashboard-card" style="margin-top: 20px;">
+        <h3>🌾 Visual Yield Dashboard</h3>
+        <div class="header-stats">
+          <span class="yield-achieved">📊 YIELD ACHIEVED: <span id="txtPercent">0</span>%</span>
+          <span class="gap-remaining">⚠️ GAP REMAINING: <span id="txtGap">0</span>%</span>
+        </div>
+        <div class="farm-wrapper">
+          <div id="farmGrid" class="grid-visual"></div>
+          <div id="centerBadge" class="badge-visual">0%</div>
+        </div>
+        <div class="footer-data">
+          <span>🌾 CROP: <strong id="dashboardCrop">Rice</strong></span>
+          <span>📈 CURRENT YIELD: <strong id="txtKg">0</strong> kg/ha</span>
+          <span>🎯 TARGET: <strong id="txtTarget">4000</strong> kg/ha</span>
+        </div>
+      </div>
         
         <!-- Full Width: Recommendations -->
         <div class="result-card">
