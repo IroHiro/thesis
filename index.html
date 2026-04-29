@@ -753,6 +753,26 @@
       gap: 2px;
       padding: 5px;
     }
+
+    /* Override - Force side-by-side layout */
+    .results-container-override {
+      display: grid !important;
+      grid-template-columns: 1fr 1fr !important;
+      gap: 20px !important;
+    }
+    
+    .left-column-stack {
+      display: flex !important;
+      flex-direction: column !important;
+      gap: 20px !important;
+    }
+    
+    /* Remove the span 2 from result-card inside this specific layout */
+    .results-container-override .result-card,
+    .left-column-stack .result-card,
+    .right-column-card {
+      grid-column: auto !important;
+    }
     
     /* Responsive for mobile */
     @media (max-width: 768px) {
@@ -1259,7 +1279,7 @@
     }
   }
   
-  function displayResults(result, cropType, municipality, usedParams) {
+ function displayResults(result, cropType, municipality, usedParams) {
   const resultsDiv = document.getElementById('results');
   const modelResults = result.model_results || {};
   const calculatedScores = result.calculated_scores || {};
@@ -1287,9 +1307,9 @@
   const targetYield = TARGET_YIELDS[cropType] || 4000;
   
   resultsDiv.innerHTML = `
-    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+    <div class="results-container-override">
       <!-- LEFT COLUMN: Yield Prediction + Dashboard -->
-      <div style="display: flex; flex-direction: column; gap: 20px;">
+      <div class="left-column-stack">
         <div class="result-card">
           <h3>🌾 ${cropType.charAt(0).toUpperCase() + cropType.slice(1)} Yield Prediction</h3>
           <div class="value">${modelResults.predicted_yield_tons ? modelResults.predicted_yield_tons.toFixed(2) : '?'} <span class="unit">tons/ha</span></div>
@@ -1317,7 +1337,7 @@
       </div>
       
       <!-- RIGHT COLUMN: Suitability -->
-      <div class="result-card">
+      <div class="result-card right-column-card">
         <h3>🌱 ${cropType.charAt(0).toUpperCase() + cropType.slice(1)} Suitability</h3>
         <div class="value ${suitabilityClass}">${suitabilityDisplay}</div>
         <p>Overall Score: ${calculatedScores.overall_suitability_score || '?'}%</p>
@@ -1345,11 +1365,9 @@
     </div>
   `;
   
-  // Initialize the dashboard grid after HTML is inserted
   initDashboardGrid();
   updateYieldDashboard(currentYield, cropType);
 }
-
   // ============================================
   // MODAL & UI EVENT HANDLERS
   // ============================================
