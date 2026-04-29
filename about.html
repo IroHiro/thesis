@@ -1,181 +1,355 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>About - Albay Agricultural Monitoring System</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: "Segoe UI", sans-serif;
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>About - TerraSight</title>
 
-        body {
-            background-color: #2f3b1f;
-            color: #fff;
-            line-height: 1.6;
-        }
+<style>
+body {
+  margin: 0;
+  font-family: 'Inter', sans-serif;
+  background: #FCF9F2;
+  color: #2f3b1f;
+}
 
-        /* NAVBAR */
-        .navbar {
-            background-color: #263014;
-            height: 50px;           /* slightly shorter */
-            display: flex;
-            align-items: center;    /* vertical centering */
-            justify-content: center; /* horizontal centering of nav-links */
-            padding: 0 40px;        /* remove top/bottom padding to match height */
-        }
+/* NAVBAR */
+.navbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 20px;
+}
 
-        .nav-links {
-            list-style: none;
-            display: flex;
-            gap: 40px;
-            margin: 0;             /* remove extra margin */
-            padding: 0;            /* remove extra padding */
-        }
+/* LEFT SIDE */
+.header-left {
+  display: flex;
+  flex-direction: column;
+}
 
-        .nav-links a {
-            text-decoration: none;
-            color: #cfe09c;
-            font-weight: 500;
-            font-size: 1rem;        /* consistent font size */
-            line-height: 50px;      /* match navbar height for perfect vertical alignment */
-        }
+/* LOGO */
+.logo {
+  font-size: 1.8rem;
+  font-weight: 800;
+  background: linear-gradient(135deg, #1F6530, #3C8849);
+  -webkit-background-clip: text;
+  color: transparent;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+}
 
-        .nav-links a:hover {
-            color: #ffffff;
-        }
+/* SUBTEXT */
+.subhead {
+  font-size: 0.85rem;
+  color: #6B8C66;
+  margin-top: 4px;
+}
 
-        /* HEADER */
-        .header {
-            background: linear-gradient(rgba(45, 60, 20, 0.9), rgba(45, 60, 20, 0.7)), 
-                        url('https://images.unsplash.com/photo-1595435934247-5d33b7f92c70?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80');
-            background-size: cover;
-            background-position: center;
-            padding: 40px 20px;
-            text-align: center;
-        }
+/* NAV LINKS */
+.nav-links {
+  display: flex;
+  gap: 28px;
+}
 
-        .header h1 {
-            font-size: 2.2rem;
-            margin-bottom: 15px;
-            line-height: 1.3;
-            color: #ffffff;
-        }
+.nav-links a {
+  text-decoration: none;
+  font-weight: 600;
+  color: #2C5C2E;
+  font-size: 0.95rem;
+  transition: 0.2s;
+}
 
-        .header p {
-            font-size: 1.1rem;
-            color: #e6efc8;
-            max-width: 800px;
-            margin: 0 auto 10px auto;
-        }
+.nav-links a:hover {
+  color: #2B6E3C;
+}
+/* HEADER */
+.header {
+  padding: 28px 0 20px;
+  border-bottom: 2px solid #E2EADB;
+  background: linear-gradient(135deg, #FCF9F2 0%, #F8F5EA 100%);
+}
 
-        /* MAIN CONTENT */
-        .main-content {
-            max-width: 1000px;
-            margin: 20px auto;
-            padding: 0 20px;
-        }
+.header h1 {
+  font-size: 2rem;
+  color: #2B6E3C;
+  margin-bottom: 10px;
+}
 
-        .section-card {
-            background-color: #3c4527;
-            padding: 25px;
-            border-radius: 6px;
-            margin-bottom: 30px;
-            border: 1px solid #4a5430;
-        }
+.header p {
+  max-width: 800px;
+  margin: auto;
+  color: #5f6b5f;
+  font-size: 1rem;
+}
 
-        .section-card h2 {
-            color: #cfe09c;
-            margin-bottom: 15px;
-        }
+/* MAIN */
+.main-content {
+  max-width: 1000px;
+  margin: 30px auto;
+  padding: 0 20px;
+}
 
-        .section-card p {
-            color: #e6efc8;
-            margin-bottom: 10px;
-        }
+.section-card {
+  background: #F8FBF5;
+  border: 1px solid #dce8d5;
+  padding: 22px;
+  border-radius: 16px;
+  margin-bottom: 20px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.04);
+}
 
-        .section-card ul {
-            padding-left: 30px; /* moves list items to the right */
-            list-style-type: disc; /* keeps bullets */
-        }
-        .section-card ul li {
-            margin-bottom: 8px;
-            color: #e6efc8;
-        }
+.section-card h2 {
+  color: #2B6E3C;
+  margin-bottom: 10px;
+}
 
-        /* FOOTER */
-        .footer {
-            background-color: #263014;
-            padding: 25px 20px;
-            text-align: center;
-            border-top: 1px solid #3c4527;
-            margin-top: 40px;
-        }
+.section-card p {
+  color: #5f6b5f;
+  line-height: 1.6;
+}
 
-        .footer p {
-            color: #cfe09c;
-            font-size: 0.9em;
-        }
-    </style>
+.section-card ul {
+  padding-left: 20px;
+}
+
+.section-card ul li {
+  margin-bottom: 6px;
+  color: #5f6b5f;
+}
+
+/* FOOTER (TerraSight Style) */
+.terrasight-footer {
+  background: linear-gradient(135deg, #EDF7E8, #F8FBF5);
+  border-top: 1px solid #dce8d5;
+  padding: 20px 35px;
+  margin-top: 40px;
+}
+
+.footer-container {
+  max-width: 1300px;
+  margin: auto;
+}
+
+.footer-row {
+  display: grid;
+  grid-template-columns: 1fr 1.3fr 1fr;
+  align-items: center;
+  gap: 20px;
+}
+
+/* CONTACT */
+.footer-contact {
+  font-size: 0.85rem;
+  color: #5f6b5f;
+  line-height: 1.6;
+}
+
+.footer-contact h4 {
+  color: #2B6E3C;
+  margin-bottom: 8px;
+}
+
+/* PARTNERS */
+.partnership-section {
+  text-align: center;
+}
+
+.partnership-section h4 {
+  color: #2B6E3C;
+  margin-bottom: 10px;
+}
+
+.partner-row {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.partner-row img {
+  width: 38px;
+  height: 38px;
+  object-fit: contain;
+  background: white;
+  padding: 5px;
+  border-radius: 10px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+/* FEEDBACK */
+.feedback-section {
+  background: white;
+  padding: 15px;
+  border-radius: 18px;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+}
+
+.feedback-section h4 {
+  color: #2B6E3C;
+  margin-bottom: 8px;
+}
+
+.stars span {
+  font-size: 1.2rem;
+  color: #d3d3d3;
+  cursor: pointer;
+}
+
+.stars span.active {
+  color: #f5b301;
+}
+
+.feedback-section textarea {
+  width: 100%;
+  height: 60px;
+  border: 1px solid #dce8d5;
+  border-radius: 12px;
+  padding: 8px;
+  font-size: 0.8rem;
+  margin-top: 10px;
+  resize: none;
+}
+
+.feedback-btn {
+  width: 100%;
+  margin-top: 8px;
+  padding: 10px;
+  border: none;
+  border-radius: 25px;
+  background: #2B6E3C;
+  color: white;
+  cursor: pointer;
+}
+
+.footer-bottom {
+  text-align: center;
+  margin-top: 15px;
+  font-size: 0.75rem;
+  color: #6b7768;
+}
+
+@media (max-width: 900px) {
+  .footer-row {
+    grid-template-columns: 1fr;
+    text-align: center;
+  }
+}
+</style>
 </head>
+
 <body>
-    <!-- NAVBAR -->
+
+<!-- HEADER -->
+<div class="header">
+  <div class="container">
+
     <nav class="navbar">
-        <ul class="nav-links">
-            <li><a href="index.html">Home</a></li>
-            <li><a href="map.html">Crop Map</a></li>
-            <li><a href="about.html">About</a></li>
-            <li><a href="faqs.html">FAQs</a></li>
-        </ul>
+
+      <!-- LEFT: LOGO + SUBTEXT -->
+      <div class="header-left">
+        <div class="logo">🌱 Crop Suitability & Yield Prediction</div>
+        <div class="subhead">
+          Yield Analytics & Crop Distribution Map | Albay Province
+        </div>
+      </div>
+
+      <!-- RIGHT: NAVIGATION -->
+      <div class="nav-links">
+        <a href="tera.html">Home</a>
+        <a href="#">About</a>
+        <a href="Cropmap.html">Crop Map</a>
+      </div>
     </nav>
 
-    <!-- HEADER -->
-    <header class="header">
-        <h1>About Agricultural Climate-Adaptive Prediction System in Albay</h1>
-        <p>Learn about our mission to visualize and analyze crop distribution across Albay's municipalities.</p>
-    </header>
+  </div>
+</div>
 
-    <!-- MAIN CONTENT -->
-    <div class="main-content">
-        <div class="section-card">
-            <h2>Our Mission</h2>
-            <p>The Albay Agricultural Monitoring System aims to provide farmers, researchers, and policymakers with clear, data-driven insights into crop distribution and agricultural trends in key municipalities.</p>
-            <p>By combining geographic visualization and statistical analysis, we help the agricultural community make informed decisions and adapt to changing environmental conditions.</p>
-        </div>
+<!-- MAIN CONTENT -->
+<div class="main-content">
 
-        <div class="section-card">
-            <h2>Focus Areas</h2>
-            <p>Our system currently highlights the top 5 municipalities for crop production:</p>
-            <ul>
-                <li>City of Ligao</li>
-                <li>Pio Duran</li>
-                <li>Malinao</li>
-                <li>Polangui</li>
-                <li>Oas</li>
-            </ul>
-            <p>We monitor major crops such as Corn, Rice/Palay, and Banana, providing detailed data and insights for each area.</p>
-        </div>
+  <div class="section-card">
+    <h2>Our Mission</h2>
+    <p>
+      TerraSight aims to empower farmers, researchers, and policymakers with data-driven insights
+      for improved agricultural planning and climate resilience.
+    </p>
+  </div>
 
-        <div class="section-card">
-            <h2>Our Approach</h2>
-            <p>We use data-driven methods, including Random Forest and LSTM models, to analyze crop distribution patterns and forecast trends.</p>
-            <p>The system is designed to support climate-adaptive agriculture, helping farmers maximize yields while minimizing environmental impact.</p>
-        </div>
+  <div class="section-card">
+    <h2>Focus Areas</h2>
+    <p>We analyze crop distribution across key municipalities:</p>
+    <ul>
+      <li>City of Ligao</li>
+      <li>Pio Duran</li>
+      <li>Malinao</li>
+      <li>Polangui</li>
+      <li>Oas</li>
+    </ul>
+  </div>
 
-        <div class="section-card">
-            <h2>About Us</h2>
-            <p>This project is part of the Thesis project of the Computer Science students from Bicol University, dedicated to improving agricultural outcomes through technology and data science.</p>
-            <p>We collaborate with local stakeholders, researchers, and government agencies to ensure accurate and actionable insights.</p>
+  <div class="section-card">
+    <h2>Technology</h2>
+    <p>
+      The system uses machine learning models such as Random Forest and LSTM to predict crop yield
+      and identify climate-adaptive farming patterns.
+    </p>
+  </div>
+
+  <div class="section-card">
+    <h2>About the Team</h2>
+    <p>
+      TerraSight is developed by Computer Science students of Bicol University as part of a thesis
+      project focused on agricultural innovation and sustainability.
+    </p>
+  </div>
+
+</div>
+
+<!-- FOOTER -->
+<footer class="terrasight-footer">
+  <div class="footer-container">
+
+    <div class="footer-row">
+
+      <!-- LEFT -->
+      <div class="footer-contact">
+        <h4>Contact Us</h4>
+        <p>📧 terrasight@gmail.com</p>
+        <p>📞 +63 912 345 6789</p>
+        <p>📍 Albay, Philippines</p>
+      </div>
+
+      <!-- CENTER -->
+      <div class="partnership-section">
+        <h4>In Partnership With</h4>
+        <div class="partner-row">
+          <img src="images/logo4.png">
+          <img src="images/logo5.png">
+          <img src="images/logo3.png">
+          <img src="images/logo1.png">
+          <img src="images/logo2.png">
+          <img src="images/APAO.png">
+          <img src="images/DA.png">
         </div>
+      </div>
+
+      <!-- RIGHT -->
+      <div class="feedback-section">
+        <h4>Rate Us</h4>
+        <div class="stars">
+          <span>★</span><span>★</span><span>★</span><span>★</span><span>★</span>
+        </div>
+        <textarea placeholder="Your feedback..."></textarea>
+        <button class="feedback-btn">Submit</button>
+      </div>
+
     </div>
 
-    <!-- FOOTER -->
-    <footer class="footer">
-        <p>Data Source: RSBSA Registry | Project: Data-Driven Crop Suitability and Yield Prediction for Climate-Adaptive Agriculture in Albay</p>
-        <p>© 2024 Albay Agricultural Research Initiative</p>
-    </footer>
+    <div class="footer-bottom">
+      © 2026 TerraSight | Data-Driven Crop Suitability System
+    </div>
+
+  </div>
+</footer>
+
 </body>
 </html>
