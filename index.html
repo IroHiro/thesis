@@ -1253,7 +1253,6 @@
         </div>
     </div>
 </div>
-        </div>
 
 <script>
   // ============================================
@@ -1777,145 +1776,128 @@
   initDashboardGrid();
   updateYieldDashboard(currentYield, cropType);
 }
-  // ============================================
-  // MODAL & UI EVENT HANDLERS
-  // ============================================
-  
-  document.addEventListener("DOMContentLoaded", function () {
-    const openBtn = document.getElementById("getPlanBtn");
-    const modal = document.getElementById("planModal");
-    const closeBtn = document.getElementById("closeModalBtn");
-    const howBtn = document.getElementById("learnMoreBtn");
-    const howModal = document.getElementById("howModal");
-    const closeHow = document.getElementById("closeHowModal");
-    
+ // ============================================
+// MODAL & UI EVENT HANDLERS
+// ============================================
+
+document.addEventListener("DOMContentLoaded", function () {
+  const openBtn = document.getElementById("getPlanBtn");
+  const modal = document.getElementById("planModal");
+  const closeBtn = document.getElementById("closeModalBtn");
+
+  const howBtn = document.getElementById("learnMoreBtn");
+  const howModal = document.getElementById("howModal");
+  const closeHow = document.getElementById("closeHowModal");
+
+  const toggleBtn = document.getElementById("farmExplainToggle");
+  const farmBox = document.querySelector(".farm-explanation");
+  const explainIcon = document.getElementById("explainIcon");
+
+  // Prediction modal
+  if (openBtn && modal) {
     openBtn.addEventListener("click", function () {
       modal.classList.add("active");
       document.body.classList.add("modal-open");
     });
-    
+  }
+
+  if (closeBtn && modal) {
     closeBtn.addEventListener("click", function () {
       modal.classList.remove("active");
       document.body.classList.remove("modal-open");
     });
-    
+  }
+
+  if (modal) {
     modal.addEventListener("click", function (e) {
       if (e.target === modal) {
         modal.classList.remove("active");
         document.body.classList.remove("modal-open");
       }
     });
-    
-    howBtn.addEventListener("click", () => {
+  }
+
+  // FAQ modal
+  if (howBtn && howModal) {
+    howBtn.addEventListener("click", function () {
       howModal.classList.add("active");
       document.body.classList.add("modal-open");
     });
-    
-    closeHow.addEventListener("click", () => {
+  }
+
+  if (closeHow && howModal) {
+    closeHow.addEventListener("click", function () {
       howModal.classList.remove("active");
       document.body.classList.remove("modal-open");
     });
-    
-    howModal.addEventListener("click", (e) => {
+  }
+
+  if (howModal) {
+    howModal.addEventListener("click", function (e) {
       if (e.target === howModal) {
         howModal.classList.remove("active");
         document.body.classList.remove("modal-open");
       }
     });
+  }
 
-// ===============================
-// FARM EXPLANATION DROPDOWN
-// ===============================
-function toggleExplanation() {
-  const box = document.querySelector(".farm-explanation");
-  const icon = document.getElementById("explainIcon");
-
-  if (!box || !icon) return;
-
-  box.classList.toggle("active");
-
-  icon.textContent = box.classList.contains("active") ? "−" : "+";
-}
-// ===============================
-// FAQ ACCORDION + STAR RATING + FEEDBACK
-// ===============================
-document.addEventListener("DOMContentLoaded", function () {
+  // Farm explanation dropdown
+  if (toggleBtn && farmBox && explainIcon) {
+    toggleBtn.addEventListener("click", function () {
+      farmBox.classList.toggle("active");
+      explainIcon.textContent = farmBox.classList.contains("active") ? "−" : "+";
+    });
+  }
 
   // FAQ accordion
   document.querySelectorAll(".faq-question").forEach(question => {
-    question.addEventListener("click", () => {
+    question.addEventListener("click", function () {
       const card = question.parentElement;
 
       document.querySelectorAll(".faq-card").forEach(item => {
-        if (item !== card) {
-          item.classList.remove("active");
-        }
+        if (item !== card) item.classList.remove("active");
       });
 
       card.classList.toggle("active");
     });
   });
 
-
   // Star rating
   const stars = document.querySelectorAll("#starRating i");
 
   stars.forEach((star, index) => {
-    star.addEventListener("click", () => {
+    star.addEventListener("click", function () {
       const value = index + 1;
 
       stars.forEach((s, i) => {
-        if (i < value) {
-          s.classList.add("active");
-          s.className = "fas fa-star active";
-        } else {
-          s.classList.remove("active");
-          s.className = "far fa-star";
-        }
+        s.className = i < value ? "fas fa-star active" : "far fa-star";
       });
 
-      const ratingValue = document.getElementById("ratingValue");
-      if (ratingValue) {
-        ratingValue.value = value;
-      }
+      document.getElementById("ratingValue").value = value;
     });
   });
-
 
   // Feedback submit
   const feedbackBtn = document.querySelector(".feedback-btn");
   const feedbackText = document.querySelector(".feedback-section textarea");
 
   if (feedbackBtn && feedbackText) {
-    feedbackBtn.addEventListener("click", () => {
-      const rating = document.getElementById("ratingValue")?.value || 0;
+    feedbackBtn.addEventListener("click", function () {
+      const rating = document.getElementById("ratingValue").value;
       const feedback = feedbackText.value;
 
       if (rating > 0 || feedback.trim()) {
         alert("Thank you for your feedback!");
-
         feedbackText.value = "";
-
-        stars.forEach(s => {
-          s.classList.remove("active");
-          s.className = "far fa-star";
-        });
-
-        const ratingValue = document.getElementById("ratingValue");
-        if (ratingValue) {
-          ratingValue.value = "0";
-        }
-
       } else {
         alert("Please provide a rating or feedback.");
       }
     });
   }
 
-
-  // FAQ speak button
+  // Speak button
   document.querySelectorAll(".speak-btn").forEach(btn => {
-    btn.addEventListener("click", (e) => {
+    btn.addEventListener("click", function (e) {
       e.stopPropagation();
 
       const card = e.target.closest(".faq-card");
@@ -1924,30 +1906,14 @@ document.addEventListener("DOMContentLoaded", function () {
       const question = card.querySelector(".faq-question h4")?.innerText || "";
       const answer = card.querySelector(".faq-answer")?.textContent || "";
 
-      const fullText = `${question}. ${answer}`;
-      const speech = new SpeechSynthesisUtterance(fullText);
-
+      const speech = new SpeechSynthesisUtterance(`${question}. ${answer}`);
       speech.lang = "en-US";
       speech.rate = 0.95;
-      speech.pitch = 1;
 
       speechSynthesis.cancel();
       speechSynthesis.speak(speech);
     });
   });
-
-});
-  document.addEventListener("DOMContentLoaded", function () {
-  const toggleBtn = document.getElementById("farmExplainToggle");
-  const box = document.querySelector(".farm-explanation");
-  const icon = document.getElementById("explainIcon");
-
-  if (toggleBtn && box && icon) {
-    toggleBtn.addEventListener("click", function () {
-      box.classList.toggle("active");
-      icon.textContent = box.classList.contains("active") ? "−" : "+";
-    });
-  }
 });
 </script>
 </body>
