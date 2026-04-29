@@ -1287,12 +1287,9 @@
   const targetYield = TARGET_YIELDS[cropType] || 4000;
   
   resultsDiv.innerHTML = `
-    <!-- Two columns: Left (Yield + Dashboard) and Right (Suitability) -->
     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
-      
-      <!-- LEFT COLUMN: Yield Prediction + Dashboard (stacked) -->
+      <!-- LEFT COLUMN: Yield Prediction + Dashboard -->
       <div style="display: flex; flex-direction: column; gap: 20px;">
-        <!-- Yield Prediction Card -->
         <div class="result-card">
           <h3>🌾 ${cropType.charAt(0).toUpperCase() + cropType.slice(1)} Yield Prediction</h3>
           <div class="value">${modelResults.predicted_yield_tons ? modelResults.predicted_yield_tons.toFixed(2) : '?'} <span class="unit">tons/ha</span></div>
@@ -1301,7 +1298,6 @@
           <p>Location: ${municipality}</p>
         </div>
         
-        <!-- Visual Yield Dashboard -->
         <div id="yieldDashboard" class="dashboard-card">
           <h3>🌾 Visual Yield Dashboard</h3>
           <div class="header-stats">
@@ -1331,34 +1327,19 @@
       </div>
     </div>
     
-    <!-- FULL WIDTH: Recommendations below both columns -->
+    <!-- FULL WIDTH: Recommendations -->
     <div class="result-card" style="margin-top: 20px;">
       <h3>📋 Recommendations</h3>
       ${recommendationsHtml || '<p>No recommendations available.</p>'}
       <div style="margin-top: 12px; padding-top: 10px; border-top: 1px solid #ddd; font-size: 11px;">
         <h4>📊 Weather Data Used</h4>
         <table style="width:100%">
-          <tr>
-            <td>🌡️ Temperature:</td>
-            <td><strong>${usedParams?.avg_temperature || '?'}°C</strong></td>
-           </tr>
-          <tr>
-            <td>🌧️ Rainfall:</td>
-            <td><strong>${usedParams?.total_rainfall || '?'} mm</strong></td>
-           </tr>
-          <tr>
-            <td>💧 Humidity:</td>
-            <td><strong>${usedParams?.humidity || '?'}%</strong></td>
-           </tr>
-          <tr>
-            <td>🌿 NDVI/EVI:</td>
-            <td><strong>${usedParams?.ndvi || '?'} / ${usedParams?.evi || '?'}</strong></td>
-           </tr>
-          <tr>
-            <td>🪴 Soil Fertility:</td>
-            <td><strong>${usedParams?.soil_fertility || '?'}/5</strong></td>
-           </tr>
-         </table>
+          <tr><td>🌡️ Temperature:</td><td><strong>${usedParams?.avg_temperature || '?'}°C</strong></td></tr>
+          <tr><td>🌧️ Rainfall:</td><td><strong>${usedParams?.total_rainfall || '?'} mm</strong></td></tr>
+          <tr><td>💧 Humidity:</td><td><strong>${usedParams?.humidity || '?'}%</strong></td></tr>
+          <tr><td>🌿 NDVI/EVI:</td><td><strong>${usedParams?.ndvi || '?'} / ${usedParams?.evi || '?'}</strong></td></tr>
+          <tr><td>🪴 Soil Fertility:</td><td><strong>${usedParams?.soil_fertility || '?'}/5</strong></td></tr>
+        </table>
         <p style="font-size: 10px; margin-top: 8px;">✓ Real-time weather from Visual Crossing API</p>
       </div>
     </div>
