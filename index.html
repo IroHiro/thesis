@@ -1410,7 +1410,7 @@
       }
       
       const result = await response.json();
-      const predictedYieldKg = result.model_results?.predicted_yield_kg || 0;
+      //const predictedYieldKg = result.model_results?.predicted_yield_kg || 0;
       // Handle both possible field names from API
       let predictedYieldKg = 0;
       if (result.model_results?.predicted_yield_kg) {
@@ -1484,7 +1484,7 @@
   if (recommendations.soil_preparation && recommendations.soil_preparation.length) recommendationsHtml += `<div><h4>🛠️ Soil Preparation</h4>${recommendations.soil_preparation.map(p => `<p>• ${p}</p>`).join('')}</div>`;
   if (recommendations.harvest_advice && recommendations.harvest_advice.length) recommendationsHtml += `<div><h4>🌾 Harvest Advice</h4>${recommendations.harvest_advice.map(h => `<p>• ${h}</p>`).join('')}</div>`;
   
-  const currentYield = modelResults.predicted_yield_kg || 0;
+  //const currentYield = modelResults.predicted_yield_kg || 0;
    // Handle both possible field names
     let currentYield = 0;
     if (modelResults.predicted_yield_kg) {
