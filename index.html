@@ -227,8 +227,8 @@
       background: white;
       border-radius: 48px;
       padding: 32px 36px;
-      max-width: 850px;  
-      width: 90%;        
+      max-width: 1100px;  
+      width: 95%;        
       max-height: 90vh;  
       overflow-y: auto;
       text-align: center;
@@ -299,9 +299,15 @@
 
     /* Results styling inside modal */
     .results-container {
-      display: flex;
-      flex-direction: column;
-      gap: 16px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;  /* Two columns side-by-side */
+      gap: 20px;
+    }
+    
+    /* Make recommendations and dashboard span full width */
+    .result-card:last-child,
+    .dashboard-card {
+      grid-column: span 2;  /* Full width */
     }
 
     .result-card {
@@ -704,6 +710,62 @@
       to { opacity: 1; transform: translateY(0); }
     }
     .delay-1 { animation-delay: 0.1s; }
+
+    /* Improved side-by-side layout */
+    .results-container {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+    }
+    
+    .result-card:last-child {
+      grid-column: span 2;
+    }
+    
+    .dashboard-card {
+      grid-column: span 2;
+      margin-top: 0;
+    }
+    
+    /* Better card styling */
+    .result-card {
+      background: white;
+      border-radius: 20px;
+      padding: 20px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+      border: 1px solid #DCE9D4;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    
+    .result-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+    }
+    
+    /* Dashboard grid adjustment */
+    .grid-visual {
+      display: grid;
+      grid-template-columns: repeat(10, 1fr);
+      gap: 2px;
+      padding: 5px;
+    }
+    
+    /* Responsive for mobile */
+    @media (max-width: 768px) {
+      .results-container {
+        grid-template-columns: 1fr;
+      }
+      
+      .result-card:last-child,
+      .dashboard-card {
+        grid-column: span 1;
+      }
+      
+      .modal-card {
+        max-width: 95%;
+        padding: 20px;
+      }
+    }
   </style>
 </head>
 <body>
@@ -1248,7 +1310,9 @@
     const targetYield = TARGET_YIELDS[cropType] || 4000;
     
     resultsDiv.innerHTML = `
+      <!-- Two-column layout: Yield and Suitability side by side -->
       <div class="results-container">
+        <!-- Left Column: Yield Prediction -->
         <div class="result-card">
           <h3>🌾 ${cropType.charAt(0).toUpperCase() + cropType.slice(1)} Yield Prediction</h3>
           <div class="value">${modelResults.predicted_yield_tons ? modelResults.predicted_yield_tons.toFixed(2) : '?'} <span class="unit">tons/ha</span></div>
@@ -1256,6 +1320,8 @@
           <p>${((currentYield / targetYield) * 100).toFixed(0)}% of target (${targetYield.toLocaleString()} kg/ha)</p>
           <p>Location: ${municipality}</p>
         </div>
+        
+        <!-- Right Column: Suitability -->
         <div class="result-card">
           <h3>🌱 ${cropType.charAt(0).toUpperCase() + cropType.slice(1)} Suitability</h3>
           <div class="value ${suitabilityClass}">${suitabilityDisplay}</div>
@@ -1264,6 +1330,8 @@
           <p>Soil Compatibility: ${calculatedScores.soil_compatibility_score || '?'}%</p>
           ${probabilitiesHtml}
         </div>
+        
+        <!-- Full Width: Recommendations -->
         <div class="result-card">
           <h3>📋 Recommendations</h3>
           ${recommendationsHtml || '<p>No recommendations available.</p>'}
