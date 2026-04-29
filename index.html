@@ -1556,7 +1556,8 @@
         alert("Please provide a rating or feedback.");
       }
     });
-     document.querySelectorAll(".speak-btn").forEach((btn) => {
+  });
+       document.querySelectorAll(".speak-btn").forEach((btn) => {
       btn.addEventListener("click", (e) => {
 
         const card = e.target.closest(".faq-card");
@@ -1576,7 +1577,6 @@
         speechSynthesis.cancel(); // stop previous speech
         speechSynthesis.speak(speech);
       });
-  });
 </script>
 </body>
 </html>
