@@ -938,6 +938,7 @@
         <option value="">-- Select Crop --</option>
         <option value="rice">🌾 Rice</option>
         <option value="corn">🌽 Corn</option>
+        <option value="coconut">🥥 Coconut</option>
       </select>
     </div>
 
@@ -1069,7 +1070,7 @@
       "Malinao":  { lat: 13.4117, lon: 123.7000, ndvi: 0.73, evi: 0.45, soil_fertility: 3.1 }
   };
 
-  const TARGET_YIELDS = { rice: 4000, corn: 3500 };
+  const TARGET_YIELDS = { rice: 4000, corn: 3500, coconut: 12000 };
   const DEFAULT_FALLBACK = { avg_temperature: 27.3, total_rainfall: 30, humidity: 75, n_score: 3, p_score: 3, k_score: 3 };
 
   // ============================================
@@ -1327,6 +1328,10 @@
       return;
     }
     await wakeUpAPIs();
+    // Coconut is now supported, testing if working
+      if (cropType === 'coconut') {
+        console.log("Coconut selected - using coconut model");
+      }
     
     let municipalityName = locKey;
     if (locKey === "Pioduran") municipalityName = "Pio Duran";
@@ -1504,7 +1509,8 @@
         <div class="result-card">
           <h3>🌾 ${cropType.charAt(0).toUpperCase() + cropType.slice(1)} Yield Prediction</h3>
           <div class="value">${(currentYield / 1000).toFixed(2)} <span class="unit">tons/ha</span></div>
-          <div class="value" style="font-size: 20px;">(${currentYield.toLocaleString()} kg/ha)</div>
+          <div class="value" style="font-size: 20px;">(${currentYield.toLocaleString()} ${cropType === 'coconut' ? 'nuts' : 'kg'}/ha)</div>
+      
           <p>${((currentYield / targetYield) * 100).toFixed(0)}% of target (${targetYield.toLocaleString()} kg/ha)</p>
           <p>Location: ${municipality}</p>
         </div>
