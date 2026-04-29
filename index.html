@@ -92,16 +92,19 @@
 
     .hero-grid {
       display: flex;
-      flex-wrap: wrap;
       align-items: center;
       justify-content: space-between;
-      gap: 48px;
-    }
-
-    .hero-content {
-      flex: 1.2;
-      min-width: 280px;
-    }
+        }
+        .hero-content {
+        flex: 1;
+        min-width: 420px;
+      }
+      .hero-farm-visual {
+        flex: 1;
+        min-width: 360px;
+        display: flex;
+        justify-content: center;
+      }
 
     .hero-badge {
       background: #E9F4E5;
@@ -486,6 +489,107 @@
         scrollbar-width: none; /* Firefox */
     }
 
+.hero-grid {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 60px;
+  flex-wrap: nowrap;
+}
+
+.hero-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.hero-farm-visual {
+  flex: 0 0 420px;
+  display: flex;
+  justify-content: center;
+}
+.farm-preview-card {
+  width: 360px;
+  background: #ffffff;
+  border: 1px solid #DCE9D4;
+  border-radius: 28px;
+  padding: 24px;
+  box-shadow: 0 20px 45px rgba(43, 110, 60, 0.12);
+}
+
+.farm-preview-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: #1F6530;
+  font-weight: 800;
+  margin-bottom: 18px;
+}
+
+.farm-preview-header strong {
+  background: #E9F4E2;
+  padding: 8px 14px;
+  border-radius: 999px;
+  font-size: 1.1rem;
+}
+
+.farm-preview-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 10px;
+  background: #C19A6B;
+  border: 6px solid #A67C52;
+  border-radius: 18px;
+  padding: 14px;
+  position: relative;
+  overflow: hidden;
+}
+
+.farm-cell {
+  aspect-ratio: 1;
+  border-radius: 10px;
+  animation: farmPulse 2s infinite ease-in-out;
+}
+
+.farm-cell.active {
+  background: #A5D6A7;
+}
+
+.farm-cell.active::after {
+  content: "🌱";
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  font-size: 18px;
+}
+
+.farm-cell.empty {
+  background-color: #C19A6B;
+  background-image: radial-gradient(#A67C52 15%, transparent 20%);
+  background-size: 8px 8px;
+}
+
+.farm-preview-text {
+  margin-top: 16px;
+  color: #52734D;
+  font-size: 0.95rem;
+  text-align: center;
+.farm-explanation {
+  margin-top: 14px;
+  padding: 12px 14px;
+  background: #F3F8EF;
+  border-radius: 14px;
+  font-size: 0.85rem;
+  color: #3F5840;
+  line-height: 1.5;
+  text-align: left;
+}
+
+.farm-explanation h4 {
+  font-size: 0.9rem;
+  margin-bottom: 6px;
+  color: #2B6E3C;
+}
     .faq-actions {
       display: flex;
       align-items: center;
@@ -851,24 +955,94 @@
     </div>
   </nav>
 
-  <main class="hero">
-    <div class="hero-grid">
-      <div class="hero-content fade-up delay-1">
-        <div class="hero-badge"><i class="fas fa-chart-line"></i> Your guide to crop suitability and yield forecasting</div>
-        <h1>Smart crop<br><span class="highlight">suitability</span></h1>
-        <p class="hero-sub">Get instant crop suitability scores and yield predictions in <strong>minutes, not weeks.</strong><br>Data-driven insights for rice & corn.</p>
-        <div class="cta-group">
-          <button class="btn-primary" id="getPlanBtn"> <i class="fas fa-chart-simple"></i> Check crop suitability </button>
-          <button class="btn-outline" id="learnMoreBtn"><i class="fas fa-circle-question"></i> FAQs </button>
-        </div>
-        <div class="trust-note">
-          <span><i class="fas fa-clock"></i> Instant predictions</span>
-          <span><i class="fas fa-cloud-sun"></i> Real weather data</span>
-          <span><i class="fas fa-chart-line"></i> AI-powered analysis</span>
-        </div>
+<main class="hero">
+  <div class="hero-grid">
+
+    <!-- LEFT TEXT -->
+    <div class="hero-content fade-up delay-1">
+      <div class="hero-badge">
+        <i class="fas fa-chart-line"></i> Your guide to crop suitability and yield forecasting
+      </div>
+
+      <h1>Smart crop<br><span class="highlight">suitability</span></h1>
+
+      <p class="hero-sub">
+        Get instant crop suitability scores and yield predictions in 
+        <strong>minutes, not weeks.</strong><br>
+        Data-driven insights for rice, corn, & coconut.
+      </p>
+
+      <div class="cta-group">
+        <button class="btn-primary" id="getPlanBtn">
+          <i class="fas fa-chart-simple"></i> Check crop suitability
+        </button>
+
+        <button class="btn-outline" id="learnMoreBtn">
+          <i class="fas fa-circle-question"></i> FAQs
+        </button>
+      </div>
+
+      <div class="trust-note">
+        <span><i class="fas fa-clock"></i> Instant predictions</span>
       </div>
     </div>
-  </main>
+
+    <!-- RIGHT FARM VISUAL -->
+    <div class="hero-farm-visual fade-up delay-1">
+      <div class="farm-preview-card">
+        <div class="farm-preview-header">
+          <span>🌾 Yield Visualization</span>
+          <strong>82%</strong>
+        </div>
+
+        <div class="farm-preview-grid">
+          <div class="farm-cell active"></div>
+          <div class="farm-cell active"></div>
+          <div class="farm-cell active"></div>
+          <div class="farm-cell active"></div>
+          <div class="farm-cell active"></div>
+
+          <div class="farm-cell active"></div>
+          <div class="farm-cell active"></div>
+          <div class="farm-cell active"></div>
+          <div class="farm-cell active"></div>
+          <div class="farm-cell empty"></div>
+
+          <div class="farm-cell active"></div>
+          <div class="farm-cell active"></div>
+          <div class="farm-cell active"></div>
+          <div class="farm-cell empty"></div>
+          <div class="farm-cell empty"></div>
+
+          <div class="farm-cell active"></div>
+          <div class="farm-cell active"></div>
+          <div class="farm-cell empty"></div>
+          <div class="farm-cell empty"></div>
+          <div class="farm-cell empty"></div>
+        </div>
+
+        <p class="farm-preview-text">
+          Sample visual estimate of crop yield potential per hectare.
+        </p>
+        <div class="farm-explanation">
+      <h4><br>📊 What this means</h4>
+      <p>
+      This grid shows how much of your land is good for growing crops.
+      </p>
+      <p>
+      <br>  🌱 Green boxes = areas where crops can grow well <br>
+            🟫 Brown boxes = areas that may need improvement <br>
+      </p>
+      <p>
+      <br>  The percentage (82%) shows how much of your land has good conditions. <br>
+      The more green, the higher your possible harvest.
+      </p>
+    </div>
+      </div>
+    </div>
+
+  </div>
+</main>
 </div>
 
 <footer class="terrasight-footer">
