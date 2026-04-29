@@ -1411,6 +1411,16 @@
       
       const result = await response.json();
       const predictedYieldKg = result.model_results?.predicted_yield_kg || 0;
+      // Handle both possible field names from API
+      let predictedYieldKg = 0;
+      if (result.model_results?.predicted_yield_kg) {
+          predictedYieldKg = result.model_results.predicted_yield_kg;
+      } else if (result.model_results?.predicted_yield) {
+          predictedYieldKg = result.model_results.predicted_yield;
+      } else if (result.model_results?.predicted_yield_tons) {
+          predictedYieldKg = result.model_results.predicted_yield_tons * 1000;
+      }
+      console.log("Yield extracted:", predictedYieldKg);
       
       displayResults(result, cropType, municipalityName, {
         avg_temperature: avgTemperature,
@@ -1475,6 +1485,16 @@
   if (recommendations.harvest_advice && recommendations.harvest_advice.length) recommendationsHtml += `<div><h4>🌾 Harvest Advice</h4>${recommendations.harvest_advice.map(h => `<p>• ${h}</p>`).join('')}</div>`;
   
   const currentYield = modelResults.predicted_yield_kg || 0;
+   // Handle both possible field names
+    let currentYield = 0;
+    if (modelResults.predicted_yield_kg) {
+        currentYield = modelResults.predicted_yield_kg;
+    } else if (modelResults.predicted_yield) {
+        currentYield = modelResults.predicted_yield;
+    } else if (modelResults.predicted_yield_tons) {
+        currentYield = modelResults.predicted_yield_tons * 1000;
+    }
+    console.log("Display yield:", currentYield);
   const targetYield = TARGET_YIELDS[cropType] || 4000;
   
   resultsDiv.innerHTML = `
