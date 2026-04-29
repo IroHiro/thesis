@@ -1075,21 +1075,35 @@
   }
 
   function updateYieldDashboard(yieldKg, cropType) {
-    const dashboard = document.getElementById('yieldDashboard');
-    if (!dashboard) return;
-    dashboard.style.display = 'block';
-    const targetYield = TARGET_YIELDS[cropType] || 4000;
-    const percentage = Math.min(100, Math.max(0, (yieldKg / targetYield) * 100));
-    const gap = Math.max(0, 100 - percentage);
-    document.getElementById('txtPercent').textContent = Math.round(percentage);
-    document.getElementById('txtGap').textContent = Math.round(gap);
-    document.getElementById('txtKg').textContent = Math.round(yieldKg).toLocaleString();
-    document.getElementById('txtTarget').textContent = targetYield.toLocaleString();
-    document.getElementById('dashboardCrop').textContent = cropType.charAt(0).toUpperCase() + cropType.slice(1);
-
-    // ADD THESE LINES FOR FARMER-FRIENDLY EXPLANATION
-    document.getElementById('txtPercentInterpret').textContent = Math.round(percentage);
-    
+  const dashboard = document.getElementById('yieldDashboard');
+  if (!dashboard) return;
+  dashboard.style.display = 'block';
+  const targetYield = TARGET_YIELDS[cropType] || 4000;
+  const percentage = Math.min(100, Math.max(0, (yieldKg / targetYield) * 100));
+  const gap = Math.max(0, 100 - percentage);
+  
+  // SAFE UPDATES - Check if elements exist first
+  const txtPercent = document.getElementById('txtPercent');
+  if (txtPercent) txtPercent.textContent = Math.round(percentage);
+  
+  const txtGap = document.getElementById('txtGap');
+  if (txtGap) txtGap.textContent = Math.round(gap);
+  
+  const txtKg = document.getElementById('txtKg');
+  if (txtKg) txtKg.textContent = Math.round(yieldKg).toLocaleString();
+  
+  const txtTarget = document.getElementById('txtTarget');
+  if (txtTarget) txtTarget.textContent = targetYield.toLocaleString();
+  
+  const dashboardCrop = document.getElementById('dashboardCrop');
+  if (dashboardCrop) dashboardCrop.textContent = cropType.charAt(0).toUpperCase() + cropType.slice(1);
+  
+  // FARMER-FRIENDLY EXPLANATION - Only if elements exist
+  const txtPercentInterpret = document.getElementById('txtPercentInterpret');
+  if (txtPercentInterpret) txtPercentInterpret.textContent = Math.round(percentage);
+  
+  const txtRecommendation = document.getElementById('txtRecommendation');
+  if (txtRecommendation) {
     let recommendation = '';
     if (percentage >= 90) {
       recommendation = '🎉 Excellent! You are meeting or exceeding your target yield. Great farming practices!';
@@ -1100,18 +1114,19 @@
     } else if (percentage >= 30) {
       recommendation = '⚠️ Your yield is below target. Consult local agriculturists for crop management advice.';
     } else {
-      recommendation = '🌱 Your yield potential needs improvement. Try adjusting planting schedule or crop variety.';
+      recommendation = '🌱 Your yield potential needs improvement. Try adjusting the planting schedule or crop variety.';
     }
-    document.getElementById('txtRecommendation').textContent = recommendation;
-    
-    const badge = document.getElementById('centerBadge');
-    if (badge) badge.textContent = Math.round(percentage) + "%";
-    const activeCount = Math.floor((percentage / 100) * totalCells);
-    dashboardCells.forEach((cell, index) => {
-      cell.className = index < activeCount ? 'cell-visual active' : 'cell-visual empty';
-    });
+    txtRecommendation.textContent = recommendation;
   }
-
+  
+  const badge = document.getElementById('centerBadge');
+  if (badge) badge.textContent = Math.round(percentage) + "%";
+  
+  const activeCount = Math.floor((percentage / 100) * totalCells);
+  dashboardCells.forEach((cell, index) => {
+    cell.className = index < activeCount ? 'cell-visual active' : 'cell-visual empty';
+  });
+}
   // ============================================
   // WEATHER FUNCTIONS
   // ============================================
@@ -1367,6 +1382,7 @@
           <p>Location: ${municipality}</p>
         </div>
         
+        <!-- Visual Yield Dashboard -->
         <div id="yieldDashboard" class="dashboard-card">
           <h3>🌾 Visual Yield Dashboard</h3>
           <div class="header-stats">
@@ -1379,12 +1395,13 @@
           </div>
           <div class="footer-data" style="flex-direction: column; text-align: center; gap: 5px;">
             <span style="background: #2B6E3C; color: white; font-weight: bold;">📋 WHAT THIS MEANS FOR YOU:</span>
-            <span style="font-size: 0.8rem; line-height: 1.4;">Your expected harvest is <strong id="txtKg">0</strong> kg per hectare. 
-            This is <strong id="txtPercentInterpret">0</strong>% of the target <strong id="txtTarget">4000</strong> kg per hectare. 
-            <span id="txtRecommendation">You are on track to meet your target!</span></span>
+            <span style="font-size: 0.8rem; line-height: 1.4;">
+              Your expected harvest is <strong id="txtKg">0</strong> kg per hectare. 
+              This is <strong id="txtPercentInterpret">0</strong>% of the target <strong id="txtTarget">4000</strong> kg per hectare.
+            </span>
+            <span id="txtRecommendation" style="font-size: 0.75rem; color: #2C5C2E;"></span>
           </div>
         </div>
-      </div>
       
       <!-- RIGHT COLUMN: Suitability -->
       <div class="result-card right-column-card">
