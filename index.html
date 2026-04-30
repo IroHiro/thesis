@@ -1164,7 +1164,9 @@
     <div id="dualLoader" style="display:none; margin-top:15px; text-align:center;">
       <span class="loader-spinner"></span> Analyzing weather & crop data...
     </div>
-
+  <button id="speakAllResults" class="btn-outline" style="margin-top:10px;">
+  🔊 Read Results
+  </button>
     <div id="results" class="result-message"></div>
   </div>
 </div>
@@ -1782,7 +1784,7 @@
   initDashboardGrid();
   updateYieldDashboard(currentYield, cropType);
 }
- // ============================================
+// ============================================
 // MODAL & UI EVENT HANDLERS
 // ============================================
 
@@ -1901,7 +1903,7 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   }
 
-  // Speak button
+  // FAQ Speak button
   document.querySelectorAll(".speak-btn").forEach(btn => {
     btn.addEventListener("click", function (e) {
       e.stopPropagation();
@@ -1920,6 +1922,35 @@ document.addEventListener("DOMContentLoaded", function () {
       speechSynthesis.speak(speech);
     });
   });
+
+  // Read all prediction results
+  const speakAllBtn = document.getElementById("speakAllResults");
+
+  if (speakAllBtn) {
+    speakAllBtn.addEventListener("click", function () {
+      const results = document.getElementById("results");
+
+      if (!results || !results.innerText.trim()) {
+        alert("No results to read yet.");
+        return;
+      }
+
+      let text = results.innerText;
+
+      text = text
+        .replace(/kg\/ha/g, "kilograms per hectare")
+        .replace(/tons\/ha/g, "tons per hectare")
+        .replace(/NDVI/g, "vegetation index")
+        .replace(/EVI/g, "enhanced vegetation index");
+
+      const speech = new SpeechSynthesisUtterance(text);
+      speech.lang = "en-US";
+      speech.rate = 0.9;
+
+      speechSynthesis.cancel();
+      speechSynthesis.speak(speech);
+    });
+  }
 });
 </script>
 </body>
