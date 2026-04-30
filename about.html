@@ -115,6 +115,20 @@ body {
   margin-bottom: 6px;
   color: #5f6b5f;
 }
+.speak-card-btn {
+  float: right;
+  border: none;
+  background: #E9F4E2;
+  color: #2B6E3C;
+  padding: 8px 10px;
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 1rem;
+}
+
+.speak-card-btn:hover {
+  background: #dcefd5;
+}
 
 /* FOOTER (TerraSight Style) */
 .terrasight-footer {
@@ -267,6 +281,7 @@ body {
 <div class="main-content">
 
   <div class="section-card">
+     <button class="speak-card-btn">🔊</button>
     <h2>Our Mission</h2>
     <p>
       TerraSight aims to empower farmers, researchers, and policymakers with data-driven insights
@@ -275,6 +290,7 @@ body {
   </div>
 
   <div class="section-card">
+     <button class="speak-card-btn">🔊</button>
     <h2>Focus Areas</h2>
     <p>We analyze crop distribution across key municipalities:</p>
     <ul>
@@ -287,6 +303,7 @@ body {
   </div>
 
   <div class="section-card">
+     <button class="speak-card-btn">🔊</button>
     <h2>Technology</h2>
     <p>
       The system uses machine learning models such as Random Forest and LSTM to predict crop yield
@@ -295,6 +312,7 @@ body {
   </div>
 
   <div class="section-card">
+     <button class="speak-card-btn">🔊</button>
     <h2>About the Team</h2>
     <p>
       TerraSight is developed by Computer Science students of Bicol University as part of a thesis
@@ -350,6 +368,19 @@ body {
 
   </div>
 </footer>
+document.querySelectorAll(".speak-card-btn").forEach(button => {
+  button.addEventListener("click", function () {
+    const card = this.closest(".section-card");
+    const text = card.innerText.replace("🔊", "").trim();
 
+    const speech = new SpeechSynthesisUtterance(text);
+    speech.lang = "en-US";
+    speech.rate = 0.9;
+
+    window.speechSynthesis.cancel();
+    window.speechSynthesis.speak(speech);
+  });
+});
+</script>
 </body>
 </html>
