@@ -300,6 +300,14 @@
       justify-content: center;
       margin-top: 10px;
     }
+    .action-buttons {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 12px;
+      margin-top: 15px;
+      min-width: 180px;
+    }
 
     /* Results styling inside modal */
     .results-container {
@@ -1157,16 +1165,14 @@
       </select>
     </div>
 
-    <div class="modal-actions">
-      <button class="btn-primary" onclick="predictBoth()">🔮 Analyze</button>
-    </div>
+  <div class="action-buttons">
+  <button class="analyze-btn">Analyze</button>
+  <button id="speakAllResults" class="btn-outline">🔊 Read Results</button>
+  </div>
 
     <div id="dualLoader" style="display:none; margin-top:15px; text-align:center;">
       <span class="loader-spinner"></span> Analyzing weather & crop data...
     </div>
-  <button id="speakAllResults" class="btn-outline" style="margin-top:10px;">
-  🔊 Read Results
-  </button>
     <div id="results" class="result-message"></div>
   </div>
 </div>
