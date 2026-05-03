@@ -8,6 +8,9 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <!-- Font Awesome 6 -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <!-- Feedback database and JS connection -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="supabase-client.js"></script>
   <style>
     * {
       margin: 0;
@@ -848,6 +851,60 @@
       background: #20552d;
     }
 
+    .stars span:hover {
+      color: #f5b301;
+    }
+    
+    .stars span.active {
+      color: #f5b301;
+    }
+    
+    .feedback-section textarea:focus {
+      outline: none;
+      border-color: #2B6E3C;
+    }
+    
+    .feedback-btn:disabled {
+      background: #ccc;
+      cursor: not-allowed;
+    }
+    
+    .feedback-message {
+      margin-top: 10px;
+      padding: 8px;
+      border-radius: 8px;
+      font-size: 0.8rem;
+      text-align: center;
+      display: none;
+    }
+    
+    .feedback-message.success {
+      background: #d4edda;
+      color: #155724;
+      border: 1px solid #c3e6cb;
+    }
+    
+    .feedback-message.error {
+      background: #f8d7da;
+      color: #721c24;
+      border: 1px solid #f5c6cb;
+    }
+    
+    .name-input {
+      width: 100%;
+      margin-bottom: 10px;
+      padding: 8px;
+      border: 1px solid #dce8d5;
+      border-radius: 12px;
+      font-size: 0.8rem;
+      box-sizing: border-box;
+    }
+    
+    .name-input:focus {
+      outline: none;
+      border-color: #2B6E3C;
+    }
+    
     .footer-bottom {
       text-align: center;
       margin-top: 15px;
@@ -1163,18 +1220,20 @@
         </div>
       </div>
       <div class="feedback-section">
-        <h4>Rate Your Experience</h4>
+        <h4>Rate Us</h4>
+        <input type="text" class="name-input" id="userName" placeholder="Your name (optional)">
         <div class="stars" id="starRating">
-          <i class="far fa-star" data-value="1"></i>
-          <i class="far fa-star" data-value="2"></i>
-          <i class="far fa-star" data-value="3"></i>
-          <i class="far fa-star" data-value="4"></i>
-          <i class="far fa-star" data-value="5"></i>
+          <span data-rating="1">★</span>
+          <span data-rating="2">★</span>
+          <span data-rating="3">★</span>
+          <span data-rating="4">★</span>
+          <span data-rating="5">★</span>
         </div>
-        <input type="hidden" id="ratingValue" value="0">
-        <textarea placeholder="Share feedback or suggestions..."></textarea>
-        <button class="feedback-btn">Submit Feedback</button>
+        <textarea id="feedbackComment" placeholder="Your feedback..."></textarea>
+        <button class="feedback-btn" id="submitFeedback">Submit</button>
+        <div id="feedbackMessage" class="feedback-message"></div>
       </div>
+      
     </div>
     <div class="footer-bottom">
       © 2026 TerraSight | Crop Suitability & Yield Prediction System
@@ -1955,38 +2014,92 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   });
 
-  // Star rating
-  const stars = document.querySelectorAll("#starRating i");
-
-  stars.forEach((star, index) => {
-    star.addEventListener("click", function () {
-      const value = index + 1;
-
-      stars.forEach((s, i) => {
-        s.className = i < value ? "fas fa-star active" : "far fa-star";
+  // Feedback Section
+  let selectedRating = 0;
+  const stars = document.querySelectorAll('#starRating span');
+  const submitBtn = document.getElementById('submitFeedback');
+  const commentInput = document.getElementById('feedbackComment');
+  const userNameInput = document.getElementById('userName');
+  const messageDiv = document.getElementById('feedbackMessage');
+  
+  // Handle star rating clicks
+  stars.forEach(star => {
+      star.addEventListener('click', function() {
+          selectedRating = parseInt(this.getAttribute('data-rating'));
+          
+          // Update active stars
+          stars.forEach((s, index) => {
+              if (index < selectedRating) {
+                  s.classList.add('active');
+              } else {
+                  s.classList.remove('active');
+              }
+          });
       });
-
-      document.getElementById("ratingValue").value = value;
-    });
   });
-
-  // Feedback submit
-  const feedbackBtn = document.querySelector(".feedback-btn");
-  const feedbackText = document.querySelector(".feedback-section textarea");
-
-  if (feedbackBtn && feedbackText) {
-    feedbackBtn.addEventListener("click", function () {
-      const rating = document.getElementById("ratingValue").value;
-      const feedback = feedbackText.value;
-
-      if (rating > 0 || feedback.trim()) {
-        alert("Thank you for your feedback!");
-        feedbackText.value = "";
-      } else {
-        alert("Please provide a rating or feedback.");
-      }
-    });
+  
+  // Function to show message
+  function showMessage(message, type) {
+      messageDiv.textContent = message;
+      messageDiv.className = `feedback-message ${type}`;
+      messageDiv.style.display = 'block';
+      
+      // Auto-hide after 5 seconds
+      setTimeout(() => {
+          messageDiv.style.display = 'none';
+      }, 5000);
   }
+  
+  // Submit feedback function using your supabase-client.js
+  async function handleSubmitFeedback() {
+      const comment = commentInput.value.trim();
+      const userName = userNameInput.value.trim();
+      
+      // Validate
+      if (!comment) {
+          showMessage('Please enter your feedback', 'error');
+          return;
+      }
+      
+      if (selectedRating === 0) {
+          showMessage('Please select a rating', 'error');
+          return;
+      }
+      
+      // Disable button while submitting
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Submitting...';
+      
+      // Call your function from supabase-client.js
+      const result = await submitFeedback(userName, comment, selectedRating);
+      
+      if (result.success) {
+          showMessage('Thank you for your feedback! 🌱', 'success');
+          
+          // Reset form
+          commentInput.value = '';
+          userNameInput.value = '';
+          selectedRating = 0;
+          stars.forEach(star => star.classList.remove('active'));
+      } else {
+          showMessage(`Failed to submit: ${result.error}`, 'error');
+      }
+      
+      // Re-enable button
+      submitBtn.disabled = false;
+      submitBtn.textContent = 'Submit';
+  }
+  
+  // Add click event to submit button
+  submitBtn.addEventListener('click', handleSubmitFeedback);
+  
+  // Optional: Allow Enter key to submit
+  commentInput.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter' && !e.shiftKey) {
+          e.preventDefault();
+          handleSubmitFeedback();
+      }
+  });
 
   // FAQ Speak button
   document.querySelectorAll(".speak-btn").forEach(btn => {
