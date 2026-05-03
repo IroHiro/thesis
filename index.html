@@ -307,9 +307,13 @@
     }
     
     /* Make recommendations and dashboard span full width */
-    .result-card:last-child,
     .dashboard-card {
-      grid-column: span 2;  /* Full width */
+      grid-column: span 2;
+    }
+
+    /* Only recommendations will be full width */
+    .recommendation-card {
+      grid-column: span 2;
     }
 
     .result-card {
@@ -336,6 +340,23 @@
       font-size: 14px;
       color: #666;
     }
+    .recommendation-card {
+  margin-top: 20px;
+  max-height: 260px;
+  overflow-y: auto;
+  font-size: 0.9rem;
+  padding-right: 8px;
+}
+
+  /* smoother scroll */
+  .recommendation-card::-webkit-scrollbar {
+    width: 5px;
+  }
+
+  .recommendation-card::-webkit-scrollbar-thumb {
+    background: #2B6E3C;
+    border-radius: 10px;
+  }
 
     .suitability-High { color: #2B6E3C; font-weight: bold; }
     .suitability-Medium { color: #f4a261; font-weight: bold; }
@@ -968,6 +989,42 @@
         padding: 20px;
       }
     }
+    .input-weather-layout {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 18px;
+  align-items: stretch;
+  margin-top: 20px;
+}
+
+.input-panel,
+.weather-panel {
+  background: #F7FBF4;
+  border: 1px solid #DCE9D4;
+  border-radius: 22px;
+  padding: 18px;
+  text-align: left;
+}
+
+.weather-panel h4 {
+  color: #2B6E3C;
+  margin-bottom: 12px;
+}
+
+.weather-card {
+  background: white;
+  border-radius: 16px;
+  padding: 14px;
+  color: #2C5C2E;
+  line-height: 1.7;
+  min-height: 135px;
+}
+
+@media (max-width: 768px) {
+  .input-weather-layout {
+    grid-template-columns: 1fr;
+  }
+}
   </style>
 </head>
 <body>
@@ -1129,30 +1186,46 @@
 <div id="planModal" class="modal-overlay">
   <div class="modal-card">
     <button id="closeModalBtn" class="btn-outline" style="float:right; padding:6px 12px;">✖</button>
+
     <i class="fas fa-chart-line" style="font-size: 2.5rem; color: #3F9E4A;"></i>
     <h3>🌾 Crop Suitability Check</h3>
     <p>Enter your municipality and preferred crop.</p>
 
-    <div class="input-group">
-      <label for="city">📍 Select municipality</label>
-      <select id="city">
-        <option value="">-- Select Municipality --</option>
-        <option value="Polangui">Polangui</option>
-        <option value="Malinao">Malinao</option>
-        <option value="Pioduran">Pio Duran</option>
-        <option value="Oas">Oas</option>
-        <option value="Ligao">Ligao City</option>
-      </select>
-    </div>
+    <div class="input-weather-layout">
 
-    <div class="input-group">
-      <label for="crop">🌱 Select crop</label>
-      <select id="crop">
-        <option value="">-- Select Crop --</option>
-        <option value="rice">🌾 Rice</option>
-        <option value="corn">🌽 Corn</option>
-        <option value="coconut">🥥 Coconut</option>
-      </select>
+      <!-- LEFT: INPUTS -->
+      <div class="input-panel">
+        <div class="input-group">
+          <label for="city">📍 Select municipality</label>
+          <select id="city">
+            <option value="">-- Select Municipality --</option>
+            <option value="Polangui">Polangui</option>
+            <option value="Malinao">Malinao</option>
+            <option value="Pioduran">Pio Duran</option>
+            <option value="Oas">Oas</option>
+            <option value="Ligao">Ligao City</option>
+          </select>
+        </div>
+
+        <div class="input-group">
+          <label for="crop">🌱 Select crop</label>
+          <select id="crop">
+            <option value="">-- Select Crop --</option>
+            <option value="rice">🌾 Rice</option>
+            <option value="corn">🌽 Corn</option>
+            <option value="coconut">🥥 Coconut</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- RIGHT: WEATHER -->
+      <div class="weather-panel">
+        <h4>🌦️ Weather Data Used</h4>
+        <div id="weatherPreview" class="weather-card">
+          Select a municipality and click Analyze to view the weather inputs used for prediction.
+        </div>
+      </div>
+
     </div>
 
 <div class="modal-actions">
@@ -1166,7 +1239,7 @@
 </div>
 
     <div id="dualLoader" style="display:none; margin-top:15px; text-align:center;">
-      <span class="loader-spinner"></span> Analyzing weather & crop data...
+      <span class="loader-spinner; text-align:center;"></span> Analyzing weather & crop data...
     </div>
     <div id="results" class="result-message"></div>
   </div>
@@ -1584,10 +1657,30 @@
         rawSequence.push([coords.ndvi, coords.evi, tmax, tmin, tave, rain, hum, solar, wind, dateObj.getFullYear(), getWeekNumber(dateObj), lastSeason]);
       }
       
-      const realClimate = await fetchRealWeatherData(locKey);
-      const avgTemperature = realClimate?.avg_temperature || DEFAULT_FALLBACK.avg_temperature;
-      const totalRainfall = realClimate?.total_rainfall || DEFAULT_FALLBACK.total_rainfall;
-      const humidity = realClimate?.humidity || DEFAULT_FALLBACK.humidity;
+const weatherBox = document.getElementById("weatherPreview");
+weatherBox.innerHTML = "⏳ Fetching weather data...";
+
+const realClimate = await fetchRealWeatherData(locKey);
+
+if (realClimate) {
+  weatherBox.innerHTML = `
+    <strong>Current Environmental Conditions</strong><br>
+    🌡️ Temperature: ${realClimate.avg_temperature}°C<br>
+    🌧️ Rainfall: ${realClimate.total_rainfall} mm<br>
+    💧 Humidity: ${realClimate.humidity}%<br>
+    <small>These values are used as model inputs.</small>
+  `;
+} else {
+  weatherBox.innerHTML = `
+    ⚠️ Unable to fetch live weather data.<br>
+    Using default fallback values for prediction.
+  `;
+}
+
+/* IMPORTANT: these must be here, outside the if(weatherBox) */
+const avgTemperature = realClimate?.avg_temperature || DEFAULT_FALLBACK.avg_temperature;
+const totalRainfall = realClimate?.total_rainfall || DEFAULT_FALLBACK.total_rainfall;
+const humidity = realClimate?.humidity || DEFAULT_FALLBACK.humidity;
       
       let maxWind = 0, minPressure = Infinity;
       for (const day of allDays) {
@@ -1765,19 +1858,10 @@
     </div>
     
     <!-- FULL WIDTH: Recommendations -->
-    <div class="result-card" style="margin-top: 20px;">
+    <div class="result-card recommendation-card">
       <h3>📋 Recommendations</h3>
       ${recommendationsHtml || '<p>No recommendations available.</p>'}
       <div style="margin-top: 12px; padding-top: 10px; border-top: 1px solid #ddd; font-size: 11px;">
-        <h4>📊 Weather Data Used</h4>
-        <table style="width:100%">
-          <tr><td>🌡️ Temperature:</td><td><strong>${usedParams?.avg_temperature || '?'}°C</strong></td></tr>
-          <tr><td>🌧️ Rainfall:</td><td><strong>${usedParams?.total_rainfall || '?'} mm</strong></td></tr>
-          <tr><td>💧 Humidity:</td><td><strong>${usedParams?.humidity || '?'}%</strong></td></tr>
-          <tr><td>🌿 NDVI/EVI:</td><td><strong>${usedParams?.ndvi || '?'} / ${usedParams?.evi || '?'}</strong></td></tr>
-          <tr><td>🪴 Soil Fertility:</td><td><strong>${usedParams?.soil_fertility || '?'}/5</strong></td></tr>
-        </table>
-        <p style="font-size: 10px; margin-top: 8px;">✓ Real-time weather from Visual Crossing API</p>
       </div>
     </div>
   `;
