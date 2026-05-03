@@ -735,6 +735,22 @@
   font-weight: 600;
   cursor: pointer;
 }
+  .cta-group {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 18px;
+}
+
+.language-select {
+  width: 150px;
+  height: 54px;
+  padding: 0 18px;
+}
+
+.trust-note {
+  margin-top: 18px;
+}
 
     /* Footer */
     .terrasight-footer {
@@ -1154,6 +1170,16 @@
     <i class="fas fa-circle-question"></i>
     <span data-i18n="faqs">FAQs</span>
   </button>
+
+  <select id="languageSwitcher" class="btn-outline language-select">
+    <option value="en">🌐 English</option>
+    <option value="fil">🇵🇭 Filipino</option>
+  </select>
+</div>
+
+<div class="trust-note">
+  <span><i class="fas fa-clock"></i> <span data-i18n="instantPredictions">Instant predictions</span></span>
+</div>
 
 <select id="languageSwitcher" class="btn-outline">
   <option value="en">🌐 English</option>
