@@ -1950,6 +1950,39 @@ const humidity = realClimate?.humidity || DEFAULT_FALLBACK.humidity;
   initDashboardGrid();
   updateYieldDashboard(currentYield, cropType);
 }
+let availableVoices = [];
+
+function loadVoices() {
+  availableVoices = speechSynthesis.getVoices();
+}
+
+loadVoices();
+speechSynthesis.onvoiceschanged = loadVoices;
+
+function getNaturalVoice() {
+  return (
+    availableVoices.find(v => v.name.includes("Google US English")) ||
+    availableVoices.find(v => v.name.includes("Microsoft Aria")) ||
+    availableVoices.find(v => v.name.includes("Microsoft Jenny")) ||
+    availableVoices.find(v => v.lang === "en-US") ||
+    availableVoices[0]
+  );
+}
+
+function speakNaturally(text) {
+  if (!text || !text.trim()) return;
+
+  const speech = new SpeechSynthesisUtterance(text);
+
+  speech.voice = getNaturalVoice();
+  speech.lang = "en-US";
+  speech.rate = 0.82;
+  speech.pitch = 1.03;
+  speech.volume = 1;
+
+  speechSynthesis.cancel();
+  speechSynthesis.speak(speech);
+}
 // ============================================
 // MODAL & UI EVENT HANDLERS
 // ============================================
@@ -2231,12 +2264,7 @@ if (document.readyState === 'loading') {
       const question = card.querySelector(".faq-question h4")?.innerText || "";
       const answer = card.querySelector(".faq-answer")?.textContent || "";
 
-      const speech = new SpeechSynthesisUtterance(`${question}. ${answer}`);
-      speech.lang = "en-US";
-      speech.rate = 0.95;
-
-      speechSynthesis.cancel();
-      speechSynthesis.speak(speech);
+    speakNaturally(`${question}. ${answer}`);
     });
   });
 
@@ -2260,12 +2288,7 @@ if (document.readyState === 'loading') {
         .replace(/NDVI/g, "vegetation index")
         .replace(/EVI/g, "enhanced vegetation index");
 
-      const speech = new SpeechSynthesisUtterance(text);
-      speech.lang = "en-US";
-      speech.rate = 0.9;
-
-      speechSynthesis.cancel();
-      speechSynthesis.speak(speech);
+speakNaturally(text);
     });
   }
 });
