@@ -728,6 +728,11 @@
     color: #1F5A2E;
     transform: translateY(-2px);
   }
+    
+#langToggle {
+  min-width: 95px;
+  justify-content: center;
+}
 
     /* Footer */
     .terrasight-footer {
@@ -1139,21 +1144,25 @@
 
 <div class="cta-group">
   <button class="btn-primary" id="getPlanBtn">
-    <i class="fas fa-chart-simple"></i> Check crop suitability
+    <i class="fas fa-chart-simple"></i>
+    <span data-i18n="checkCrop">Check crop suitability</span>
   </button>
 
   <button class="btn-outline" id="learnMoreBtn">
-    <i class="fas fa-circle-question"></i> FAQs
+    <i class="fas fa-circle-question"></i>
+    <span data-i18n="faqs">FAQs</span>
   </button>
 
-  <!-- 🌐 LANGUAGE SWITCH -->
-<div class="btn-outline" id="langToggle" style="cursor:pointer;">
-  🌐 EN
+  <button type="button" class="btn-outline" id="langToggle">
+    🌐 EN
+  </button>
 </div>
-      <div class="trust-note">
-        <span><i class="fas fa-clock"></i> Instant predictions</span>
-      </div>
-    </div>
+
+<div class="trust-note">
+  <span><i class="fas fa-clock"></i> <span data-i18n="instantPredictions">Instant predictions</span></span>
+</div>
+
+</div> <!-- ✅ closes hero-content -->
 
     <!-- RIGHT FARM VISUAL -->
     <div class="hero-farm-visual fade-up delay-1">
