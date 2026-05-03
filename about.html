@@ -19,6 +19,8 @@ body {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  padding: 28px 0 24px; /* IMPORTANT */
+  flex-wrap: wrap;
   gap: 20px;
 }
 
@@ -28,21 +30,14 @@ body {
   flex-direction: column;
 }
 
-/* LOGO */
 .logo {
-  font-size: 1.8rem;
-  font-weight: 800;
-  background: linear-gradient(135deg, #1F6530, #3C8849);
-  -webkit-background-clip: text;
-  color: transparent;
-  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 2rem; /* from 1.8rem */
 }
 
-/* SUBTEXT */
 .subhead {
-  font-size: 0.85rem;
-  color: #6B8C66;
-  margin-top: 4px;
+  margin-top: 8px; /* from 4px */
+  font-size: 0.95rem;
+  color: #52734D;
 }
 
 /* NAV LINKS */
@@ -80,6 +75,11 @@ body {
   margin: auto;
   color: #5f6b5f;
   font-size: 1rem;
+}
+  .container {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 0 32px;
 }
 
 /* MAIN */
@@ -313,25 +313,24 @@ body {
 <!-- HEADER -->
 <div class="header">
   <div class="container">
-
     <nav class="navbar">
 
-      <!-- LEFT: LOGO + SUBTEXT -->
-      <div class="header-left">
+      <!-- LEFT -->
+      <div>
         <div class="logo">🌱 Crop Suitability & Yield Prediction</div>
         <div class="subhead">
           Yield Analytics & Crop Distribution Map | Albay Province
         </div>
       </div>
 
-      <!-- RIGHT: NAVIGATION -->
+      <!-- RIGHT -->
       <div class="nav-links">
         <a href="index.html">Home</a>
-        <a href="#">About</a>
+        <a href="about.html">About</a>
         <a href="map.html">Crop Map</a>
       </div>
-    </nav>
 
+    </nav>
   </div>
 </div>
 
