@@ -2037,13 +2037,14 @@ document.addEventListener("DOMContentLoaded", function () {
   });
 
   // Feedback Section
-// Wait for DOM to be fully loaded
-document.addEventListener("DOMContentLoaded", function() {
-    // Initialize feedback functionality
-    initFeedback();
-});
+// ============================================
+// FEEDBACK SECTION - FIXED VERSION
+// ============================================
 
+// Define the function globally
 function initFeedback() {
+    console.log('Initializing feedback section...');
+    
     let selectedRating = 0;
     const stars = document.querySelectorAll('#starRating span');
     const submitBtn = document.getElementById('submitFeedback');
@@ -2062,11 +2063,17 @@ function initFeedback() {
         return;
     }
     
-    console.log('Feedback initialized with', stars.length, 'stars');
+    console.log('Found', stars.length, 'stars');
+    
+    // Reset all stars to inactive
+    stars.forEach(star => {
+        star.classList.remove('active');
+        star.style.color = '#d3d3d3';
+    });
     
     // Handle star rating clicks
-    stars.forEach((star, index) => {
-        // Remove any existing listeners by cloning (clean slate)
+    stars.forEach((star) => {
+        // Remove any existing listeners by cloning
         const newStar = star.cloneNode(true);
         star.parentNode.replaceChild(newStar, star);
         
@@ -2082,14 +2089,16 @@ function initFeedback() {
             allStars.forEach((s, i) => {
                 if (i < selectedRating) {
                     s.classList.add('active');
+                    s.style.color = '#f5b301';
                 } else {
                     s.classList.remove('active');
+                    s.style.color = '#d3d3d3';
                 }
             });
         });
         
         // Add hover effects
-        newStar.addEventListener('mouseenter', function(e) {
+        newStar.addEventListener('mouseenter', function() {
             const rating = parseInt(this.getAttribute('data-rating'));
             const allStars = document.querySelectorAll('#starRating span');
             allStars.forEach((s, i) => {
@@ -2145,7 +2154,7 @@ function initFeedback() {
         }
         
         if (selectedRating === 0) {
-            showMessage('Please select a rating by clicking on the stars', 'error');
+            showMessage('Please click on the stars to select a rating (1-5)', 'error');
             return;
         }
         
@@ -2200,9 +2209,17 @@ function initFeedback() {
         });
     }
     
-    console.log('Feedback section ready! Click on stars to rate.');
+    console.log('✅ Feedback section ready! Click on stars to rate.');
 }
 
+// Initialize feedback when DOM is ready
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initFeedback);
+} else {
+    // DOM already loaded, call immediately
+    initFeedback();
+}
+  
   // FAQ Speak button
   document.querySelectorAll(".speak-btn").forEach(btn => {
     btn.addEventListener("click", function (e) {
