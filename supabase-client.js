@@ -4,6 +4,11 @@
 const SUPABASE_URL = 'https://mveuuogpcdjgmivwcngz.supabase.co'; 
 const SUPABASE_ANON_KEY = 'sb_publishable_Poec_RCJqZswJUxdMmL19Q_YXfoQsh2'; 
 
+// Make sure Supabase is loaded
+if (typeof supabase === 'undefined') {
+    console.error('Supabase library not loaded! Make sure to include: <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>');
+}
+
 // Initialize the Supabase client
 const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
@@ -21,10 +26,12 @@ async function submitFeedback(userName, comment, rating) {
 
         // Prepare the data
         const feedbackData = {
-            user_name: userName || null, // If no name provided, set to null
+            user_name: userName || null,
             comment: comment.trim(),
             rating: rating
         };
+
+        console.log('Submitting feedback:', feedbackData); // Debug log
 
         // Insert into Supabase
         const { data, error } = await supabaseClient
@@ -37,6 +44,7 @@ async function submitFeedback(userName, comment, rating) {
             throw new Error(error.message);
         }
 
+        console.log('Success! Data saved:', data); // Debug log
         return { success: true, data: data };
     } catch (error) {
         console.error('Error submitting feedback:', error);
