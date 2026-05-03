@@ -1,7 +1,7 @@
 // supabase-client.js
 // Initialize Supabase client
 // Replace these with your actual Supabase URL and anon key
-const SUPABASE_URL = 'https://mveuuogpcdjgmivwcngz.supabase.co/rest/v1/'; 
+const SUPABASE_URL = 'https://mveuuogpcdjgmivwcngz.supabase.co'; 
 const SUPABASE_ANON_KEY = 'sb_publishable_Poec_RCJqZswJUxdMmL19Q_YXfoQsh2'; 
 
 // Make sure Supabase is loaded
