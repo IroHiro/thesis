@@ -162,10 +162,31 @@ body {
 
 .partner-row {
   display: flex;
-  justify-content: center;
+  flex-direction: column;
   align-items: center;
-  gap: 12px;
-  flex-wrap: wrap;
+  gap: 10px;
+}
+
+/* each row */
+.logo-row {
+  display: flex;
+  gap: 10px;
+}
+
+/* center the bottom row */
+.logo-row.bottom {
+  justify-content: center;
+}
+
+/* logo style */
+.logo-row img {
+  width: 55px;
+  height: 55px;
+  object-fit: contain;
+  background: white;
+  padding: 6px;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
 }
 
   .partner-row img {
@@ -378,16 +399,22 @@ body {
       <!-- CENTER -->
       <div class="partnership-section">
         <h4>In Partnership With</h4>
-        <div class="partner-row">
-          <img src="img/logo4.png" alt="Partner" onerror="this.style.display='none'">
-          <img src="img/logo5.png" alt="Partner" onerror="this.style.display='none'">
-          <img src="img/logo3.png" alt="Partner" onerror="this.style.display='none'">
-          <img src="img/logo1.png" alt="Partner" onerror="this.style.display='none'">
-          <img src="img/logo2.png" alt="Partner" onerror="this.style.display='none'">
-          <img src="img/APAO.png" alt="Partner" onerror="this.style.display='none'">
-          <img src="img/DA.png" alt="Partner" onerror="this.style.display='none'">
-        </div>
+      <!-- TOP ROW -->
+      <div class="logo-row top">
+    <img src="img/logo4.png" alt="Partner" onerror="this.style.display='none'">
+    <img src="img/logo5.png" alt="Partner" onerror="this.style.display='none'">
+    <img src="img/logo3.png" alt="Partner" onerror="this.style.display='none'">
+    <img src="img/logo1.png" alt="Partner" onerror="this.style.display='none'">
       </div>
+    
+      <!-- BOTTOM ROW -->
+      <div class="logo-row bottom">
+      <img src="img/logo2.png" alt="Partner" onerror="this.style.display='none'">
+      <img src="img/APAO.png" alt="Partner" onerror="this.style.display='none'">
+      <img src="img/DA.png" alt="Partner" onerror="this.style.display='none'">
+      </div>
+    
+    </div>
 
       <!-- RIGHT -->
       <div class="feedback-section">
