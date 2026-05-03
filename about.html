@@ -236,6 +236,61 @@ body {
   cursor: pointer;
 }
 
+/* Add these to your existing CSS */
+.stars span:hover {
+  color: #f5b301;
+}
+
+.stars span.active {
+  color: #f5b301;
+}
+
+.feedback-section textarea:focus {
+  outline: none;
+  border-color: #2B6E3C;
+}
+
+.feedback-btn:disabled {
+  background: #ccc;
+  cursor: not-allowed;
+}
+
+.feedback-message {
+  margin-top: 10px;
+  padding: 8px;
+  border-radius: 8px;
+  font-size: 0.8rem;
+  text-align: center;
+  display: none;
+}
+
+.feedback-message.success {
+  background: #d4edda;
+  color: #155724;
+  border: 1px solid #c3e6cb;
+}
+
+.feedback-message.error {
+  background: #f8d7da;
+  color: #721c24;
+  border: 1px solid #f5c6cb;
+}
+
+.name-input {
+  width: 100%;
+  margin-bottom: 10px;
+  padding: 8px;
+  border: 1px solid #dce8d5;
+  border-radius: 12px;
+  font-size: 0.8rem;
+  box-sizing: border-box;
+}
+
+.name-input:focus {
+  outline: none;
+  border-color: #2B6E3C;
+}
+  
 .footer-bottom {
   text-align: center;
   margin-top: 15px;
@@ -355,11 +410,17 @@ body {
       <!-- RIGHT -->
       <div class="feedback-section">
         <h4>Rate Us</h4>
-        <div class="stars">
-          <span>★</span><span>★</span><span>★</span><span>★</span><span>★</span>
+        <input type="text" class="name-input" id="userName" placeholder="Your name (optional)">
+        <div class="stars" id="starRating">
+          <span data-rating="1">★</span>
+          <span data-rating="2">★</span>
+          <span data-rating="3">★</span>
+          <span data-rating="4">★</span>
+          <span data-rating="5">★</span>
         </div>
-        <textarea placeholder="Your feedback..."></textarea>
-        <button class="feedback-btn">Submit</button>
+        <textarea id="feedbackComment" placeholder="Your feedback..."></textarea>
+        <button class="feedback-btn" id="submitFeedback">Submit</button>
+        <div id="feedbackMessage" class="feedback-message"></div>
       </div>
 
     </div>
@@ -370,16 +431,104 @@ body {
 
   </div>
 </footer>
+
+
+  <script src="supabase-client.js"></script>
 <script>
+// Rating stars functionality
+let selectedRating = 0;
+const stars = document.querySelectorAll('#starRating span');
+const submitBtn = document.getElementById('submitFeedback');
+const commentInput = document.getElementById('feedbackComment');
+const userNameInput = document.getElementById('userName');
+const messageDiv = document.getElementById('feedbackMessage');
+
+// Handle star rating clicks
+stars.forEach(star => {
+    star.addEventListener('click', function() {
+        selectedRating = parseInt(this.getAttribute('data-rating'));
+        
+        // Update active stars
+        stars.forEach((s, index) => {
+            if (index < selectedRating) {
+                s.classList.add('active');
+            } else {
+                s.classList.remove('active');
+            }
+        });
+    });
+});
+
+// Function to show message
+function showMessage(message, type) {
+    messageDiv.textContent = message;
+    messageDiv.className = `feedback-message ${type}`;
+    messageDiv.style.display = 'block';
+    
+    // Auto-hide after 5 seconds
+    setTimeout(() => {
+        messageDiv.style.display = 'none';
+    }, 5000);
+}
+
+// Submit feedback function using your supabase-client.js
+async function handleSubmitFeedback() {
+    const comment = commentInput.value.trim();
+    const userName = userNameInput.value.trim();
+    
+    // Validate
+    if (!comment) {
+        showMessage('Please enter your feedback', 'error');
+        return;
+    }
+    
+    if (selectedRating === 0) {
+        showMessage('Please select a rating', 'error');
+        return;
+    }
+    
+    // Disable button while submitting
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Submitting...';
+    
+    // Call your function from supabase-client.js
+    const result = await submitFeedback(userName, comment, selectedRating);
+    
+    if (result.success) {
+        showMessage('Thank you for your feedback! 🌱', 'success');
+        
+        // Reset form
+        commentInput.value = '';
+        userNameInput.value = '';
+        selectedRating = 0;
+        stars.forEach(star => star.classList.remove('active'));
+    } else {
+        showMessage(`Failed to submit: ${result.error}`, 'error');
+    }
+    
+    // Re-enable button
+    submitBtn.disabled = false;
+    submitBtn.textContent = 'Submit';
+}
+
+// Add click event to submit button
+submitBtn.addEventListener('click', handleSubmitFeedback);
+
+// Optional: Allow Enter key to submit
+commentInput.addEventListener('keypress', (e) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        handleSubmitFeedback();
+    }
+});
+  
 document.querySelectorAll(".speak-card-btn").forEach(button => {
   button.addEventListener("click", function () {
     const card = this.closest(".section-card");
     const text = card.innerText.replace("🔊", "").trim();
-
     const speech = new SpeechSynthesisUtterance(text);
     speech.lang = "en-US";
     speech.rate = 0.9;
-
     window.speechSynthesis.cancel();
     window.speechSynthesis.speak(speech);
   });
