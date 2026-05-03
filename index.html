@@ -729,9 +729,11 @@
     transform: translateY(-2px);
   }
     
-#langToggle {
-  min-width: 95px;
-  justify-content: center;
+#languageSwitcher {
+  border-radius: 60px;
+  padding: 12px 18px;
+  font-weight: 600;
+  cursor: pointer;
 }
 
     /* Footer */
@@ -1153,10 +1155,10 @@
     <span data-i18n="faqs">FAQs</span>
   </button>
 
-  <button type="button" class="btn-outline" id="langToggle">
-    🌐 EN
-  </button>
-</div>
+<select id="languageSwitcher" class="btn-outline">
+  <option value="en">🌐 English</option>
+  <option value="fil">🇵🇭 Filipino</option>
+</select>
 
 <div class="trust-note">
   <span><i class="fas fa-clock"></i> <span data-i18n="instantPredictions">Instant predictions</span></span>
@@ -2306,52 +2308,42 @@ speakNaturally(text);
     });
   }
 });
-  // ============================
-// LANGUAGE TRANSLATION SYSTEM
-// ============================
+document.addEventListener("DOMContentLoaded", function () {
+  const languageSwitcher = document.getElementById("languageSwitcher");
 
-let currentLang = "en";
-
-const translations = {
-  en: {
-    heroBadge: "Your guide to crop suitability and yield forecasting",
-    heroTitle1: "Smart crop",
-    heroTitle2: "suitability",
-    heroSub: "Get instant crop suitability scores and yield predictions in minutes, not weeks. Data-driven insights for rice, corn, & coconut.",
-    checkCrop: "Check crop suitability",
-    faqs: "FAQs",
-    instantPredictions: "Instant predictions"
-  },
-  fil: {
-    heroBadge: "Gabay sa crop suitability at yield forecasting",
-    heroTitle1: "Matalinong",
-    heroTitle2: "pagtatanim",
-    heroSub: "Makakuha agad ng crop suitability at yield predictions sa loob ng minuto, hindi linggo. Data-driven na insights para sa palay, mais, at niyog.",
-    checkCrop: "Suriin ang ani",
-    faqs: "Mga Tanong",
-    instantPredictions: "Mabilis na resulta"
-  }
-};
-
-// APPLY TRANSLATION
-function applyLanguage(lang) {
-  document.querySelectorAll("[data-i18n]").forEach(el => {
-    const key = el.getAttribute("data-i18n");
-    if (translations[lang][key]) {
-      el.textContent = translations[lang][key];
+  const translations = {
+    en: {
+      heroBadge: "Your guide to crop suitability and yield forecasting",
+      heroTitle1: "Smart crop",
+      heroTitle2: "suitability",
+      heroSub: "Get instant crop suitability scores and yield predictions in minutes, not weeks. Data-driven insights for rice, corn, & coconut.",
+      checkCrop: "Check crop suitability",
+      faqs: "FAQs",
+      instantPredictions: "Instant predictions"
+    },
+    fil: {
+      heroBadge: "Gabay sa pagiging angkop ng pananim at pagtataya ng ani",
+      heroTitle1: "Matalinong",
+      heroTitle2: "pagsusuri ng pananim",
+      heroSub: "Makakuha agad ng resulta sa pagiging angkop ng pananim at pagtataya ng ani sa loob ng ilang minuto. Datos-based na gabay para sa palay, mais, at niyog.",
+      checkCrop: "Suriin ang pagiging angkop",
+      faqs: "Mga Tanong",
+      instantPredictions: "Agarang resulta"
     }
+  };
+
+  function applyLanguage(lang) {
+    document.querySelectorAll("[data-i18n]").forEach(el => {
+      const key = el.getAttribute("data-i18n");
+      if (translations[lang][key]) {
+        el.textContent = translations[lang][key];
+      }
+    });
+  }
+
+  languageSwitcher.addEventListener("change", function () {
+    applyLanguage(this.value);
   });
-}
-
-// BUTTON CLICK
-document.getElementById("langToggle").addEventListener("click", () => {
-  currentLang = currentLang === "en" ? "fil" : "en";
-
-  applyLanguage(currentLang);
-
-  // Update button label
-  document.getElementById("langToggle").textContent =
-    currentLang === "en" ? "🌐 EN" : "🌐 FIL";
 });
 </script>
 </body>
