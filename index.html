@@ -2306,7 +2306,13 @@ speakNaturally(text);
     });
   }
 });
-  const uiTranslations = {
+  // ============================
+// LANGUAGE TRANSLATION SYSTEM
+// ============================
+
+let currentLang = "en";
+
+const translations = {
   en: {
     heroBadge: "Your guide to crop suitability and yield forecasting",
     heroTitle1: "Smart crop",
@@ -2314,107 +2320,39 @@ speakNaturally(text);
     heroSub: "Get instant crop suitability scores and yield predictions in minutes, not weeks. Data-driven insights for rice, corn, & coconut.",
     checkCrop: "Check crop suitability",
     faqs: "FAQs",
-    instantPredictions: "Instant predictions",
-
-    modalTitle: "🌾 Crop Suitability Check",
-    modalDesc: "Enter your municipality and preferred crop.",
-    selectMunicipality: "📍 Select municipality",
-    selectCrop: "🌱 Select crop",
-    weatherUsed: "🌦️ Weather Data Used",
-    weatherPlaceholder: "Select a municipality and click Analyze to view the weather inputs used for prediction.",
-    analyze: "🔮 Analyze",
-    readResults: "🔊 Read Results",
-
-    faqTitle: "❓ Frequently Asked Questions",
-    faqSub: "Quick answers about TerraSight and how to use the platform.",
-    q1: "What is TerraSight?",
-    a1: "TerraSight is a crop suitability and yield prediction platform that helps farmers make smarter planting decisions using weather, soil, and vegetation data.",
-    q2: "How do I use TerraSight?",
-    a2: "Select your municipality, choose your preferred crop, and click analyze to receive crop suitability scores and yield predictions.",
-    q3: "Why is my municipality not listed?",
-    a3: "The system currently supports Polangui, Oas, Ligao, Malinao, and Pio Duran based on available agricultural datasets.",
-    q4: "What crops are supported?",
-    a4: "TerraSight currently supports Rice, Corn, and Coconut crop analysis.",
-    q5: "Where does the data come from?",
-    a5: "Data comes from weather APIs, vegetation indices (NDVI/EVI), and local agricultural records.",
-    q6: "Who developed TerraSight?",
-    a6: "TerraSight was developed as a research project to support climate-adaptive agriculture in Albay.",
-
-    contact: "Contact Us",
-    partners: "In Partnership With",
-    rate: "Rate Your Experience",
-    feedback: "Share feedback or suggestions...",
-    submit: "Submit Feedback",
-    footer: "© 2026 TerraSight | Crop Suitability & Yield Prediction System"
+    instantPredictions: "Instant predictions"
   },
-
   fil: {
-    heroBadge: "Gabay sa pagiging angkop ng pananim at pagtataya ng ani",
+    heroBadge: "Gabay sa crop suitability at yield forecasting",
     heroTitle1: "Matalinong",
-    heroTitle2: "pagsusuri ng pananim",
-    heroSub: "Makakuha agad ng marka ng pagiging angkop ng pananim at pagtataya ng ani sa loob lamang ng ilang minuto. Datos-based na gabay para sa palay, mais, at niyog.",
-    checkCrop: "Suriin ang pagiging angkop",
+    heroTitle2: "pagtatanim",
+    heroSub: "Makakuha agad ng crop suitability at yield predictions sa loob ng minuto, hindi linggo. Data-driven na insights para sa palay, mais, at niyog.",
+    checkCrop: "Suriin ang ani",
     faqs: "Mga Tanong",
-    instantPredictions: "Agarang resulta",
-
-    modalTitle: "🌾 Pagsusuri ng Angkop na Pananim",
-    modalDesc: "Piliin ang munisipalidad at nais na pananim.",
-    selectMunicipality: "📍 Piliin ang munisipalidad",
-    selectCrop: "🌱 Piliin ang pananim",
-    weatherUsed: "🌦️ Datos ng Panahon na Ginamit",
-    weatherPlaceholder: "Pumili ng munisipalidad at pindutin ang Analyze upang makita ang datos ng panahon na ginamit sa prediksyon.",
-    analyze: "🔮 Suriin",
-    readResults: "🔊 Basahin ang Resulta",
-
-    faqTitle: "❓ Mga Madalas Itanong",
-    faqSub: "Mabilis na sagot tungkol sa TerraSight at kung paano gamitin ang sistema.",
-    q1: "Ano ang TerraSight?",
-    a1: "Ang TerraSight ay isang plataporma para sa pagsusuri ng pagiging angkop ng pananim at pagtataya ng ani upang tulungan ang mga magsasaka sa mas maayos na pagpapasya gamit ang datos ng panahon, lupa, at halaman.",
-    q2: "Paano gamitin ang TerraSight?",
-    a2: "Piliin ang inyong munisipalidad, piliin ang nais na pananim, at pindutin ang Suriin upang makita ang pagiging angkop ng pananim at inaasahang ani.",
-    q3: "Bakit wala sa listahan ang aking munisipalidad?",
-    a3: "Sa kasalukuyan, sinusuportahan ng sistema ang Polangui, Oas, Ligao, Malinao, at Pio Duran batay sa mga available na datos pang-agrikultura.",
-    q4: "Anong mga pananim ang suportado?",
-    a4: "Sa ngayon, sinusuportahan ng TerraSight ang pagsusuri para sa palay, mais, at niyog.",
-    q5: "Saan nanggagaling ang datos?",
-    a5: "Ang datos ay mula sa weather APIs, vegetation indices tulad ng NDVI/EVI, at lokal na talaang pang-agrikultura.",
-    q6: "Sino ang gumawa ng TerraSight?",
-    a6: "Ang TerraSight ay binuo bilang isang research project upang suportahan ang climate-adaptive agriculture sa Albay.",
-
-    contact: "Makipag-ugnayan",
-    partners: "Katuwang ng Proyekto",
-    rate: "I-rate ang Iyong Karanasan",
-    feedback: "Ibahagi ang komento o suhestiyon...",
-    submit: "Ipasa ang Feedback",
-    footer: "© 2026 TerraSight | Sistema ng Pagsusuri ng Angkop na Pananim at Pagtataya ng Ani"
+    instantPredictions: "Mabilis na resulta"
   }
 };
 
-function translateUI(lang) {
+// APPLY TRANSLATION
+function applyLanguage(lang) {
   document.querySelectorAll("[data-i18n]").forEach(el => {
     const key = el.getAttribute("data-i18n");
-    if (uiTranslations[lang][key]) {
-      el.textContent = uiTranslations[lang][key];
+    if (translations[lang][key]) {
+      el.textContent = translations[lang][key];
     }
   });
-
-  document.querySelectorAll("[data-i18n-placeholder]").forEach(el => {
-    const key = el.getAttribute("data-i18n-placeholder");
-    if (uiTranslations[lang][key]) {
-      el.setAttribute("placeholder", uiTranslations[lang][key]);
-    }
-  });
-
-  localStorage.setItem("terraLang", lang);
 }
 
-document.getElementById("languageSwitcher").addEventListener("change", function () {
-  translateUI(this.value);
-});
+// BUTTON CLICK
+document.getElementById("langToggle").addEventListener("click", () => {
+  currentLang = currentLang === "en" ? "fil" : "en";
 
-const savedLang = localStorage.getItem("terraLang") || "en";
-document.getElementById("languageSwitcher").value = savedLang;
-translateUI(savedLang);
+  applyLanguage(currentLang);
+
+  // Update button label
+  document.getElementById("langToggle").textContent =
+    currentLang === "en" ? "🌐 EN" : "🌐 FIL";
+});
 </script>
 </body>
 </html>
