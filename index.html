@@ -753,77 +753,96 @@
   margin-top: 18px;
 }
 
-    /* Footer */
-    .terrasight-footer {
-      background: linear-gradient(135deg, #EDF7E8, #F8FBF5);
-      border-top: 1px solid #dce8d5;
-      padding: 20px 35px;
-      margin-top: 60px;
-    }
-  .footer-container {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    gap: 40px;
-    flex-wrap: wrap;
+/* FOOTER (TerraSight Style) */
+.terrasight-footer {
+  background: linear-gradient(135deg, #EDF7E8, #F8FBF5);
+  border-top: none; /* ✅ remove line */
+  padding: 20px 35px;
+  margin-top: 40px;
+}
+
+.footer-container {
+  max-width: 1300px;
+  margin: auto;
+}
+
+.footer-row {
+  display: grid;
+  grid-template-columns: 1fr 1.5fr 1fr;
+  align-items: center;
+  gap: 20px;
+}
+
+/* CONTACT */
+.footer-contact {
+  font-size: 0.95rem; /* from 0.85rem */
+  color: #5f6b5f;
+  line-height: 1.6;
+}
+
+.footer-contact h4 {
+  font-size: 1.1rem;
+  color: #2B6E3C;
+  margin-bottom: 8px;
+}
+
+.partnership-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+  .partnership-section h4 {
+  color: #2B6E3C;
+  margin-bottom: 10px;
   }
-    .footer-row {
-      display: grid;
-      grid-template-columns: 1fr 1.3fr 1fr;
-      align-items: center;
-      gap: 20px;
-    }
 
-    .footer-contact {
-      font-size: 0.85rem;
-      color: #5f6b5f;
-      line-height: 1.6;
-      flex: 1;
-      min-width: 250px;
-    }
+.partner-row {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
 
-    .footer-contact h4 {
-      color: #2B6E3C;
-      margin-bottom: 8px;
-      font-size: 0.95rem;
-    }
+/* each row */
+.logo-row {
+  display: flex;
+  gap: 10px;
+}
 
-    .partnership-section {
-      text-align: center;
-       flex: 1.5;   /* 🔥 make this bigger */
-    }
+/* center the bottom row */
+.logo-row.bottom {
+  justify-content: center;
+}
 
-    .partnership-section h4 {
-      font-size: 0.9rem;
-      color: #2B6E3C;
-      margin-bottom: 12px;
-    }
+/* logo style */
+.logo-row img {
+  width: 55px;
+  height: 55px;
+  object-fit: contain;
+  background: white;
+  padding: 6px;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
 
-    .partner-row {
-      display: flex;
-      justify-content: center;
-      gap: 8px;
-      flex-wrap: wrap;
-    }
+  .partner-row img {
+  max-width: 60px;
+  max-height: 60px;
+  width: 100%;
+  height: auto;
+  object-fit: contain;
+  }
 
-    .partner-row img {
-      width: 70px;
-      height: 70px;
-      object-fit: contain;
-      background: white;
-      padding: 5px;
-      border-radius: 10px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-    }
-
-    .feedback-section {
-      background: white;
-      padding: 15px;
-      border-radius: 18px;
-      box-shadow: 0 4px 15px rgba(0,0,0,0.05);
-      flex: 1;
-      min-width: 280px;
-    }
+/* FEEDBACK */
+.feedback-section {
+  background: white;
+  padding: 15px;
+  border-radius: 18px;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+  max-width: 320px; /* limit width */
+  margin-left: auto; /* keep it right */
+}
 
     .feedback-section h4 {
       color: #2B6E3C;
@@ -1266,18 +1285,25 @@
         <p>📞 +63 900 000 0000</p>
         <p>📍 Albay, Philippines</p>
       </div>
+      <!-- CENTER -->
       <div class="partnership-section">
         <h4>In Partnership With</h4>
-        <div class="partner-row">
-          <img src="img/logo4.png" alt="Partner" onerror="this.style.display='none'">
-          <img src="img/logo5.png" alt="Partner" onerror="this.style.display='none'">
-          <img src="img/logo3.png" alt="Partner" onerror="this.style.display='none'">
-          <img src="img/logo1.png" alt="Partner" onerror="this.style.display='none'">
-          <img src="img/logo2.png" alt="Partner" onerror="this.style.display='none'">
-          <img src="img/APAO.png" alt="Partner" onerror="this.style.display='none'">
-          <img src="img/DA.png" alt="Partner" onerror="this.style.display='none'">
-        </div>
+      <!-- TOP ROW -->
+      <div class="logo-row top">
+    <img src="img/logo4.png" alt="Partner" onerror="this.style.display='none'">
+    <img src="img/logo5.png" alt="Partner" onerror="this.style.display='none'">
+    <img src="img/logo3.png" alt="Partner" onerror="this.style.display='none'">
+    <img src="img/logo1.png" alt="Partner" onerror="this.style.display='none'">
       </div>
+    
+      <!-- BOTTOM ROW -->
+      <div class="logo-row bottom">
+      <img src="img/logo2.png" alt="Partner" onerror="this.style.display='none'">
+      <img src="img/APAO.png" alt="Partner" onerror="this.style.display='none'">
+      <img src="img/DA.png" alt="Partner" onerror="this.style.display='none'">
+      </div>
+    
+    </div>
       <div class="feedback-section">
         <h4>Rate Us</h4>
         <input type="text" class="name-input" id="userName" placeholder="Your name (optional)">
