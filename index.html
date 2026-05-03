@@ -904,6 +904,28 @@
       outline: none;
       border-color: #2B6E3C;
     }
+    /* Star rating styles - make sure these are NOT inside any media query */
+    .stars {
+        display: flex;
+        gap: 5px;
+        margin-bottom: 10px;
+    }
+    
+    .stars span {
+        font-size: 24px;
+        cursor: pointer;
+        transition: color 0.2s ease;
+        color: #d3d3d3;
+        display: inline-block;
+    }
+    
+    .stars span:hover {
+        color: #f5b301 !important;
+    }
+    
+    .stars span.active {
+        color: #f5b301 !important;
+    }
     
     .footer-bottom {
       text-align: center;
