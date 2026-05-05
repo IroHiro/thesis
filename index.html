@@ -345,22 +345,15 @@
       color: #666;
     }
     .recommendation-card {
-  margin-top: 20px;
-  max-height: 260px;
-  overflow-y: auto;
-  font-size: 0.9rem;
-  padding-right: 8px;
-}
+      margin-top: 20px;
+      font-size: 0.9rem;
 
-  /* smoother scroll */
-  .recommendation-card::-webkit-scrollbar {
-    width: 5px;
-  }
+      max-height: none;
+      overflow: visible;
 
-  .recommendation-card::-webkit-scrollbar-thumb {
-    background: #2B6E3C;
-    border-radius: 10px;
-  }
+      max-width: 700px;   /* ✅ controls width */
+      width: 100%;
+    }
 
     .suitability-High { color: #2B6E3C; font-weight: bold; }
     .suitability-Medium { color: #f4a261; font-weight: bold; }
@@ -479,6 +472,22 @@
       color: #1b5e20;
       z-index: 10;
       white-space: nowrap;
+    }
+    .result-speak-btn {
+      float: right;
+      border: none;
+      background: #E9F4E2;
+      color: #2B6E3C;
+      border-radius: 50%;
+      width: 32px;
+      height: 32px;
+      cursor: pointer;
+      font-size: 0.95rem;
+    }
+
+    .result-speak-btn:hover {
+      background: #DCEFD6;
+      transform: scale(1.08);
     }
 
     .footer-data {
@@ -1364,10 +1373,6 @@
   <button type="button" class="btn-primary" onclick="predictBoth()">
     🔮 Analyze
   </button>
-
-  <button type="button" id="speakAllResults" class="btn-outline">
-    🔊 Read Results
-  </button>
 </div>
 
     <div id="dualLoader" style="display:none; margin-top:15px; text-align:center;">
@@ -1392,10 +1397,11 @@
   <div class="faq-card">
     <div class="faq-question">
       <h4 data-i18n="faq1Q">What is TerraSight?</h4>
-      <div class="faq-actions">
-        <i class="fas fa-volume-up speak-btn"></i>
-        <span>+</span>
-      </div>
+        <div class="faq-actions">
+    <i class="fas fa-volume-up speak-btn" 
+      data-audio="what_is_terrasight.m4a"></i>
+    <span>+</span>
+</div>
     </div>
     <div class="faq-answer" data-i18n="faq1A">
       TerraSight is a crop suitability and yield prediction platform that helps farmers make smarter planting decisions using weather, soil, and vegetation data.
@@ -1406,9 +1412,10 @@
     <div class="faq-question">
       <h4 data-i18n="faq2Q">How do I use TerraSight?</h4>
       <div class="faq-actions">
-        <i class="fas fa-volume-up speak-btn"></i>
-        <span>+</span>
-      </div>
+  <i class="fas fa-volume-up speak-btn" 
+     data-audio="how_to_use_terrasight.m4a"></i>
+  <span>+</span>
+</div>
     </div>
     <div class="faq-answer" data-i18n="faq2A">
       Select your municipality, choose your preferred crop, and click analyze to receive crop suitability scores and yield predictions.
@@ -1418,10 +1425,11 @@
   <div class="faq-card">
     <div class="faq-question">
       <h4 data-i18n="faq3Q">Why is my municipality not listed?</h4>
-      <div class="faq-actions">
-        <i class="fas fa-volume-up speak-btn"></i>
-        <span>+</span>
-      </div>
+<div class="faq-actions">
+  <i class="fas fa-volume-up speak-btn" 
+     data-audio="why_not_listed.m4a"></i>
+  <span>+</span>
+</div>
     </div>
     <div class="faq-answer" data-i18n="faq3A">
       The system currently supports Polangui, Oas, Ligao, Malinao, and Pio Duran based on available agricultural datasets.
@@ -1431,10 +1439,11 @@
   <div class="faq-card">
     <div class="faq-question">
       <h4 data-i18n="faq4Q">What crops are supported?</h4>
-      <div class="faq-actions">
-        <i class="fas fa-volume-up speak-btn"></i>
-        <span>+</span>
-      </div>
+ <div class="faq-actions">
+  <i class="fas fa-volume-up speak-btn" 
+     data-audio="supported_crops.m4a"></i>
+  <span>+</span>
+</div>
     </div>
     <div class="faq-answer" data-i18n="faq4A">
       TerraSight currently supports Rice, Corn, and Coconut crop analysis.
@@ -1444,10 +1453,11 @@
   <div class="faq-card">
     <div class="faq-question">
       <h4 data-i18n="faq5Q">Where does the data come from?</h4>
-      <div class="faq-actions">
-        <i class="fas fa-volume-up speak-btn"></i>
-        <span>+</span>
-      </div>
+<div class="faq-actions">
+  <i class="fas fa-volume-up speak-btn" 
+     data-audio="data_sources.m4a"></i>
+  <span>+</span>
+</div>
     </div>
     <div class="faq-answer" data-i18n="faq5A">
       Data comes from weather APIs, vegetation indices (NDVI/EVI), and local agricultural records.
@@ -1457,10 +1467,11 @@
   <div class="faq-card">
     <div class="faq-question">
       <h4 data-i18n="faq6Q">Who developed TerraSight?</h4>
-      <div class="faq-actions">
-        <i class="fas fa-volume-up speak-btn"></i>
-        <span>+</span>
-      </div>
+ <div class="faq-actions">
+  <i class="fas fa-volume-up speak-btn" 
+     data-audio="developer_info.m4a"></i>
+  <span>+</span>
+</div>
     </div>
     <div class="faq-answer" data-i18n="faq6A">
       TerraSight was developed as a research project to support climate-adaptive agriculture in Albay.
@@ -1929,9 +1940,9 @@ const humidity = realClimate?.humidity || DEFAULT_FALLBACK.humidity;
   
   let recommendationsHtml = '';
   if (recommendations.overall) recommendationsHtml += `<div><h4>📋 ${recommendations.overall.status || 'Recommendation'}</h4><p>${recommendations.overall.message || ''}</p></div>`;
-  if (recommendations.planting_advice) recommendationsHtml += `<div><h4>🌱 Planting Advice</h4><p>${recommendations.planting_advice.message || ''}</p></div>`;
-  if (recommendations.soil_preparation && recommendations.soil_preparation.length) recommendationsHtml += `<div><h4>🛠️ Soil Preparation</h4>${recommendations.soil_preparation.map(p => `<p>• ${p}</p>`).join('')}</div>`;
-  if (recommendations.harvest_advice && recommendations.harvest_advice.length) recommendationsHtml += `<div><h4>🌾 Harvest Advice</h4>${recommendations.harvest_advice.map(h => `<p>• ${h}</p>`).join('')}</div>`;
+  if (recommendations.planting_advice) recommendationsHtml += `<div><br><h4>🌱 Planting Advice</h4><p>${recommendations.planting_advice.message || ''}</p></div>`;
+  if (recommendations.soil_preparation && recommendations.soil_preparation.length) recommendationsHtml += `<div><br><h4>🛠️ Soil Preparation</h4>${recommendations.soil_preparation.map(p => `<p>• ${p}</p>`).join('')}</div>`;
+  if (recommendations.harvest_advice && recommendations.harvest_advice.length) recommendationsHtml += `<div><br><h4>🌾 Harvest Advice</h4>${recommendations.harvest_advice.map(h => `<p>• ${h}</p>`).join('')}</div>`;
   
   //const currentYield = modelResults.predicted_yield_kg || 0;
    // Handle both possible field names
@@ -1951,7 +1962,10 @@ const humidity = realClimate?.humidity || DEFAULT_FALLBACK.humidity;
       <!-- LEFT COLUMN: Yield Prediction + Dashboard -->
       <div class="left-column-stack">
         <div class="result-card">
-          <h3>🌾 ${cropType.charAt(0).toUpperCase() + cropType.slice(1)} Yield Prediction</h3>
+         <h3>
+          🌾 ${cropType.charAt(0).toUpperCase() + cropType.slice(1)} Yield Prediction
+          <button class="result-speak-btn" onclick="speakResultContainer(this)">🔊</button>
+        </h3>
           <div class="value">${(currentYield / 1000).toFixed(2)} <span class="unit">tons/ha</span></div>
           <div class="value" style="font-size: 20px;">(${currentYield.toLocaleString()} ${cropType === 'coconut' ? 'nuts' : 'kg'}/ha)</div>
       
@@ -1961,7 +1975,10 @@ const humidity = realClimate?.humidity || DEFAULT_FALLBACK.humidity;
         
         <!-- Visual Yield Dashboard -->
         <div id="yieldDashboard" class="dashboard-card">
-          <h3>🌾 Visual Yield Dashboard</h3>
+          <h3>
+        🌾 Visual Yield Dashboard
+        <button class="result-speak-btn" onclick="speakResultContainer(this)">🔊</button>
+      </h3>
           <div class="header-stats">
             <span class="yield-achieved">📊 YIELD ACHIEVED: <span id="txtPercent">0</span>%</span>
             <span class="gap-remaining">⚠️ GAP REMAINING: <span id="txtGap">0</span>%</span>
@@ -1982,7 +1999,10 @@ const humidity = realClimate?.humidity || DEFAULT_FALLBACK.humidity;
       
       <!-- RIGHT COLUMN: Suitability -->
       <div class="result-card right-column-card">
-        <h3>🌱 ${cropType.charAt(0).toUpperCase() + cropType.slice(1)} Suitability</h3>
+        <h3>
+        🌱 ${cropType.charAt(0).toUpperCase() + cropType.slice(1)} Suitability
+        <button class="result-speak-btn" onclick="speakResultContainer(this)">🔊</button>
+      </h3>
         <div class="value ${suitabilityClass}">${suitabilityDisplay}</div>
         <p>Overall Score: ${calculatedScores.overall_suitability_score || '?'}%</p>
         <p>Climate Match: ${calculatedScores.climate_match_score || '?'}%</p>
@@ -1993,7 +2013,10 @@ const humidity = realClimate?.humidity || DEFAULT_FALLBACK.humidity;
     
     <!-- FULL WIDTH: Recommendations -->
     <div class="result-card recommendation-card">
-      <h3>📋 Recommendations</h3>
+    <h3>
+      📋 Recommendations
+      <button class="result-speak-btn" onclick="speakResultContainer(this)">🔊</button>
+    </h3>
       ${recommendationsHtml || '<p>No recommendations available.</p>'}
       <div style="margin-top: 12px; padding-top: 10px; border-top: 1px solid #ddd; font-size: 11px;">
       </div>
@@ -2305,21 +2328,6 @@ if (document.readyState === 'loading') {
     // DOM already loaded, call immediately
     initFeedback();
 }
-  
-  // FAQ Speak button
-  document.querySelectorAll(".speak-btn").forEach(btn => {
-    btn.addEventListener("click", function (e) {
-      e.stopPropagation();
-
-      const card = e.target.closest(".faq-card");
-      if (!card) return;
-
-      const question = card.querySelector(".faq-question h4")?.innerText || "";
-      const answer = card.querySelector(".faq-answer")?.textContent || "";
-
-    speakNaturally(`${question}. ${answer}`);
-    });
-  });
 
   // Read all prediction results
   const speakAllBtn = document.getElementById("speakAllResults");
@@ -2390,7 +2398,7 @@ document.addEventListener("DOMContentLoaded", function () {
     faqsSubtitle: "Mabilis na sagot tungkol sa TerraSight at kung paano ito gamitin.",
 
     faq1Q: "Ano ang TerraSight?",
-    faq1A: "Ang TerraSight ay isang crop suitability at yield prediction platform na tumutulong sa mga magsasaka na makagawa ng mas matalinong desisyon sa pagtatanim gamit ang datos ng panahon, lupa, at vegetation data.",
+    faq1A: "Ang TerraSight ay isang sistema na tumutulong sa mga magsasaka na pumili ng tamang pananim gamit ang datos ng panahon, lupa, at halama",
 
     faq2Q: "Paano gamitin ang TerraSight?",
     faq2A: "Piliin ang inyong munisipalidad, pumili ng nais na pananim, at pindutin ang Analyze upang makita ang crop suitability score at yield prediction.",
@@ -2399,13 +2407,13 @@ document.addEventListener("DOMContentLoaded", function () {
     faq3A: "Sa kasalukuyan, sinusuportahan ng sistema ang Polangui, Oas, Ligao, Malinao, at Pio Duran batay sa mga available na agricultural datasets.",
 
     faq4Q: "Anong mga pananim ang sinusuportahan?",
-    faq4A: "Sa kasalukuyan, sinusuportahan ng TerraSight ang pagsusuri para sa palay, mais, at niyog.",
+    faq4A: "sinusuportahan ng TerraSight ang pagsusuri para sa palay, mais, at niyog.",
 
     faq5Q: "Saan nanggagaling ang datos?",
     faq5A: "Ang datos ay mula sa weather APIs, vegetation indices tulad ng NDVI at EVI, at lokal na talaang pang-agrikultura.",
 
     faq6Q: "Sino ang gumawa ng TerraSight?",
-    faq6A: "Ang TerraSight ay ginawa ng mga estudyante ng Computer Science mula sa Bicol University bilang bahagi ng thesis project na nakatuon sa agricultural innovation at sustainability."
+    faq6A: "Ang TerraSight ay isang research project na ginawa ng mga Computer Science Students ng Bicol University. "
   }
   };
 
@@ -2422,6 +2430,102 @@ document.addEventListener("DOMContentLoaded", function () {
     applyLanguage(this.value);
   });
 });
+let currentAudio = null;
+let currentBtn = null;
+
+function playFAQAudio(button) {
+  speechSynthesis.cancel();
+  const file = button.getAttribute("data-audio");
+  const language = document.getElementById("languageSwitcher").value;
+
+  const audioPath = `audio/${language}/${file}`;
+
+  // If already playing → STOP
+  if (currentAudio) {
+    currentAudio.pause();
+    currentAudio.currentTime = 0;
+
+    if (currentBtn) {
+      currentBtn.classList.remove("fa-stop");
+      currentBtn.classList.add("fa-volume-up");
+    }
+
+    currentAudio = null;
+    currentBtn = null;
+    return;
+  }
+
+  // Play new audio
+  const audio = new Audio(audioPath);
+
+  currentAudio = audio;
+  currentBtn = button;
+
+  button.classList.remove("fa-volume-up");
+  button.classList.add("fa-stop");
+
+  audio.play();
+
+  audio.onended = function () {
+    button.classList.remove("fa-stop");
+    button.classList.add("fa-volume-up");
+    currentAudio = null;
+    currentBtn = null;
+  };
+}
+document.querySelectorAll(".speak-btn").forEach(btn => {
+  btn.addEventListener("click", function () {
+    playFAQAudio(this);
+  });
+});
+let currentResultUtterance = null;
+let currentResultBtn = null;
+
+function cleanSpeechText(text) {
+  return text
+    .replace(/[\u{1F300}-\u{1FAFF}]/gu, "") // remove emojis
+    .replace(/[^\w\s.,:%/()-]/g, "") // remove extra symbols
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function speakResultContainer(button) {
+  const card = button.closest(".result-card, .dashboard-card");
+  if (!card) return;
+
+  // Stop if currently speaking
+  if (speechSynthesis.speaking) {
+    speechSynthesis.cancel();
+
+    if (currentResultBtn) {
+      currentResultBtn.innerHTML = "🔊";
+    }
+
+    currentResultUtterance = null;
+    currentResultBtn = null;
+    return;
+  }
+
+  let text = card.innerText;
+  text = cleanSpeechText(text);
+
+  const utterance = new SpeechSynthesisUtterance(text);
+  utterance.rate = 0.9;
+  utterance.pitch = 1;
+
+  currentResultUtterance = utterance;
+  currentResultBtn = button;
+
+  button.innerHTML = "⏹";
+
+  utterance.onend = function () {
+    button.innerHTML = "🔊";
+    currentResultUtterance = null;
+    currentResultBtn = null;
+  };
+
+  speechSynthesis.speak(utterance);
+}
 </script>
 </body>
 </html>
