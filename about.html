@@ -48,6 +48,7 @@ body {
 
 .nav-links {
   display: flex;
+  align-items: center;
   gap: 24px;
 }
 
@@ -62,7 +63,37 @@ body {
 .nav-links a:hover {
   color: #2B6E3C;
 }
+#languageSwitcher {
+  border: 1.5px solid #BED6B6;
+  background: transparent;
+  color: #2A5C2E;
+  border-radius: 60px;
+  padding: 10px 16px;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  height: 44px;
+}
 
+#languageSwitcher:hover {
+  background: #F2F8EF;
+  border-color: #8FBC8A;
+}
+.language-select {
+  min-width: 150px;
+  height: 42px;
+  padding: 0 18px;
+  border: 1.5px solid #BED6B6;
+  border-radius: 50px;
+  background: transparent;
+  color: #2A5C2E;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+
+  display: flex;
+  align-items: center;
+}
 /* MAIN */
 .main-content {
   max-width: 1000px;
@@ -331,10 +362,10 @@ body {
         <a href="index.html">Home</a>
         <a href="#">About</a>
         <a href="map.html">Crop Map</a>
-        <select id="languageSwitcher">
-      <option value="en">🌐 English</option>
-      <option value="fil">🇵🇭 Filipino</option>
-    </select>
+      <select id="languageSwitcher" class="language-select">
+        <option value="en">🌐 English</option>
+        <option value="fil">🇵🇭 Filipino</option>
+      </select>
       </div>
 
     </nav>
