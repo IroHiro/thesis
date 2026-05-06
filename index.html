@@ -1963,7 +1963,25 @@ const humidity = realClimate?.humidity || DEFAULT_FALLBACK.humidity;
   if (recommendations.planting_advice) recommendationsHtml += `<div><br><h4>🌱 Planting Advice</h4><p>${recommendations.planting_advice.message || ''}</p></div>`;
   if (recommendations.soil_preparation && recommendations.soil_preparation.length) recommendationsHtml += `<div><br><h4>🛠️ Soil Preparation</h4>${recommendations.soil_preparation.map(p => `<p>• ${p}</p>`).join('')}</div>`;
   if (recommendations.harvest_advice && recommendations.harvest_advice.length) recommendationsHtml += `<div><br><h4>🌾 Harvest Advice</h4>${recommendations.harvest_advice.map(h => `<p>• ${h}</p>`).join('')}</div>`;
-  
+
+   // ========== ADD THIS: TYPHOON RECOMMENDATIONS ==========
+    if (recommendations.typhoon) {
+      const typhoon = recommendations.typhoon;
+      const riskIcon = typhoon.risk_level === 'High' ? '⚠️🔴' : (typhoon.risk_level === 'Moderate' ? '⚠️🟠' : '🟢');
+      const seasonText = typhoon.is_typhoon_season ? '⚠️ ACTIVE TYPHOON SEASON' : '✅ NO ACTIVE TYPHOON THREAT';
+      
+      recommendationsHtml += `
+        <div><br><h4>🌪️ Typhoon Preparedness</h4>
+        <p><strong>${riskIcon} Risk Level:</strong> ${typhoon.risk_level}</p>
+        <p><strong>📅 Risk Months:</strong> ${typhoon.risk_months}</p>
+        <p><strong>🚨 Current Status:</strong> ${seasonText}</p>
+        <div style="background: ${typhoon.risk_level === 'High' ? '#FEE2E2' : (typhoon.risk_level === 'Moderate' ? '#FEF3C7' : '#E8F5E9')}; padding: 12px; border-radius: 12px; margin-top: 8px;">
+          ${typhoon.advice.map(advice => `<p style="margin: 5px 0;">• ${advice}</p>`).join('')}
+        </div>
+        </div>
+      `;
+    }
+
   //const currentYield = modelResults.predicted_yield_kg || 0;
    // Handle both possible field names
     let currentYield = 0;
