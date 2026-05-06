@@ -331,6 +331,10 @@ body {
         <a href="index.html">Home</a>
         <a href="#">About</a>
         <a href="map.html">Crop Map</a>
+        <select id="languageSwitcher">
+      <option value="en">🌐 English</option>
+      <option value="fil">🇵🇭 Filipino</option>
+    </select>
       </div>
 
     </nav>
@@ -342,44 +346,34 @@ body {
 <div class="main-content">
 
   <div class="section-card">
-     <button class="speak-card-btn">🔊</button>
-    <h2>Our Mission</h2>
-    <p>
-      TerraSight aims to empower farmers, researchers, and policymakers with data-driven insights
-      for improved agricultural planning and climate resilience.
-    </p>
-  </div>
+  <button class="speak-card-btn" data-audio="mission">🔊</button>
+  <h2 data-i18n="missionTitle">Our Mission</h2>
+  <p data-i18n="missionText">
+    TerraSight aims to empower farmers, researchers, and policymakers with data-driven insights for improved agricultural planning and climate resilience.
+  </p>
+</div>
 
-  <div class="section-card">
-     <button class="speak-card-btn">🔊</button>
-    <h2>Focus Areas</h2>
-    <p>We analyze crop distribution across key municipalities:</p>
-    <ul>
-      <li>City of Ligao</li>
-      <li>Pio Duran</li>
-      <li>Malinao</li>
-      <li>Polangui</li>
-      <li>Oas</li>
-    </ul>
-  </div>
+<div class="section-card">
+  <button class="speak-card-btn" data-audio="focus_areas">🔊</button>
+  <h2 data-i18n="focusTitle">Focus Areas</h2>
+  <p data-i18n="focusText">We analyze crop distribution across key municipalities including the City of Ligao, Pio Duran, Malinao, Polangui, and Oas.</p>
+</div>
 
-  <div class="section-card">
-     <button class="speak-card-btn">🔊</button>
-    <h2>Technology</h2>
-    <p>
-      The system uses machine learning models such as Random Forest and LSTM to predict crop yield
-      and identify climate-adaptive farming patterns.
-    </p>
-  </div>
+<div class="section-card">
+  <button class="speak-card-btn" data-audio="technology">🔊</button>
+  <h2 data-i18n="technologyTitle">Technology</h2>
+  <p data-i18n="technologyText">
+    The system uses machine learning models such as Random Forest and LSTM to predict crop yield and identify climate-adaptive farming patterns.
+  </p>
+</div>
 
-  <div class="section-card">
-     <button class="speak-card-btn">🔊</button>
-    <h2>About the Team</h2>
-    <p>
-      TerraSight is developed by Computer Science students of Bicol University as part of a thesis
-      project focused on agricultural innovation and sustainability.
-    </p>
-  </div>
+<div class="section-card">
+  <button class="speak-card-btn" data-audio="about_team">🔊</button>
+  <h2 data-i18n="teamTitle">About the Team</h2>
+  <p data-i18n="teamText">
+    TerraSight is developed by Computer Science students of Bicol University as part of a thesis project focused on agricultural innovation and sustainability.
+  </p>
+</div>
 
 </div>
 
@@ -526,17 +520,104 @@ commentInput.addEventListener('keypress', (e) => {
     }
 });
   
-document.querySelectorAll(".speak-card-btn").forEach(button => {
-  button.addEventListener("click", function () {
-    const card = this.closest(".section-card");
-    const text = card.innerText.replace("🔊", "").trim();
-    const speech = new SpeechSynthesisUtterance(text);
-    speech.lang = "en-US";
-    speech.rate = 0.9;
-    window.speechSynthesis.cancel();
-    window.speechSynthesis.speak(speech);
+document.addEventListener("DOMContentLoaded", function () {
+  const languageSwitcher = document.getElementById("languageSwitcher");
+  const savedLang = localStorage.getItem("selectedLanguage") || "en";
+
+  languageSwitcher.value = savedLang;
+  setLanguage(savedLang);
+
+  languageSwitcher.addEventListener("change", function () {
+    setLanguage(this.value);
+  });
+
+  document.querySelectorAll(".speak-card-btn").forEach(button => {
+    button.addEventListener("click", function () {
+      const fileName = this.getAttribute("data-audio");
+      playRecordedAudio(fileName, this);
+    });
   });
 });
+const translations = {
+  en: {
+    missionTitle: "Our Mission",
+    missionText: "TerraSight aims to empower farmers, researchers, and policymakers with data-driven insights for improved agricultural planning and climate resilience.",
+
+    focusTitle: "Focus Areas",
+    focusText: "We analyze crop distribution across key municipalities including the City of Ligao, Pio Duran, Malinao, Polangui, and Oas.",
+
+    technologyTitle: "Technology",
+    technologyText: "The system uses machine learning models such as Random Forest and LSTM to predict crop yield and identify climate-adaptive farming patterns.",
+
+    teamTitle: "About the Team",
+    teamText: "TerraSight is developed by Computer Science students of Bicol University as part of a thesis project focused on agricultural innovation and sustainability."
+  },
+
+  fil: {
+    missionTitle: "Ang Aming Misyon",
+    missionText: "Layunin ng TerraSight na bigyan ng kapangyarihan ang mga magsasaka, mananaliksik, at mga tagapagpatupad ng polisiya sa pamamagitan ng mga datos upang mapabuti ang pagpaplano sa agrikultura at makapag-angkop sa pagbabago ng klima.",
+
+    focusTitle: "Mga Pokus na Lugar",
+    focusText: "Sinusuri namin ang distribusyon ng pananim sa mga pangunahing munisipalidad tulad ng Lungsod ng Ligao, Pio Duran, Malinao, Polangui, at Oas.",
+
+    technologyTitle: "Teknolohiya",
+    technologyText: "Gumagamit ang sistema ng mga machine learning model tulad ng Random Forest at LSTM upang mahulaan ang ani ng pananim at matukoy ang mga pattern ng climate-adaptive farming.",
+
+    teamTitle: "Tungkol sa Grupo",
+    teamText: "Ang TerraSight ay binuo ng mga estudyante ng Computer Science mula sa Bicol University bilang bahagi ng isang thesis project na nakatuon sa inobasyon at pagpapanatili sa agrikultura."
+  }
+};
+
+function setLanguage(lang) {
+  document.querySelectorAll("[data-i18n]").forEach(el => {
+    const key = el.getAttribute("data-i18n");
+    if (translations[lang] && translations[lang][key]) {
+      el.textContent = translations[lang][key];
+    }
+  });
+  localStorage.setItem("selectedLanguage", lang);
+}
+
+let currentAudio = null;
+let currentButton = null;
+
+function playRecordedAudio(fileName, button) {
+  const lang = localStorage.getItem("selectedLanguage") || "en";
+  const audioPath = `audio/${lang}/${fileName}.m4a`;
+
+  // if same button clicked again, stop audio
+  if (currentAudio && currentButton === button) {
+    currentAudio.pause();
+    currentAudio.currentTime = 0;
+    currentAudio = null;
+    currentButton.textContent = "🔊";
+    currentButton = null;
+    return;
+  }
+
+  // stop previous audio
+  if (currentAudio) {
+    currentAudio.pause();
+    currentAudio.currentTime = 0;
+    if (currentButton) currentButton.textContent = "🔊";
+  }
+
+  currentAudio = new Audio(audioPath);
+  currentButton = button;
+  button.textContent = "⏹️";
+
+  currentAudio.play().catch(error => {
+    console.error("Audio failed:", audioPath, error);
+    alert("Audio not found or cannot play: " + audioPath);
+    button.textContent = "🔊";
+  });
+
+  currentAudio.onended = function () {
+    button.textContent = "🔊";
+    currentAudio = null;
+    currentButton = null;
+  };
+}
 </script>
 </body>
 </html>
