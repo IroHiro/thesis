@@ -1257,25 +1257,24 @@
         </p>
 <div class="farm-explanation">
 
+
   <div class="farm-explanation-header" id="farmExplainToggle">
-    <h4>📊 What this means</h4>
+    <h4 data-i18n="whatThisMeans">📊 What this means</h4>
     <span id="explainIcon">+</span>
   </div>
 
   <div class="farm-explanation-content" id="farmExplainContent">
-    <p>This grid shows how much of your land is good for growing crops.</p>
-
-    <p>
-      🌱 Green boxes = areas where crops can grow well <br>
-      🟫 Brown boxes = areas that may need improvement
-    </p>
-
-    <p>
+    <p data-i18n="yieldMeaning1">This grid shows how much of your land is good for growing crops.</p>
+    <br>
+    <span data-i18n="yieldMeaning2"> 🌱 Green boxes = areas where crops can grow well </span><br>
+    <span data-i18n="yieldMeaning3"> 🟫 Brown boxes = areas that may need improvement </span>
+    <br>
+    <p data-i18n="yieldMeaning4">
       The percentage (82%) shows how much of your land has good conditions.
       The more green, the higher your possible harvest.
     </p>
-
-    <p>
+    <br>
+    <p data-i18n="yieldMeaning5">
       If most boxes are green, expect better harvest.
       If many are brown, improving soil or water can help.
     </p>
@@ -1342,14 +1341,14 @@
 
     <i class="fas fa-chart-line" style="font-size: 2.5rem; color: #3F9E4A;"></i>
     <h3>🌾 Crop Suitability Check</h3>
-    <p>Enter your municipality and preferred crop.</p>
+    <p data-i18n="predictionSubtitle">Enter your municipality and preferred crop.</p>
 
     <div class="input-weather-layout">
 
       <!-- LEFT: INPUTS -->
       <div class="input-panel">
         <div class="input-group">
-          <label for="city">📍 Select municipality</label>
+          <label for="city" data-i18n="selectMunicipality">📍 Select municipality</label>
           <select id="city">
             <option value="">-- Select Municipality --</option>
             <option value="Polangui">Polangui</option>
@@ -1361,7 +1360,7 @@
         </div>
 
         <div class="input-group">
-          <label for="crop">🌱 Select crop</label>
+          <label for="crop" data-i18n="selectCrop">🌱 Select crop</label>
           <select id="crop">
             <option value="">-- Select Crop --</option>
             <option value="rice">🌾 Rice</option>
@@ -2422,8 +2421,26 @@ document.addEventListener("DOMContentLoaded", function () {
     faq5A: "Data comes from weather APIs, vegetation indices such as NDVI and EVI, and local agricultural records.",
 
     faq6Q: "Who developed TerraSight?",
-    faq6A: "TerraSight was developed as a research project to support climate-adaptive agriculture in Albay."
+    faq6A: "TerraSight was developed as a research project to support climate-adaptive agriculture in Albay.",
+    weatherTitle: "🌦️ Weather Data Used",
+    weatherDefault: "Select a municipality and click Analyze to view the weather inputs used for prediction.",
+    predictionSubtitle: "Enter your municipality and preferred crop.",
+    selectMunicipality: "📍 Select municipality",
+    selectCrop: "🌱 Select crop",
+
+    whatThisMeans: "📊 What this means",
+
+    yieldMeaning1: "This grid shows how much of your land is good for growing crops.",
+
+    yieldMeaning2: "🌱 Green boxes = areas where crops can grow well",
+
+    yieldMeaning3: "🟫 Brown boxes = areas that may need improvement",
+
+    yieldMeaning4: "The percentage (82%) shows how much of your land has good conditions. The more green, the higher your possible harvest.",
+
+    yieldMeaning5: "If most boxes are green, expect better harvest. If many are brown, improving soil or water can help."
     },
+    
     fil: {
       heroBadge: "Gabay sa pagiging angkop ng pananim at pagtataya ng ani",
       heroTitle1: "Matalinong",
@@ -2451,7 +2468,25 @@ document.addEventListener("DOMContentLoaded", function () {
     faq5A: "Ang datos ay mula sa weather APIs, vegetation indices tulad ng NDVI at EVI, at lokal na talaang pang-agrikultura.",
 
     faq6Q: "Sino ang gumawa ng TerraSight?",
-    faq6A: "Ang TerraSight ay isang research project na ginawa ng mga Computer Science Students ng Bicol University. "
+    faq6A: "Ang TerraSight ay isang research project na ginawa ng mga Computer Science Students ng Bicol University. ",
+    
+    weatherTitle: "🌦️ Ginamit na Datos ng Panahon",
+    weatherDefault: "Pumili ng munisipyo at pindutin ang Analyze upang makita ang weather inputs na ginamit sa prediction.",
+    predictionSubtitle: "Ilagay ang iyong munisipyo at nais na pananim.",
+    selectMunicipality: "📍 Piliin ang munisipyo",
+    selectCrop: "🌱 Piliin ang pananim",
+
+    whatThisMeans: "📊 Ano ang ibig sabihin nito",
+
+    yieldMeaning1: "Ipinapakita ng grid na ito kung gaano kaganda ang kondisyon ng iyong lupa para sa pagtatanim.",
+
+    yieldMeaning2: "🌱 Ang berdeng kahon ay mga lugar kung saan maaaring tumubo nang maayos ang pananim.",
+
+    yieldMeaning3: "🟫 Ang kayumangging kahon ay mga lugar na maaaring kailanganin ng pagpapabuti.",
+
+    yieldMeaning4: "Ipinapakita ng porsyento (82%) kung gaano kalaki ang bahagi ng lupa na may magandang kondisyon. Mas maraming berde, mas mataas ang posibleng ani.",
+
+    yieldMeaning5: "Kapag karamihan ay berde, mas maganda ang posibleng ani. Kapag maraming kayumanggi, maaaring kailanganin ng mas maayos na lupa o patubig."
   }
   };
 
