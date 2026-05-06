@@ -1893,22 +1893,12 @@ const humidity = realClimate?.humidity || DEFAULT_FALLBACK.humidity;
       //const predictedYieldKg = result.model_results?.predicted_yield_kg || 0;
       // Handle both possible field names from API
       let predictedYieldKg = 0;
-        if (cropType === 'coconut') {
-            // Coconut returns nuts, not kg
-            predictedYieldKg = result.predicted_yield_nuts || result.predicted_yield_millions * 1000000 || 0;
-            console.log("Coconut yield (nuts):", predictedYieldKg);
-        } else {
-            if (result.model_results?.predicted_yield_kg) {
-                predictedYieldKg = result.model_results.predicted_yield_kg;
-            } else if (result.model_results?.predicted_yield) {
-                predictedYieldKg = result.model_results.predicted_yield;
-            } else if (result.model_results?.predicted_yield_tons) {
-                predictedYieldKg = result.model_results.predicted_yield_tons * 1000;
-            } else if (result.yield_kg) {
-                predictedYieldKg = result.yield_kg;
-            } else if (result.yield_tons) {
-                predictedYieldKg = result.yield_tons * 1000;
-            }
+        if (result.model_results?.predicted_yield_kg) {
+            predictedYieldKg = result.model_results.predicted_yield_kg;
+        } else if (result.model_results?.predicted_yield) {
+            predictedYieldKg = result.model_results.predicted_yield;
+        } else if (result.model_results?.predicted_yield_tons) {
+            predictedYieldKg = result.model_results.predicted_yield_tons * 1000;
         }
       console.log("Yield extracted:", predictedYieldKg);
       
