@@ -1350,7 +1350,7 @@
         <div class="input-group">
           <label for="city" data-i18n="selectMunicipality">📍 Select municipality</label>
           <select id="city">
-            <option value="">-- Select Municipality --</option>
+            <option value="" data-i18n="defaultMunicipality">-- Select Municipality --</option>
             <option value="Polangui">Polangui</option>
             <option value="Malinao">Malinao</option>
             <option value="Pioduran">Pio Duran</option>
@@ -1362,7 +1362,7 @@
         <div class="input-group">
           <label for="crop" data-i18n="selectCrop">🌱 Select crop</label>
           <select id="crop">
-            <option value="">-- Select Crop --</option>
+            <option value="" data-i18n="defaultCrop">-- Select Crop --</option>
             <option value="rice">🌾 Rice</option>
             <option value="corn">🌽 Corn</option>
             <option value="coconut">🥥 Coconut</option>
@@ -1372,8 +1372,8 @@
 
       <!-- RIGHT: WEATHER -->
       <div class="weather-panel">
-        <h4>🌦️ Weather Data Used</h4>
-        <div id="weatherPreview" class="weather-card">
+        <h4 data-i18n="weatherTitle">🌦️ Weather Data Used</h4>
+        <div id="weatherPreview" class="weather-card" data-i18n="weatherDefault">
           Select a municipality and click Analyze to view the weather inputs used for prediction.
         </div>
       </div>
@@ -2427,6 +2427,8 @@ document.addEventListener("DOMContentLoaded", function () {
     predictionSubtitle: "Enter your municipality and preferred crop.",
     selectMunicipality: "📍 Select municipality",
     selectCrop: "🌱 Select crop",
+    defaultMunicipality: "-- Select Municipality --",
+    defaultCrop: "-- Select Crop --",
 
     whatThisMeans: "📊 What this means",
 
@@ -2475,7 +2477,8 @@ document.addEventListener("DOMContentLoaded", function () {
     predictionSubtitle: "Ilagay ang iyong munisipyo at nais na pananim.",
     selectMunicipality: "📍 Piliin ang munisipyo",
     selectCrop: "🌱 Piliin ang pananim",
-
+    defaultMunicipality: "-- Piliin ang Munisipyo --",
+    defaultCrop: "-- Piliin ang Pananim --",
     whatThisMeans: "📊 Ano ang ibig sabihin nito",
 
     yieldMeaning1: "Ipinapakita ng grid na ito kung gaano kaganda ang kondisyon ng iyong lupa para sa pagtatanim.",
