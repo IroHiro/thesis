@@ -29,11 +29,11 @@
             color: #1A2E1F;
             line-height: 1.4;
         }
-            .container {
+        .container {
         max-width: 1280px;
         margin: 0 auto;
         padding: 0 32px;
-            }
+        }
 
         /* navigation */
         .navbar {
@@ -81,14 +81,14 @@
         }
 
         .logo {
-            font-size: 1.6rem; /* smaller */
-            font-weight: 800;
-            background: linear-gradient(135deg, #1F6530, #3C8849);
-            background-clip: text;
-            -webkit-background-clip: text;
-            color: transparent;
-            font-family: 'Plus Jakarta Sans', sans-serif;
-            display: inline-block;
+        font-size: 2rem;
+        font-weight: 800;
+        letter-spacing: -0.02em;
+        background: linear-gradient(135deg, #1F6530, #3C8849);
+        background-clip: text;
+        -webkit-background-clip: text;
+        color: transparent;
+        font-family: 'Plus Jakarta Sans', sans-serif;
         }
 
         .subhead {
@@ -605,11 +605,13 @@
 </head>
 <body>
 <div class="header">
-  <nav class="navbar">
-    
+  <div class="container">
+
+    <nav class="navbar">
+
     <!-- LEFT: LOGO -->
     <div>
-      <div class="logo">🌱 Crop Suitability & Yield Prediction</div>
+      <div class="logo">🌱 TerraSight</div>
       <div class="subhead">Yield Analytics & Crop Distribution Map | Albay Province</div>
     </div>
 
@@ -620,7 +622,9 @@
       <a href="#" id="Map">Crop Map</a>
     </div>
 
-  </nav>
+    </nav>
+
+  </div>
 </div>
 
     <!-- Tabs -->
