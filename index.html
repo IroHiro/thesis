@@ -1857,11 +1857,16 @@ const humidity = realClimate?.humidity || DEFAULT_FALLBACK.humidity;
       };
       
       console.log("Calling API for:", municipalityName);
-      
+
       const response = await fetch(RULE_BASED_API_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(requestBody)
+          method: 'POST',
+          mode: 'cors',              // Add this line - explicitly enable CORS
+          credentials: 'omit',       // Add this line - don't send cookies
+          headers: { 
+              'Content-Type': 'application/json',
+              'Accept': 'application/json'  // Add accept header
+          },
+          body: JSON.stringify(requestBody)
       });
       
       if (!response.ok) {
