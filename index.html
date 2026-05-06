@@ -757,7 +757,19 @@
   height: 54px;
   padding: 0 18px;
 }
+  .btn-reset {
+  background: #f1f1f1;
+  color: #2B6E3C;
+  border: 1px solid #2B6E3C;
+  padding: 10px 18px;
+  border-radius: 25px;
+  cursor: pointer;
+  font-weight: 500;
+}
 
+.btn-reset:hover {
+  background: #e4f3e0;
+}
 .trust-note {
   margin-top: 18px;
 }
@@ -1373,6 +1385,9 @@
   <button type="button" class="btn-primary" onclick="predictBoth()">
     🔮 Analyze
   </button>
+  <button type="button" class="btn-reset" onclick="resetPredictionForm()">
+  🔄 Reset
+</button>
 </div>
 
     <div id="dualLoader" style="display:none; margin-top:15px; text-align:center;">
@@ -2530,6 +2545,22 @@ function speakResultContainer(button) {
   };
 
   speechSynthesis.speak(utterance);
+}
+  function resetPredictionForm() {
+  document.getElementById("city").selectedIndex = 0;
+  document.getElementById("crop").selectedIndex = 0;
+
+  document.getElementById("weatherPreview").innerHTML =
+    "Select a municipality and click Analyze to view the weather inputs used for prediction.";
+
+  document.getElementById("results").innerHTML = "";
+
+  const loader = document.getElementById("dualLoader");
+  if (loader) loader.style.display = "none";
+
+  if (window.speechSynthesis) speechSynthesis.cancel();
+
+  console.log("Reset clicked");
 }
 </script>
 </body>
