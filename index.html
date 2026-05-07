@@ -1533,6 +1533,87 @@
   const DEFAULT_FALLBACK = { avg_temperature: 27.3, total_rainfall: 30, humidity: 75, n_score: 3, p_score: 3, k_score: 3 };
 
   // ============================================
+  // LIBRETRANSLATE API FOR RECOMMENDATIONS ONLY
+  // ============================================
+  
+  let currentLanguage = 'en'; // Track current language
+  
+  async function translateText(text, targetLang) {
+      if (!text || targetLang === 'en') return text;
+      
+      try {
+          const response = await fetch('https://libretranslate.com/translate', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                  q: text,
+                  source: 'en',
+                  target: targetLang,
+                  format: 'text'
+              })
+          });
+          
+          if (!response.ok) throw new Error(`Translation error: ${response.status}`);
+          const data = await response.json();
+          return data.translatedText || text;
+      } catch (error) {
+          console.error('Translation error:', error);
+          return text;
+      }
+  }
+  
+  async function translateRecommendations(recommendations, targetLang) {
+      if (targetLang === 'en' || !recommendations) return recommendations;
+      
+      const translated = JSON.parse(JSON.stringify(recommendations));
+      
+      if (translated.overall?.message) {
+          translated.overall.message = await translateText(translated.overall.message, targetLang);
+      }
+      if (translated.overall?.status) {
+          translated.overall.status = await translateText(translated.overall.status, targetLang);
+      }
+      
+      if (translated.planting_advice?.message) {
+          translated.planting_advice.message = await translateText(translated.planting_advice.message, targetLang);
+      }
+      
+      if (translated.soil_preparation?.length) {
+          const translatedItems = [];
+          for (const item of translated.soil_preparation) {
+              translatedItems.push(await translateText(item, targetLang));
+          }
+          translated.soil_preparation = translatedItems;
+      }
+      
+      if (translated.harvest_advice?.length) {
+          const translatedItems = [];
+          for (const item of translated.harvest_advice) {
+              translatedItems.push(await translateText(item, targetLang));
+          }
+          translated.harvest_advice = translatedItems;
+      }
+      
+      if (translated.typhoon) {
+          if (translated.typhoon.risk_level) {
+              translated.typhoon.risk_level = await translateText(translated.typhoon.risk_level, targetLang);
+          }
+          if (translated.typhoon.risk_months) {
+              translated.typhoon.risk_months = await translateText(translated.typhoon.risk_months, targetLang);
+          }
+          if (translated.typhoon.advice?.length) {
+              const translatedAdvice = [];
+              for (const advice of translated.typhoon.advice) {
+                  translatedAdvice.push(await translateText(advice, targetLang));
+              }
+              translated.typhoon.advice = translatedAdvice;
+          }
+      }
+      
+      return translated;
+  }
+  
+  // ============================================
   // API WAKE-UP FUNCTION - Call this BEFORE any prediction
   // ============================================
   
@@ -1967,15 +2048,26 @@ const humidity = realClimate?.humidity || DEFAULT_FALLBACK.humidity;
     }
   }
   
- function displayResults(result, cropType, municipality, usedParams) {
+ async function displayResults(result, cropType, municipality, usedParams) {
   const resultsDiv = document.getElementById('results');
   const modelResults = result.model_results || {};
   const calculatedScores = result.calculated_scores || {};
-  const recommendations = result.recommendations || {};
+  
   const suitability = modelResults.suitability || 'Medium';
   const suitabilityClass = `suitability-${suitability}`;
   const suitabilityDisplay = { 'High': '🌟 Highly Suitable', 'Medium': '✅ Moderately Suitable', 'Low': '⚠️ Marginally Suitable' }[suitability] || suitability;
+
+  //const recommendations = result.recommendations || {};
+  let recommendations = result.recommendations || {};
+
+  // Check language and translate recommendations ONLY
+  const languageSwitcher = document.getElementById("languageSwitcher");
+  currentLanguage = languageSwitcher ? languageSwitcher.value : 'en';
   
+  if (currentLanguage === 'fil') {
+      recommendations = await translateRecommendations(recommendations, 'tl');
+  }
+   
   let probabilitiesHtml = '';
   // Add farmer-friendly explanation instead of probability bars
   let suitabilityAdvice = '';
@@ -2551,9 +2643,31 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   }
 
-  languageSwitcher.addEventListener("change", function () {
-    applyLanguage(this.value);
-  });
+  //languageSwitcher.addEventListener("change", function () {
+  //  applyLanguage(this.value);
+  //});
+
+    languageSwitcher.addEventListener("change", async function () {
+      const selectedLang = this.value;
+      applyLanguage(selectedLang);
+      
+      // Update currentLanguage for recommendations translation
+      currentLanguage = selectedLang === 'fil' ? 'tl' : 'en';
+      
+      // If there are existing results, refresh them to translate recommendations
+      const cityValue = document.getElementById("city")?.value;
+      const cropValue = document.getElementById("crop")?.value;
+      
+      if (cityValue && cropValue && cityValue !== "" && cropValue !== "") {
+        const resultsDiv = document.getElementById("results");
+        if (resultsDiv && resultsDiv.innerHTML !== "") {
+          resultsDiv.innerHTML = '<div style="text-align:center; padding:20px;"><span class="loader-spinner"></span> Translating recommendations...</div>';
+          await predictBoth();
+        }
+      }
+    });
+
+  
 });
 let currentAudio = null;
 let currentBtn = null;
