@@ -1646,12 +1646,30 @@
   if (!dashboard) return;
   dashboard.style.display = 'block';
   //const targetYield = TARGET_YIELDS[cropType] || 4000;
-    let targetYield;
-      if (cropType === 'coconut' && TARGET_YIELDS.coconut[municipality]) {
-          targetYield = TARGET_YIELDS.coconut[municipality];
+    let targetYield = 4000;
+      if (cropType === 'coconut') {
+        // Clean up municipality name to match TARGET_YIELDS keys
+        let cleanMunicipality = municipality;
+        
+        // Remove "City" or "city" from the name
+        cleanMunicipality = cleanMunicipality.replace(/ City| city/gi, '');
+        
+        // Capitalize first letter only (e.g., "ligao" -> "Ligao")
+        cleanMunicipality = cleanMunicipality.charAt(0).toUpperCase() + 
+                            cleanMunicipality.slice(1).toLowerCase();
+        
+        // Try to get the target yield
+        if (TARGET_YIELDS.coconut && TARGET_YIELDS.coconut[cleanMunicipality]) {
+          targetYield = TARGET_YIELDS.coconut[cleanMunicipality];
+          console.log("Coconut target for", cleanMunicipality, "=", targetYield);
         } else {
-          targetYield = TARGET_YIELDS[cropType] || 4000;
+          console.warn("No coconut target found for:", cleanMunicipality);
+          console.log("Available keys:", Object.keys(TARGET_YIELDS.coconut || {}));
+          targetYield = 12000; // fallback for coconut
         }
+      } else {
+        targetYield = TARGET_YIELDS[cropType] || 4000;
+      }
     
   const percentage = Math.min(100, Math.max(0, (yieldKg / targetYield) * 100));
   const gap = Math.max(0, 100 - percentage);
