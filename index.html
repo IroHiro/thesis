@@ -1646,17 +1646,26 @@
   if (!dashboard) return;
   dashboard.style.display = 'block';
   //const targetYield = TARGET_YIELDS[cropType] || 4000;
-    let targetYield = 4000;
+    let targetYield = 4000; // default fallback
+  
+      // SAFETY CHECK: if municipality is undefined or null, log and use default
+      if (!municipality) {
+        console.warn("municipality is undefined in updateYieldDashboard");
+        municipality = "Unknown";
+      }
+      
       if (cropType === 'coconut') {
-        // Clean up municipality name to match TARGET_YIELDS keys
-        let cleanMunicipality = municipality;
+        // Clean up municipality name - ONLY if municipality exists
+        let cleanMunicipality = String(municipality); // Convert to string safely
         
         // Remove "City" or "city" from the name
-        cleanMunicipality = cleanMunicipality.replace(/ City| city/gi, '');
-        
-        // Capitalize first letter only (e.g., "ligao" -> "Ligao")
-        cleanMunicipality = cleanMunicipality.charAt(0).toUpperCase() + 
-                            cleanMunicipality.slice(1).toLowerCase();
+        if (cleanMunicipality) {
+          cleanMunicipality = cleanMunicipality.replace(/ City| city/gi, '');
+          
+          // Capitalize first letter only (e.g., "ligao" -> "Ligao")
+          cleanMunicipality = cleanMunicipality.charAt(0).toUpperCase() + 
+                              cleanMunicipality.slice(1).toLowerCase();
+        }
         
         // Try to get the target yield
         if (TARGET_YIELDS.coconut && TARGET_YIELDS.coconut[cleanMunicipality]) {
@@ -1664,7 +1673,6 @@
           console.log("Coconut target for", cleanMunicipality, "=", targetYield);
         } else {
           console.warn("No coconut target found for:", cleanMunicipality);
-          console.log("Available keys:", Object.keys(TARGET_YIELDS.coconut || {}));
           targetYield = 12000; // fallback for coconut
         }
       } else {
