@@ -1562,6 +1562,9 @@
         return text;
     }
 }
+  function delay(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+}
   
   async function translateRecommendations(recommendations, targetLang) {
       if (targetLang === 'en' || !recommendations) return recommendations;
