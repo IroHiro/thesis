@@ -1519,7 +1519,17 @@
       "Malinao":  { lat: 13.4117, lon: 123.7000, ndvi: 0.73, evi: 0.45, soil_fertility: 3.1 }
   };
 
-  const TARGET_YIELDS = { rice: 4600, corn: 4500, coconut: 12000 };
+  const TARGET_YIELDS = { 
+    rice: 4600, 
+    corn: 4500, 
+    coconut: {
+      Malinao: 2710826,
+      Ligao: 44172738,
+      Oas: 28999713,
+      Pioduran: 16280367,
+      Polangui: 14658366
+    }
+  };
   const DEFAULT_FALLBACK = { avg_temperature: 27.3, total_rainfall: 30, humidity: 75, n_score: 3, p_score: 3, k_score: 3 };
 
   // ============================================
@@ -1631,11 +1641,18 @@
     }
   }
 
-  function updateYieldDashboard(yieldKg, cropType) {
+  function updateYieldDashboard(yieldKg, cropType, municipality) {
   const dashboard = document.getElementById('yieldDashboard');
   if (!dashboard) return;
   dashboard.style.display = 'block';
-  const targetYield = TARGET_YIELDS[cropType] || 4000;
+  //const targetYield = TARGET_YIELDS[cropType] || 4000;
+    let targetYield;
+      if (cropType === 'coconut') {
+        targetYield = TARGET_YIELDS.coconut[municipality] || 21000000;
+      } else {
+        targetYield = TARGET_YIELDS[cropType] || 4000;
+      }
+    
   const percentage = Math.min(100, Math.max(0, (yieldKg / targetYield) * 100));
   const gap = Math.max(0, 100 - percentage);
   
@@ -1992,7 +2009,13 @@ const humidity = realClimate?.humidity || DEFAULT_FALLBACK.humidity;
         currentYield = modelResults.predicted_yield_tons * 1000;
     }
     console.log("Display yield:", currentYield);
-  const targetYield = TARGET_YIELDS[cropType] || 4000;
+  //const targetYield = TARGET_YIELDS[cropType] || 4000;
+   let targetYield;
+      if (cropType === 'coconut') {
+        targetYield = TARGET_YIELDS.coconut[municipality] || 21000000;
+      } else {
+        targetYield = TARGET_YIELDS[cropType] || 4000 ;
+      }
   
   resultsDiv.innerHTML = `
     <div class="results-container-override">
