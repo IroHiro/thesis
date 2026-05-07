@@ -1539,28 +1539,28 @@
   let currentLanguage = 'en'; // Track current language
   
   async function translateText(text, targetLang) {
-      if (!text || targetLang === 'en') return text;
-      
-      try {
-          const response = await fetch('https://libretranslate.com/translate', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                  q: text,
-                  source: 'en',
-                  target: targetLang,
-                  format: 'text'
-              })
-          });
-          
-          if (!response.ok) throw new Error(`Translation error: ${response.status}`);
-          const data = await response.json();
-          return data.translatedText || text;
-      } catch (error) {
-          console.error('Translation error:', error);
-          return text;
-      }
-  }
+    if (!text || targetLang === 'en') return text;
+    
+    try {
+        const response = await fetch('https://libretranslate.com/translate', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                q: text,
+                source: 'en',
+                target: targetLang,
+                format: 'text'
+            })
+        });
+        
+        if (!response.ok) throw new Error(`Translation error: ${response.status}`);
+        const data = await response.json();
+        return data.translatedText || text;
+    } catch (error) {
+        console.error('Translation error:', error);
+        return text;
+    }
+}
   
   async function translateRecommendations(recommendations, targetLang) {
       if (targetLang === 'en' || !recommendations) return recommendations;
@@ -1582,6 +1582,7 @@
           const translatedItems = [];
           for (const item of translated.soil_preparation) {
               translatedItems.push(await translateText(item, targetLang));
+              await delay(200)
           }
           translated.soil_preparation = translatedItems;
       }
@@ -1590,6 +1591,7 @@
           const translatedItems = [];
           for (const item of translated.harvest_advice) {
               translatedItems.push(await translateText(item, targetLang));
+              await delay(200)
           }
           translated.harvest_advice = translatedItems;
       }
@@ -1605,6 +1607,7 @@
               const translatedAdvice = [];
               for (const advice of translated.typhoon.advice) {
                   translatedAdvice.push(await translateText(advice, targetLang));
+                  await delay(200)
               }
               translated.typhoon.advice = translatedAdvice;
           }
