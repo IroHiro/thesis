@@ -1542,20 +1542,21 @@
     if (!text || targetLang === 'en') return text;
     
     try {
-        const response = await fetch('https://libretranslate.com/translate', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                q: text,
-                source: 'en',
-                target: targetLang,
-                format: 'text'
-            })
-        });
+        // Using MyMemory API - more generous rate limits
+        const url = `https://api.mymemory.translated.net/get?q=${encodeURIComponent(text)}&langpair=en|${targetLang}`;
+        
+        const response = await fetch(url);
         
         if (!response.ok) throw new Error(`Translation error: ${response.status}`);
         const data = await response.json();
-        return data.translatedText || text;
+        
+        // MyMemory returns translation in data.responseData.translatedText
+        let translatedText = data.responseData?.translatedText || text;
+        
+        // Remove any HTML entities that might appear
+        translatedText = translatedText.replace(/&quot;/g, '"').replace(/&#39;/g, "'");
+        
+        return translatedText;
     } catch (error) {
         console.error('Translation error:', error);
         return text;
