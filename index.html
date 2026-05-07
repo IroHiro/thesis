@@ -1957,7 +1957,7 @@ const humidity = realClimate?.humidity || DEFAULT_FALLBACK.humidity;
       });
 
       // Update the visual dashboard with the predicted yield
-      updateYieldDashboard(predictedYieldKg, cropType);
+      updateYieldDashboard(predictedYieldKg, cropType, municipalityName);
       
     } catch (error) {
       console.error("Prediction error:", error);
@@ -2110,7 +2110,7 @@ const humidity = realClimate?.humidity || DEFAULT_FALLBACK.humidity;
   `;
   
   initDashboardGrid();
-  updateYieldDashboard(currentYield, cropType);
+  updateYieldDashboard(currentYield, cropType, municipalityName);
 }
 let availableVoices = [];
 
