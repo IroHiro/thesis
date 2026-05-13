@@ -489,7 +489,31 @@
       background: #DCEFD6;
       transform: scale(1.08);
     }
+    .update-section {
+      display: flex;
+      justify-content: flex-end;
+      margin-top: 30px;
+      margin-bottom: 40px;
+    }
 
+    .update-section .btn-primary {
+      transform: translateX(-140px);
+    }
+
+    .small-modal {
+      max-width: 450px;
+    }
+
+    .close-btn {
+      float: right;
+      margin-bottom: 10px;
+    }
+
+    #loginMessage,
+    #updateMessage {
+      margin-top: 15px;
+      font-weight: 600;
+    }
     .footer-data {
       display: flex;
       justify-content: space-between;
@@ -1286,7 +1310,90 @@
   </div>
 </main>
 </div>
+<!-- UPDATE YIELD BUTTON -->
+<div class="container">
+  <div class="update-section">
+    <button class="btn-primary" id="openUpdateModal">
+      📈 Update Yield Yearly
+    </button>
+  </div>
+</div>
 
+<!-- LOGIN MODAL -->
+<div id="loginModal" class="modal-overlay">
+  <div class="modal-card small-modal">
+
+    <button class="btn-outline close-btn" id="closeLoginModal">✖</button>
+
+    <h2>Authorized Access</h2>
+    <p>Only APAO and PCA personnel can update yearly yield data.</p>
+
+    <div class="input-group">
+      <label>Email</label>
+      <input type="email" id="loginEmail" placeholder="Enter email">
+    </div>
+
+    <div class="input-group">
+      <label>Password</label>
+      <input type="password" id="loginPassword" placeholder="Enter password">
+    </div>
+
+    <button class="btn-primary" onclick="loginUser()">
+      Login
+    </button>
+
+    <div id="loginMessage"></div>
+
+  </div>
+</div>
+
+<!-- UPDATE FORM MODAL -->
+<div id="updateModal" class="modal-overlay">
+  <div class="modal-card">
+
+    <button class="btn-outline close-btn" id="closeUpdateModal">✖</button>
+
+    <h2>Yearly Yield Update</h2>
+    <p>Update crop yield records for the selected municipality.</p>
+
+    <div class="input-group">
+      <label>Municipality</label>
+      <select id="yieldMunicipality">
+        <option>Ligao</option>
+        <option>Polangui</option>
+        <option>Oas</option>
+        <option>Malinao</option>
+        <option>Pio Duran</option>
+      </select>
+    </div>
+
+    <div class="input-group">
+      <label>Crop</label>
+      <select id="yieldCrop">
+        <option value="rice">Rice</option>
+        <option value="corn">Corn</option>
+        <option value="coconut">Coconut</option>
+      </select>
+    </div>
+
+    <div class="input-group">
+      <label>Year</label>
+      <input type="number" id="yieldYear" placeholder="2026">
+    </div>
+
+    <div class="input-group">
+      <label>Yield Value</label>
+      <input type="number" id="yieldValue" placeholder="Enter yield">
+    </div>
+
+    <button class="btn-primary" onclick="saveYieldData()">
+      Save Yield Data
+    </button>
+
+    <div id="updateMessage"></div>
+
+  </div>
+</div>
 <footer class="terrasight-footer">
   <div class="footer-container">
     <div class="footer-row">
@@ -2787,6 +2894,114 @@ function speakResultContainer(button) {
   if (window.speechSynthesis) speechSynthesis.cancel();
 
   console.log("Reset clicked");
+}
+// OPEN LOGIN MODAL
+document.getElementById("openUpdateModal").onclick = () => {
+  document.getElementById("loginModal").classList.add("active");
+};
+
+// CLOSE LOGIN MODAL
+document.getElementById("closeLoginModal").onclick = () => {
+  document.getElementById("loginModal").classList.remove("active");
+};
+
+// CLOSE UPDATE MODAL
+document.getElementById("closeUpdateModal").onclick = () => {
+  document.getElementById("updateModal").classList.remove("active");
+};
+
+// SAMPLE AUTHORIZED USERS
+const authorizedUsers = [
+  {
+    email: "apao@gmail.com",
+    password: "apao123",
+    role: "APAO"
+  },
+  {
+    email: "pca@gmail.com",
+    password: "pca123",
+    role: "PCA"
+  }
+];
+
+// LOGIN FUNCTION
+function loginUser() {
+
+  const email = document.getElementById("loginEmail").value;
+  const password = document.getElementById("loginPassword").value;
+
+  const user = authorizedUsers.find(u =>
+    u.email === email && u.password === password
+  );
+
+  if (!user) {
+    document.getElementById("loginMessage").innerHTML =
+      "❌ Unauthorized account.";
+    return;
+  }
+
+  document.getElementById("loginMessage").innerHTML =
+    "✅ Login successful.";
+
+  localStorage.setItem("loggedRole", user.role);
+
+  setTimeout(() => {
+    document.getElementById("loginModal").classList.remove("active");
+    document.getElementById("updateModal").classList.add("active");
+  }, 1000);
+}
+
+// SAVE YIELD DATA
+function saveYieldData() {
+
+  const municipality =
+    document.getElementById("yieldMunicipality").value;
+
+  const crop =
+    document.getElementById("yieldCrop").value;
+
+  const year =
+    document.getElementById("yieldYear").value;
+
+  const yieldValue =
+    document.getElementById("yieldValue").value;
+
+  const role = localStorage.getItem("loggedRole");
+
+  // APAO can only update rice/corn
+  if (
+    role === "APAO" &&
+    crop === "coconut"
+  ) {
+    document.getElementById("updateMessage").innerHTML =
+      "❌ APAO cannot update coconut data.";
+    return;
+  }
+
+  // PCA can only update coconut
+  if (
+    role === "PCA" &&
+    crop !== "coconut"
+  ) {
+    document.getElementById("updateMessage").innerHTML =
+      "❌ PCA can only update coconut data.";
+    return;
+  }
+
+  // SAMPLE SAVE
+  const newData = {
+    municipality,
+    crop,
+    year,
+    yieldValue,
+    updatedBy: role
+  };
+
+  console.log("Saved Data:", newData);
+
+  document.getElementById("updateMessage").innerHTML =
+    "✅ Yield data updated successfully.";
+
 }
 </script>
 </body>
