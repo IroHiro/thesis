@@ -1357,7 +1357,7 @@
     <p>Update crop yield records for the selected municipality.</p>
 
     <div class="input-group">
-      <label>Municipality</label>
+      <label>Municipality *</label>
       <select id="yieldMunicipality">
         <option>Ligao</option>
         <option>Polangui</option>
@@ -1368,7 +1368,7 @@
     </div>
 
     <div class="input-group">
-      <label>Crop</label>
+      <label>Crop *</label>
       <select id="yieldCrop">
         <option value="rice">Rice</option>
         <option value="corn">Corn</option>
@@ -1376,17 +1376,36 @@
       </select>
     </div>
 
-    <div class="input-group">
-      <label>Year</label>
-      <input type="number" id="yieldYear" placeholder="2026">
-    </div>
+      <div class="input-group">
+        <label>Year *</label>
+        <input type="number" id="yieldYear" placeholder="2026">
+      </div>
 
-    <div class="input-group">
-      <label>Yield Value</label>
-      <input type="number" id="yieldValue" placeholder="Enter yield">
-    </div>
+  <div class="input-group">
+    <label>Grand Total Area *</label>
+    <input type="number" id="grandTotalArea" placeholder="Enter total area">
+  </div>
 
-    <button class="btn-primary" onclick="saveYieldData()">
+  <div class="input-group">
+    <label>Grand Total Production *</label>
+    <input type="number" id="grandTotalProduction" placeholder="Enter total production">
+  </div>
+
+  <div class="input-group">
+    <label>Yield/ha (MT) *</label>
+    <input type="number" step="0.01" id="yieldPerHa" placeholder="Enter yield per hectare">
+  </div>
+    
+    <div class="input-group">
+  <label>Season Optional</label>
+  <select id="yieldSeason">
+    <option value="">Not specified</option>
+    <option value="Wet Season">Wet Season</option>
+    <option value="Dry Season">Dry Season</option>
+  </select>
+</div>
+
+    <button typ2="button" class="btn-primary" onclick="saveYieldData()">
       Save Yield Data
     </button>
 
@@ -1394,6 +1413,62 @@
 
   </div>
 </div>
+<div class="input-group">
+  <label>Year *</label>
+  <input type="number" id="updateYear" required>
+</div>
+
+<div class="input-group">
+  <label>LGU *</label>
+  <select id="updateLGU" required>
+    <option value="">Select LGU</option>
+    <option>Ligao</option>
+    <option>Polangui</option>
+    <option>Oas</option>
+    <option>Malinao</option>
+    <option>Pio Duran</option>
+  </select>
+</div>
+
+<div class="input-group">
+  <label>Crop *</label>
+  <select id="updateCrop" required>
+    <option value="">Select Crop</option>
+    <option>Rice</option>
+    <option>Corn</option>
+    <option>Coconut</option>
+  </select>
+</div>
+
+<div class="input-group">
+  <label>Grand Total Area *</label>
+  <input type="number" id="totalArea" required>
+</div>
+
+<div class="input-group">
+  <label>Grand Total Production *</label>
+  <input type="number" id="totalProduction" required>
+</div>
+
+<div class="input-group">
+  <label>Yield/ha (MT) *</label>
+  <input type="number" step="0.01" id="yieldPerHa" required>
+</div>
+
+<div class="input-group">
+  <label>Season (Optional)</label>
+  <select id="season">
+    <option value="">Select Season</option>
+    <option>Wet Season</option>
+    <option>Dry Season</option>
+  </select>
+</div>
+
+<button class="btn-primary" onclick="saveYieldRecord()">
+  Save Record
+</button>
+
+<div id="saveMessage"></div>
 <footer class="terrasight-footer">
   <div class="footer-container">
     <div class="footer-row">
@@ -2953,56 +3028,142 @@ function loginUser() {
 
 // SAVE YIELD DATA
 function saveYieldData() {
+  const municipality = document.getElementById("yieldMunicipality").value;
+  const crop = document.getElementById("yieldCrop").value;
+  const year = document.getElementById("yieldYear").value.trim();
 
-  const municipality =
-    document.getElementById("yieldMunicipality").value;
+  const grandTotalArea = document.getElementById("grandTotalArea").value.trim();
+  const grandTotalProduction = document.getElementById("grandTotalProduction").value.trim();
+  const yieldPerHa = document.getElementById("yieldPerHa").value.trim();
 
-  const crop =
-    document.getElementById("yieldCrop").value;
-
-  const year =
-    document.getElementById("yieldYear").value;
-
-  const yieldValue =
-    document.getElementById("yieldValue").value;
-
+  const season = document.getElementById("yieldSeason").value;
   const role = localStorage.getItem("loggedRole");
 
-  // APAO can only update rice/corn
   if (
-    role === "APAO" &&
-    crop === "coconut"
+    !municipality ||
+    !crop ||
+    !year ||
+    !grandTotalArea ||
+    !grandTotalProduction ||
+    !yieldPerHa
   ) {
     document.getElementById("updateMessage").innerHTML =
-      "❌ APAO cannot update coconut data.";
+      "Please fill in all required fields.";
     return;
   }
 
-  // PCA can only update coconut
-  if (
-    role === "PCA" &&
-    crop !== "coconut"
-  ) {
+  if (Number(year) < 2000 || Number(year) > 2100) {
     document.getElementById("updateMessage").innerHTML =
-      "❌ PCA can only update coconut data.";
+      "Please enter a valid year.";
     return;
   }
 
-  // SAMPLE SAVE
+  if (
+    Number(grandTotalArea) <= 0 ||
+    Number(grandTotalProduction) <= 0 ||
+    Number(yieldPerHa) <= 0
+  ) {
+    document.getElementById("updateMessage").innerHTML =
+      "Area, production, and yield must be greater than 0.";
+    return;
+  }
+
+  if (role === "APAO" && crop === "coconut") {
+    document.getElementById("updateMessage").innerHTML =
+      "APAO cannot update coconut data.";
+    return;
+  }
+
+  if (role === "PCA" && crop !== "coconut") {
+    document.getElementById("updateMessage").innerHTML =
+      "PCA can only update coconut data.";
+    return;
+  }
+
   const newData = {
     municipality,
     crop,
     year,
-    yieldValue,
-    updatedBy: role
+    grandTotalArea,
+    grandTotalProduction,
+    yieldPerHa,
+    season: season || "Not specified",
+    updatedBy: role,
+    updatedAt: new Date().toLocaleString()
   };
 
-  console.log("Saved Data:", newData);
+  const records = JSON.parse(localStorage.getItem("yieldRecords")) || [];
+  records.push(newData);
+  localStorage.setItem("yieldRecords", JSON.stringify(records));
 
   document.getElementById("updateMessage").innerHTML =
-    "✅ Yield data updated successfully.";
+    "Yield data updated successfully.";
+
+  document.getElementById("yieldYear").value = "";
+  document.getElementById("grandTotalArea").value = "";
+  document.getElementById("grandTotalProduction").value = "";
+  document.getElementById("yieldPerHa").value = "";
+  document.getElementById("yieldSeason").value = "";
+
+  console.log("Saved yield records:", records);
+}
+function saveYieldRecord() {
+
+  const year = document.getElementById("updateYear").value;
+  const lgu = document.getElementById("updateLGU").value;
+  const crop = document.getElementById("updateCrop").value;
+  const totalArea = document.getElementById("totalArea").value;
+  const totalProduction = document.getElementById("totalProduction").value;
+  const yieldPerHa = document.getElementById("yieldPerHa").value;
+  const season = document.getElementById("season").value;
+
+  // REQUIRED VALIDATION
+  if (
+    !year ||
+    !lgu ||
+    !crop ||
+    !totalArea ||
+    !totalProduction ||
+    !yieldPerHa
+  ) {
+
+    document.getElementById("saveMessage").innerHTML =
+      "❌ Please fill in all required fields.";
+
+    return;
+  }
+
+  // RECORD OBJECT
+  const newRecord = {
+    year,
+    lgu,
+    crop,
+    totalArea,
+    totalProduction,
+    yieldPerHa,
+    season
+  };
+
+  // GET EXISTING DATA
+  let records =
+    JSON.parse(localStorage.getItem("yieldRecords")) || [];
+
+  // ADD NEW RECORD
+  records.push(newRecord);
+
+  // SAVE TO LOCAL STORAGE
+  localStorage.setItem(
+    "yieldRecords",
+    JSON.stringify(records)
+  );
+
+  document.getElementById("saveMessage").innerHTML =
+    "✅ Yield record saved successfully.";
+
+  console.log(records);
 
 }
+
 </script>
 </body>
 </html>
