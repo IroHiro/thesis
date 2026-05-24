@@ -1408,11 +1408,12 @@
     <button typ2="button" class="btn-primary" onclick="saveYieldData()">
       Save Yield Data
     </button>
-    <div id="updateMessage"></div>
      <button type="button" class="btn-primary" onclick="triggerModelTraining()" style="background: #1F5A2E;">
         🤖 Train Model Now
-      </button>
-
+    </button>
+    <div id="updateMessage"></div>
+    <div id="trainMessage" style="margin-top: 10px; font-weight: 500;"></div>
+  
   </div>
 </div>
 <footer class="terrasight-footer">
@@ -3107,7 +3108,121 @@ function saveYieldRecord() {
     "✅ Yield record saved successfully.";
 
   console.log(records);
+}
 
+
+// ============================================
+// TRIGGER MODEL TRAINING - OPENS AND RUNS COLAB
+// ============================================
+
+// Colab notebook ID (from the URL)
+const COLAB_NOTEBOOK_ID = "1JXUXrkbsbkJPniHNVdekycrYl-ad8y5m#scrollTo=uhKPvFiW-efR";
+
+async function triggerModelTraining() {
+  const trainMessage = document.getElementById('trainMessage');
+  const modal = document.getElementById('updateModal');
+  
+  if (!trainMessage) return;
+  
+  // Check if user is logged in
+  const role = localStorage.getItem("loggedRole");
+  if (!role) {
+    trainMessage.innerHTML = "❌ Please login first to train the model.";
+    trainMessage.style.color = "#d62828";
+    return;
+  }
+  
+  // Confirm before training
+  const confirmTrain = confirm(
+    "⚠️ TRAINING MODEL - This will:\n\n" +
+    "1. Fetch latest climate data from NASA API\n" +
+    "2. Download vegetation indices from GitHub\n" +
+    "3. Retrain LSTM and Random Forest models\n" +
+    "4. Update model files on GitHub\n" +
+    "5. Trigger Render.com to redeploy the API\n\n" +
+    "⏱️ This takes 10-15 minutes.\n\n" +
+    "A new tab will open with Google Colab.\n" +
+    "The notebook will run automatically.\n\n" +
+    "Do you want to continue?"
+  );
+  
+  if (!confirmTrain) return;
+  
+  // Show loading message
+  trainMessage.innerHTML = "🚀 Opening Google Colab and starting training...";
+  trainMessage.style.color = "#2B6E3C";
+  
+  try {
+    // ============================================
+    // METHOD 1: URL with autoplay/run parameter
+    // ============================================
+    
+    // Colab accepts these URL parameters:
+    // - force=true: Forces a new runtime
+    // - run=true: Attempts to run all cells automatically
+    // - autoresize=true: Adapts to content
+    
+    const colabUrl = `https://colab.research.google.com/drive/${COLAB_NOTEBOOK_ID}#force=true&run=true&autoresize=true`;
+    
+    // Open in a new tab
+    const colabWindow = window.open(colabUrl, '_blank');
+    
+    if (!colabWindow) {
+      // Popup blocked - try fallback
+      window.location.href = colabUrl;
+      trainMessage.innerHTML = "⚠️ Popup blocked. Click the link that opens to run the notebook.";
+    } else {
+      trainMessage.innerHTML = "✅ Colab notebook opened! The training will start automatically. This takes 10-15 minutes. Do not close the tab.";
+    }
+    
+    // Optional: Also send a notification to Discord
+    sendTrainingNotification(role);
+    
+  } catch (error) {
+    console.error("Error opening Colab:", error);
+    
+    // Fallback: Just open the regular Colab link
+    const fallbackUrl = `https://colab.research.google.com/drive/${COLAB_NOTEBOOK_ID}#force=true`;
+    window.open(fallbackUrl, '_blank');
+    trainMessage.innerHTML = "⚠️ Please manually click 'Runtime → Run all' in the opened Colab notebook.";
+    trainMessage.style.color = "#f4a261";
+  }
+  
+  // Close the modal after 3 seconds (optional)
+  setTimeout(() => {
+    if (modal) modal.classList.remove('active');
+  }, 3000);
+}
+
+// ============================================
+// SEND NOTIFICATION TO DISCORD 
+// ============================================
+async function sendTrainingNotification(triggeredBy) {
+  const DISCORD_WEBHOOK_URL = "https://discord.com/api/webhooks/1503429451285794957/AksZmowcDszM8MkvgbTHQclebcWbpHLmVb9QKeJV2sHGVqL1x9ptsIqZHUqvKXX1k6AK"; // Optional - replace if you have Discord
+  
+  if (!DISCORD_WEBHOOK_URL || DISCORD_WEBHOOK_URL === "YOUR_DISCORD_WEBHOOK_URL") {
+    console.log("Discord webhook not configured");
+    return;
+  }
+  
+  const message = {
+    content: `🚀 **Model Training Triggered!**\n\n` +
+             `**Triggered by:** ${triggeredBy}\n` +
+             `**Time:** ${new Date().toLocaleString()}\n` +
+             `**Colab:** https://colab.research.google.com/drive/${COLAB_NOTEBOOK_ID}\n` +
+             `**Status:** Training started - check back in 10-15 minutes`
+  };
+  
+  try {
+    await fetch(DISCORD_WEBHOOK_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(message)
+    });
+    console.log("Notification sent to Discord");
+  } catch (error) {
+    console.error("Failed to send Discord notification:", error);
+  }
 }
 
 </script>
