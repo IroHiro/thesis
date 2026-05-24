@@ -3112,11 +3112,11 @@ function saveYieldRecord() {
 
 
 // ============================================
-// TRIGGER MODEL TRAINING - OPENS AND RUNS COLAB
+// TRIGGER MODEL TRAINING - USES GOOGLE APPS SCRIPT
 // ============================================
 
-// Colab notebook ID (from the URL)
-const COLAB_NOTEBOOK_ID = "1JXUXrkbsbkJPniHNVdekycrYl-ad8y5m#scrollTo=uhKPvFiW-efR";
+// Your Google Apps Script Web App URL from Step 1
+const COLAB_RUNNER_URL = "https://script.google.com/macros/s/AKfycbwuEKuG_2lg9QMg96is5nHj3MFBuLjC0j4SzPtaxc8Pdmms8VC9a-r4gW_bw46tT3K-/exec";
 
 async function triggerModelTraining() {
   const trainMessage = document.getElementById('trainMessage');
@@ -3134,64 +3134,54 @@ async function triggerModelTraining() {
   
   // Confirm before training
   const confirmTrain = confirm(
-    "⚠️ TRAINING MODEL - This will:\n\n" +
-    "1. Fetch latest climate data from NASA API\n" +
-    "2. Download vegetation indices from GitHub\n" +
-    "3. Retrain LSTM and Random Forest models\n" +
-    "4. Update model files on GitHub\n" +
-    "5. Trigger Render.com to redeploy the API\n\n" +
-    "⏱️ This takes 10-15 minutes.\n\n" +
-    "A new tab will open with Google Colab.\n" +
-    "The notebook will run automatically.\n\n" +
-    "Do you want to continue?"
+    "🚀 START MODEL TRAINING\n\n" +
+    "This will:\n" +
+    "✓ Fetch latest climate data from NASA API\n" +
+    "✓ Download vegetation indices from GitHub\n" +
+    "✓ Retrain LSTM and Random Forest models\n" +
+    "✓ Update model files on GitHub\n" +
+    "✓ Trigger Render to redeploy the API\n\n" +
+    "⏱️ Takes 10-15 minutes.\n\n" +
+    "Click OK to start. A new window will open."
   );
   
   if (!confirmTrain) return;
   
   // Show loading message
-  trainMessage.innerHTML = "🚀 Opening Google Colab and starting training...";
+  trainMessage.innerHTML = "🚀 Opening Colab and starting training...";
   trainMessage.style.color = "#2B6E3C";
   
   try {
-    // ============================================
-    // METHOD 1: URL with autoplay/run parameter
-    // ============================================
+    // Open the Google Apps Script web app
+    const runnerWindow = window.open(COLAB_RUNNER_URL, '_blank');
     
-    // Colab accepts these URL parameters:
-    // - force=true: Forces a new runtime
-    // - run=true: Attempts to run all cells automatically
-    // - autoresize=true: Adapts to content
-    
-    const colabUrl = `https://colab.research.google.com/drive/${COLAB_NOTEBOOK_ID}#force=true&run=true&autoresize=true`;
-    
-    // Open in a new tab
-    const colabWindow = window.open(colabUrl, '_blank');
-    
-    if (!colabWindow) {
+    if (!runnerWindow) {
       // Popup blocked - try fallback
-      window.location.href = colabUrl;
+      window.location.href = COLAB_RUNNER_URL;
       trainMessage.innerHTML = "⚠️ Popup blocked. Click the link that opens to run the notebook.";
     } else {
-      trainMessage.innerHTML = "✅ Colab notebook opened! The training will start automatically. This takes 10-15 minutes. Do not close the tab.";
+      trainMessage.innerHTML = "✅ Training started! The notebook will run automatically. Check back in 10-15 minutes.";
     }
     
-    // Optional: Also send a notification to Discord
+    // Optional: Send notification
     sendTrainingNotification(role);
     
-  } catch (error) {
-    console.error("Error opening Colab:", error);
+    // Close the update modal
+    setTimeout(() => {
+      if (modal) modal.classList.remove('active');
+    }, 2000);
     
-    // Fallback: Just open the regular Colab link
-    const fallbackUrl = `https://colab.research.google.com/drive/${COLAB_NOTEBOOK_ID}#force=true`;
-    window.open(fallbackUrl, '_blank');
-    trainMessage.innerHTML = "⚠️ Please manually click 'Runtime → Run all' in the opened Colab notebook.";
-    trainMessage.style.color = "#f4a261";
+  } catch (error) {
+    console.error("Error:", error);
+    trainMessage.innerHTML = "❌ Failed to start training. Please try again.";
+    trainMessage.style.color = "#d62828";
   }
-  
-  // Close the modal after 3 seconds (optional)
-  setTimeout(() => {
-    if (modal) modal.classList.remove('active');
-  }, 3000);
+}
+
+// Optional notification function
+async function sendTrainingNotification(triggeredBy) {
+  // You can add Discord webhook here if you have one
+  console.log(`Training triggered by: ${triggeredBy} at ${new Date().toLocaleString()}`);
 }
 
 // ============================================
